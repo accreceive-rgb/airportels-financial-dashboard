@@ -3,7 +3,7 @@
   "exportedAt": "2026-04-27",
   "exportedBy": "Claude",
   "department": {
-    "name": "MAKESEND Financial",
+    "name": "Airportels Financial",
     "org": "Airportels",
     "mission": "TBD",
     "updatedAt": "2026-04-27"
@@ -19,7 +19,7 @@
       "time": "18:52",
       "user": "Oh",
       "action": "created",
-      "target": "MAKESEND Financial MADGA Project",
+      "target": "Airportels Financial MADGA Project",
       "detail": "Project initialized — scaffold complete, git connected to Airportels repo",
       "type": "system"
     }

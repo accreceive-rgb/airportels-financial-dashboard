@@ -1,4 +1,4 @@
-# MAKESEND Financial — MADGA Project
+# Airportels Financial — MADGA Project
 
 > **MADGA** (Make Department Great Again) — Central source of truth for everything our department does: processes, workflows, tools, stakeholders, and improvement plans.
 

@@ -1,4 +1,4 @@
-# MAKESEND Financial — MADGA Project Rules
+# Airportels Financial — MADGA Project Rules
 
 > This file tells Claude how to work on this MADGA project.
 > It is auto-generated during project setup. Do not delete.
@@ -291,7 +291,7 @@ Before closing, **always** write to `changelog.md` (newest entry at top):
 - **File naming:** lowercase, hyphens for spaces (e.g., `order-fulfillment`)
 - **YAML frontmatter:** every `.md` file must have YAML frontmatter with at least `title` and `updated` fields
 - **`detail/` subfolder:** only create inside a process folder when a step is complex enough for its own file
-- **HTML `<title>`:** `MAKESEND Financial — MADGA` for `index.html`, `<Process Name> — MAKESEND Financial MADGA` for sub-pages
+- **HTML `<title>`:** `Airportels Financial — MADGA` for `index.html`, `<Process Name> — Airportels Financial MADGA` for sub-pages
 - **MADGA badge:** `<span class="text-xs font-mono bg-gray-800 text-white px-2 py-1 rounded">MADGA</span>`
 
 ---

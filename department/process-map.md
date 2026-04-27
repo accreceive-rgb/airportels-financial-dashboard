@@ -1,12 +1,12 @@
 ---
 title: Process Map
-department: MAKESEND Financial
+department: Airportels Financial
 updated: 2026-04-27
 ---
 
 # Process Map
 
-> Master index of all MAKESEND Financial processes.
+> Master index of all Airportels Financial processes.
 
 | # | Process | Owner | Category | Status | Completeness |
 |---|---|---|---|---|---|
