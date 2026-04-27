@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Branch Income Recording — Airportels Financial</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <header class="bg-white border-b shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div>
+        <a href="../index.html" class="text-sm text-blue-600 hover:underline">&larr; Airportels Financial — MADGA</a>
+        <h1 class="text-xl font-bold text-gray-900 mt-1">Branch Income Recording</h1>
+        <p class="text-sm text-gray-500">Revenue / AR &bull; Intern / AR Officer</p>
+      </div>
+      <div class="flex flex-col items-end gap-1">
+        <span class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">partial</span>
+        <span class="text-xs text-gray-400">active</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- Purpose & Timing -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-2">Purpose</h2>
+      <p class="text-sm text-gray-700">บันทึกรายได้ประจำวันของแต่ละสาขา ตั้งแต่รับ Email รายงานจากสาขาหลังปิดร้าน ตรวจสอบยอดฝากเงินสด และนำเข้าระบบ PEAK</p>
+      <div class="mt-3 flex items-center gap-2 text-sm text-gray-500">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Daily — หลังสาขาปิดร้าน</span>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-3">Steps</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">รับ Email รายงาน AI Income จากสาขา</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">Email</td><td class="py-2 px-3 text-sm">รายงาน AI Income</td><td class="py-2 px-3 text-sm text-gray-500">หลังปิดร้านทุกวัน</td></tr>
+              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">บันทึก AI Income เข้าระบบ</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">RV/RE</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">ตรวจสอบยอดฝากเงินสด vs Income</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">Sheet / PEAK</td><td class="py-2 px-3 text-sm">ผลตรวจสอบ</td><td class="py-2 px-3 text-sm text-gray-500">ต้องตรงกัน</td></tr>
+              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">แนบสลิปฝากเงินสดใน PEAK</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">สลิปแนบในระบบ</td><td class="py-2 px-3 text-sm text-gray-500">ทุกสาขา</td></tr>
+              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">Print Credit Advice บันทึกรายได้</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">Credit Advice</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">Print RE/RV</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">เอกสาร RE/RV</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">บันทึก RV ใน Statement</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">Statement sheet</td><td class="py-2 px-3 text-sm">Statement อัปเดต</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">8</td><td class="py-2 px-3 text-sm">บันทึกรายได้แต่ละสาขาลง Sheet Income</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Sheet Income</td><td class="py-2 px-3 text-sm">Sheet อัปเดต</td><td class="py-2 px-3 text-sm text-gray-500">แยกตามสาขา</td></tr>
+              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">9</td><td class="py-2 px-3 text-sm">จัดเก็บเอกสาร</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">เอกสารจัดเก็บ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Stakeholders -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-3">Stakeholders</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">Name / Role</th>
+              <th class="py-2 px-3">Involvement</th>
+              <th class="py-2 px-3">Type</th>
+            </tr>
+          </thead>
+          <tbody>
+              <tr class="border-t"><td class="py-2 px-3 text-sm font-medium">Intern Accounting</td><td class="py-2 px-3 text-sm text-gray-600">ดำเนินการหลัก — บันทึก AI Income, ตรวจสอบยอด, แนบสลิป</td><td class="py-2 px-3"><span class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">internal</span></td></tr>
+              <tr class="border-t"><td class="py-2 px-3 text-sm font-medium">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">บันทึกรายได้ลง Sheet Income</td><td class="py-2 px-3"><span class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">internal</span></td></tr>
+              <tr class="border-t"><td class="py-2 px-3 text-sm font-medium">Branch Staff</td><td class="py-2 px-3 text-sm text-gray-600">ส่ง Email รายงานรายได้</td><td class="py-2 px-3"><span class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">internal</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tools, Inputs, Outputs -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-lg shadow-sm p-5">
+        <h2 class="text-base font-semibold text-gray-800 mb-2">Tools</h2>
+        <ul class="space-y-1.5">
+            <li class="flex items-start gap-2"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span><span class="text-sm">PEAK — บันทึก RV/RE แนบสลิป</span></li>
+            <li class="flex items-start gap-2"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span><span class="text-sm">Email — รับรายงาน AI Income</span></li>
+            <li class="flex items-start gap-2"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span><span class="text-sm">Sheet Income — บันทึกและ track รายได้</span></li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm p-5">
+        <h2 class="text-base font-semibold text-gray-800 mb-2">Inputs</h2>
+        <ul class="list-disc list-inside space-y-1">
+            <li class="text-sm text-gray-700">Email รายงานรายได้จากสาขา</li>
+            <li class="text-sm text-gray-700">สลิปฝากเงินสด</li>
+            <li class="text-sm text-gray-700">Credit Advice จากธนาคาร</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm p-5">
+        <h2 class="text-base font-semibold text-gray-800 mb-2">Outputs</h2>
+        <ul class="list-disc list-inside space-y-1">
+            <li class="text-sm text-gray-700">RV/RE ใน PEAK</li>
+            <li class="text-sm text-gray-700">Sheet Income อัปเดต</li>
+            <li class="text-sm text-gray-700">เอกสารจัดเก็บ</li>
+        </ul>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
+    Airportels Financial — MADGA v1.3 &bull; <a href="../index.html" class="hover:underline">Back to Dashboard</a>
+  </footer>
+
+</body>
+</html>

@@ -9,11 +9,432 @@
     "updatedAt": "2026-04-27"
   },
   "members": [
-    { "name": "Oh", "role": "TBD", "responsibility": "TBD" }
+    { "name": "คุณโฮ่", "role": "Director / CFO (TBD)", "responsibility": "อนุมัติขั้นสุดท้าย รับรายงานงบการเงิน" },
+    { "name": "Accounting Manager", "role": "Accounting Manager", "responsibility": "ตรวจสอบเอกสาร ภาษีขาย Omise Statement งบการเงิน บริหารทีม" },
+    { "name": "มอส", "role": "AP Officer (TBD)", "responsibility": "จัดทำใบเบิก Payment Voucher ภาษีซื้อ ภงด.3/53 Rider Payroll" },
+    { "name": "AR Officer", "role": "AR Officer", "responsibility": "รายได้สาขา Landlord Report Partner Invoice Petty Cash" },
+    { "name": "Intern", "role": "Intern Accounting", "responsibility": "AI Income ฝากเงินสด RV/RE สรุปรายได้รายวัน" }
   ],
-  "processes": [],
+  "processes": [
+    {
+      "id": "branch-income-recording",
+      "name": "Branch Income Recording",
+      "owner": "Intern / AR Officer",
+      "category": "Revenue / AR",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "บันทึกรายได้ประจำวันของแต่ละสาขา ตั้งแต่รับ Email รายงานจากสาขาหลังปิดร้าน ตรวจสอบยอดฝากเงินสด และนำเข้าระบบ PEAK",
+      "timing": "Daily — หลังสาขาปิดร้าน",
+      "stakeholders": [
+        { "name": "Intern Accounting", "involvement": "ดำเนินการหลัก — บันทึก AI Income, ตรวจสอบยอด, แนบสลิป", "type": "internal" },
+        { "name": "AR Officer", "involvement": "บันทึกรายได้ลง Sheet Income", "type": "internal" },
+        { "name": "Branch Staff", "involvement": "ส่ง Email รายงานรายได้", "type": "internal" }
+      ],
+      "tools": [
+        { "name": "PEAK", "purpose": "บันทึก RV/RE แนบสลิป" },
+        { "name": "Email", "purpose": "รับรายงาน AI Income จากสาขา" },
+        { "name": "Sheet Income", "purpose": "บันทึกและ track รายได้" }
+      ],
+      "inputs": ["Email รายงานรายได้จากสาขา", "สลิปฝากเงินสด", "Credit Advice จากธนาคาร"],
+      "outputs": ["RV/RE ใน PEAK", "Sheet Income อัปเดต", "เอกสารจัดเก็บ"],
+      "crossLinks": {
+        "from": [{ "process": "Branch Staff", "department": "operations", "detail": "รายงานรายได้ทาง Email" }],
+        "to": [{ "process": "Landlord Revenue Reporting", "department": "airportels-financial", "detail": "สรุปรายได้ส่ง Landlord" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "รับ Email รายงาน AI Income จากสาขา", "actor": "Intern", "tool": "Email", "output": "รายงาน AI Income", "notes": "หลังปิดร้านทุกวัน" },
+        { "num": 2, "name": "บันทึก AI Income เข้าระบบ", "actor": "Intern", "tool": "PEAK", "output": "RV/RE", "notes": "" },
+        { "num": 3, "name": "ตรวจสอบยอดฝากเงินสด vs Income", "actor": "Intern", "tool": "Sheet / PEAK", "output": "ผลตรวจสอบ", "notes": "ต้องตรงกัน" },
+        { "num": 4, "name": "แนบสลิปฝากเงินสดใน PEAK", "actor": "Intern", "tool": "PEAK", "output": "สลิปแนบในระบบ", "notes": "ทุกสาขา" },
+        { "num": 5, "name": "Print Credit Advice บันทึกรายได้", "actor": "Intern", "tool": "PEAK", "output": "Credit Advice", "notes": "" },
+        { "num": 6, "name": "Print RE/RV", "actor": "Intern", "tool": "PEAK", "output": "เอกสาร RE/RV", "notes": "" },
+        { "num": 7, "name": "บันทึก RV ใน Statement", "actor": "Intern", "tool": "Statement sheet", "output": "Statement อัปเดต", "notes": "" },
+        { "num": 8, "name": "บันทึกรายได้แต่ละสาขาลง Sheet Income", "actor": "AR Officer", "tool": "Sheet Income", "output": "Sheet อัปเดต", "notes": "แยกตามสาขา" },
+        { "num": 9, "name": "จัดเก็บเอกสาร", "actor": "Intern", "tool": "—", "output": "เอกสารจัดเก็บ", "notes": "" }
+      ],
+      "subPage": "pages/process-branch-income-recording.html"
+    },
+    {
+      "id": "landlord-revenue-reporting",
+      "name": "Landlord Revenue Reporting",
+      "owner": "AR Officer / Intern",
+      "category": "Revenue / AR",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "จัดทำและส่งรายงานรายได้รายวันและรายเดือนของแต่ละสาขาให้ Landlord ตามข้อกำหนดสัญญา",
+      "timing": "Daily + Monthly",
+      "stakeholders": [
+        { "name": "AR Officer", "involvement": "จัดทำและส่งรายงาน", "type": "internal" },
+        { "name": "Intern Accounting", "involvement": "ทำสรุปรายได้รายวัน", "type": "internal" },
+        { "name": "Landlord", "involvement": "ผู้รับรายงาน", "type": "external" }
+      ],
+      "tools": [
+        { "name": "Email", "purpose": "ส่งรายงานให้ Landlord" },
+        { "name": "Sheet Income", "purpose": "ดึงข้อมูลรายได้" }
+      ],
+      "inputs": ["Sheet Income", "สรุปรายได้รายวันจาก Intern"],
+      "outputs": ["Email รายงานรายได้รายวัน", "Email รายงานรายได้รายเดือน"],
+      "crossLinks": {
+        "from": [{ "process": "Branch Income Recording", "department": "airportels-financial", "detail": "ข้อมูลรายได้สาขา" }],
+        "to": [{ "process": "Landlord", "department": "external", "detail": "รายงานรายได้" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "รวบรวมข้อมูลรายได้รายวัน", "actor": "Intern / AR", "tool": "Sheet Income", "output": "สรุปรายได้รายวัน", "notes": "" },
+        { "num": 2, "name": "จัดทำสรุปรายได้รายวัน", "actor": "Intern", "tool": "TBD", "output": "Report รายวัน", "notes": "" },
+        { "num": 3, "name": "ส่ง Email รายงานรายวันให้ Landlord", "actor": "AR Officer", "tool": "Email", "output": "Email ส่งแล้ว", "notes": "" },
+        { "num": 4, "name": "จัดทำรายงานรายเดือน", "actor": "AR Officer", "tool": "Sheet Income", "output": "Report รายเดือน", "notes": "" },
+        { "num": 5, "name": "ส่ง Email รายงานรายเดือนให้ Landlord", "actor": "AR Officer", "tool": "Email", "output": "Email ส่งแล้ว", "notes": "" }
+      ],
+      "subPage": "pages/process-landlord-revenue-reporting.html"
+    },
+    {
+      "id": "online-payment-recording",
+      "name": "Online Payment Recording (Omise/PayPal)",
+      "owner": "Accounting Manager / AR Officer",
+      "category": "Revenue / AR",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "ดึงรายงานจากช่องทางชำระเงินออนไลน์ (Omise, PayPal) และบันทึกบัญชีเข้าระบบ PEAK",
+      "timing": "TBD — รายวัน/สัปดาห์/เดือน",
+      "stakeholders": [
+        { "name": "Accounting Manager", "involvement": "ดึง Report Omise บันทึกบัญชี", "type": "internal" },
+        { "name": "AR Officer", "involvement": "บันทึกรายได้ PayPal", "type": "internal" }
+      ],
+      "tools": [
+        { "name": "Omise", "purpose": "Platform ชำระเงิน — ดึง Report" },
+        { "name": "PayPal", "purpose": "Platform ชำระเงิน" },
+        { "name": "PEAK", "purpose": "บันทึกบัญชีรายได้" }
+      ],
+      "inputs": ["Report จาก Omise", "รายการจาก PayPal"],
+      "outputs": ["รายการบัญชีใน PEAK"],
+      "crossLinks": {
+        "from": [],
+        "to": [{ "process": "Bank Statement Reconciliation", "department": "airportels-financial", "detail": "กระทบยอด" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "ดึง Report จาก Omise", "actor": "Accounting Manager", "tool": "Omise", "output": "Report Omise", "notes": "TBD — frequency" },
+        { "num": 2, "name": "บันทึกบัญชี Omise เข้า PEAK", "actor": "Accounting Manager", "tool": "PEAK", "output": "รายการบัญชี", "notes": "" },
+        { "num": 3, "name": "บันทึกรายได้ PayPal", "actor": "AR Officer", "tool": "PEAK", "output": "รายการบัญชี PayPal", "notes": "TBD" }
+      ],
+      "subPage": "pages/process-online-payment-recording.html"
+    },
+    {
+      "id": "partner-billing-ar",
+      "name": "Partner Billing & AR",
+      "owner": "AR Officer",
+      "category": "Revenue / AR",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "ตรวจสอบรายได้จาก Partner, ออก Invoice และใบเสร็จ, ติดตามการชำระเงินและเอกสารหัก ณ ที่จ่าย",
+      "timing": "Monthly — ตามรอบเรียกเก็บ",
+      "stakeholders": [
+        { "name": "AR Officer", "involvement": "ดำเนินการทั้งหมด", "type": "internal" },
+        { "name": "Accounting Manager", "involvement": "ตรวจสอบ", "type": "internal" },
+        { "name": "Partner", "involvement": "ผู้รับ Invoice และชำระเงิน", "type": "external" }
+      ],
+      "tools": [
+        { "name": "PEAK", "purpose": "ออก Invoice/ใบเสร็จ บันทึกรายได้" },
+        { "name": "Email", "purpose": "ส่งเอกสารให้ Partner" }
+      ],
+      "inputs": ["ข้อมูลรายได้จาก Partner", "Sheet Income"],
+      "outputs": ["Invoice", "ใบเสร็จรับเงิน", "เอกสารหัก ณ ที่จ่าย (รับ)", "รายได้ใน PEAK"],
+      "crossLinks": {
+        "from": [{ "process": "Partner", "department": "external", "detail": "ข้อมูลรายได้" }],
+        "to": [{ "process": "Tax Filing & Reporting", "department": "airportels-financial", "detail": "หัก ณ ที่จ่ายที่รับมา" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "ตรวจสอบรายได้จาก Partner ก่อนออก Invoice", "actor": "AR Officer", "tool": "Sheet Income", "output": "ยอดรายได้ที่ถูกต้อง", "notes": "" },
+        { "num": 2, "name": "ออก Invoice เรียกเก็บ Partner", "actor": "AR Officer", "tool": "PEAK", "output": "Invoice", "notes": "" },
+        { "num": 3, "name": "จัดส่ง Invoice ให้ Partner", "actor": "AR Officer", "tool": "Email", "output": "Invoice ส่งแล้ว", "notes": "" },
+        { "num": 4, "name": "ออกใบเสร็จให้ Partner", "actor": "AR Officer", "tool": "PEAK", "output": "ใบเสร็จ", "notes": "" },
+        { "num": 5, "name": "จัดส่งใบเสร็จให้ Partner", "actor": "AR Officer", "tool": "Email", "output": "ใบเสร็จส่งแล้ว", "notes": "" },
+        { "num": 6, "name": "ติดตามเอกสารหัก ณ ที่จ่าย", "actor": "AR Officer", "tool": "—", "output": "เอกสาร ภงด.", "notes": "" },
+        { "num": 7, "name": "จัดเก็บเอกสาร", "actor": "AR Officer", "tool": "—", "output": "เอกสารจัดเก็บ", "notes": "" }
+      ],
+      "subPage": "pages/process-partner-billing-ar.html"
+    },
+    {
+      "id": "bank-statement-reconciliation",
+      "name": "Bank Statement Reconciliation",
+      "owner": "Accounting Manager / AR Officer",
+      "category": "Revenue / AR",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "กระทบยอด Bank Statement กับรายได้และรายจ่ายที่บันทึกในระบบ เพื่อให้ยอดถูกต้องตรงกัน",
+      "timing": "TBD — รายวัน/สัปดาห์/เดือน",
+      "stakeholders": [
+        { "name": "Accounting Manager", "involvement": "เช็ค Statement ภาพรวม", "type": "internal" },
+        { "name": "AR Officer", "involvement": "กระทบยอด Statement กับรายได้", "type": "internal" },
+        { "name": "AP Officer", "involvement": "เช็ค Statement ด้านค่าใช้จ่าย", "type": "internal" },
+        { "name": "Intern", "involvement": "บันทึก RV ใน Statement", "type": "internal" }
+      ],
+      "tools": [
+        { "name": "PEAK", "purpose": "บันทึกรายการบัญชี" },
+        { "name": "Bank Statement", "purpose": "ข้อมูลการเคลื่อนไหวบัญชี" }
+      ],
+      "inputs": ["Bank Statement", "รายการบัญชีใน PEAK", "เอกสารเบิกจ่าย"],
+      "outputs": ["Statement กระทบยอดแล้ว", "รายการบัญชีถูกต้องใน PEAK"],
+      "crossLinks": {
+        "from": [],
+        "to": [{ "process": "Monthly Financial Close", "department": "airportels-financial", "detail": "ข้อมูลกระทบยอด" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "ดึง Bank Statement", "actor": "TBD", "tool": "ธนาคาร", "output": "Statement", "notes": "" },
+        { "num": 2, "name": "กระทบยอด Statement กับรายได้", "actor": "AR Officer", "tool": "PEAK / Sheet", "output": "ผลกระทบยอด", "notes": "" },
+        { "num": 3, "name": "เช็ค Statement ด้านค่าใช้จ่าย", "actor": "AP Officer", "tool": "Statement", "output": "รายการกระทบแล้ว", "notes": "กรณีเบิกตรงกับคุณโฮ่" },
+        { "num": 4, "name": "บันทึก RV ใน Statement", "actor": "Intern", "tool": "Statement", "output": "Statement อัปเดต", "notes": "" },
+        { "num": 5, "name": "บันทึกบัญชีรายการที่พบ", "actor": "Accounting Manager", "tool": "PEAK", "output": "รายการบัญชี", "notes": "กรณียุ่งยาก" }
+      ],
+      "subPage": "pages/process-bank-statement-reconciliation.html"
+    },
+    {
+      "id": "petty-cash-advance",
+      "name": "Petty Cash & Advance Management",
+      "owner": "AR Officer / AP Officer",
+      "category": "Expense / AP",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "บริหารเงินสดย่อยและการเบิก Advance ของบริษัท ตั้งแต่การอนุมัติ บันทึกบัญชี จนถึงการตรวจสอบ",
+      "timing": "As-needed",
+      "stakeholders": [
+        { "name": "AR Officer", "involvement": "ดูแลเงินสดย่อย (Custodian)", "type": "internal" },
+        { "name": "AP Officer", "involvement": "ตรวจเช็คเอกสาร บันทึกบัญชี", "type": "internal" },
+        { "name": "Accounting Manager", "involvement": "ตรวจสอบเอกสารที่บันทึกแล้ว", "type": "internal" }
+      ],
+      "tools": [{ "name": "PEAK", "purpose": "บันทึกบัญชีเงินสดย่อย/Advance" }],
+      "inputs": ["ใบเบิกเงินสดย่อย / Advance", "ใบเสร็จหลักฐาน"],
+      "outputs": ["เงินสดย่อยจ่ายออก", "รายการบัญชีใน PEAK"],
+      "crossLinks": {
+        "from": [{ "process": "All Departments", "department": "internal", "detail": "พนักงานผู้เบิก" }],
+        "to": [{ "process": "Bank Statement Reconciliation", "department": "airportels-financial", "detail": "" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "พนักงานยื่นใบเบิกเงินสดย่อย/Advance", "actor": "พนักงาน", "tool": "ใบเบิก", "output": "ใบเบิก", "notes": "TBD — ขั้นตอนอนุมัติ" },
+        { "num": 2, "name": "ตรวจสอบเอกสาร", "actor": "AP Officer", "tool": "เอกสาร", "output": "เอกสารผ่านตรวจ", "notes": "" },
+        { "num": 3, "name": "บันทึกบัญชีเข้าระบบ", "actor": "AP Officer", "tool": "PEAK", "output": "รายการบัญชี", "notes": "" },
+        { "num": 4, "name": "ตรวจสอบเอกสารที่บันทึกแล้ว", "actor": "Accounting Manager", "tool": "PEAK", "output": "ผลตรวจสอบ", "notes": "" },
+        { "num": 5, "name": "จ่ายเงินสดย่อย", "actor": "AR Officer", "tool": "เงินสด", "output": "เงินสดจ่ายออก", "notes": "" }
+      ],
+      "subPage": "pages/process-petty-cash-advance.html"
+    },
+    {
+      "id": "expense-reimbursement",
+      "name": "Expense Reimbursement Processing",
+      "owner": "AP Officer",
+      "category": "Expense / AP",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "ตรวจสอบและดำเนินการเบิกค่าใช้จ่ายต่างๆ ของบริษัท ตั้งแต่รับเอกสาร ตรวจสอบ บันทึกบัญชี จนถึงชำระเงิน",
+      "timing": "As-needed / Monthly",
+      "stakeholders": [
+        { "name": "AP Officer (มอส)", "involvement": "จัดทำใบเบิก ตรวจสอบเอกสาร บันทึกบัญชี", "type": "internal" },
+        { "name": "Accounting Manager", "involvement": "ตรวจเช็คก่อนส่งคุณโฮ่", "type": "internal" },
+        { "name": "คุณโฮ่", "involvement": "อนุมัติขั้นสุดท้าย", "type": "internal" }
+      ],
+      "tools": [{ "name": "PEAK", "purpose": "บันทึกบัญชีค่าใช้จ่าย" }],
+      "inputs": ["ใบเบิกค่าใช้จ่ายพร้อมหลักฐาน", "ใบเสร็จจากผู้ขาย"],
+      "outputs": ["ค่าใช้จ่ายจ่ายออก", "รายการบัญชีใน PEAK"],
+      "crossLinks": {
+        "from": [{ "process": "All Departments", "department": "internal", "detail": "พนักงานผู้เบิก" }],
+        "to": [{ "process": "Bank Statement Reconciliation", "department": "airportels-financial", "detail": "" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "รับเอกสารเบิกค่าใช้จ่าย", "actor": "AP Officer", "tool": "เอกสาร", "output": "ใบเบิก", "notes": "" },
+        { "num": 2, "name": "ตรวจสอบความถูกต้องเอกสาร", "actor": "AP Officer", "tool": "เอกสาร", "output": "เอกสารผ่านตรวจ", "notes": "" },
+        { "num": 3, "name": "จัดทำ Payment Voucher", "actor": "AP Officer (มอส)", "tool": "PEAK", "output": "Payment Voucher", "notes": "" },
+        { "num": 4, "name": "ตรวจเช็คเอกสารก่อนส่ง", "actor": "Accounting Manager", "tool": "เอกสาร", "output": "ผลตรวจสอบ", "notes": "" },
+        { "num": 5, "name": "นำส่งให้คุณโฮ่อนุมัติ", "actor": "Accounting Manager", "tool": "เอกสาร", "output": "การอนุมัติ", "notes": "" },
+        { "num": 6, "name": "บันทึกบัญชีค่าใช้จ่าย", "actor": "AP Officer", "tool": "PEAK", "output": "รายการบัญชี", "notes": "บันทึกตรงเดือน" },
+        { "num": 7, "name": "จัดเก็บเอกสาร", "actor": "AP Officer", "tool": "—", "output": "เอกสารจัดเก็บ", "notes": "" }
+      ],
+      "subPage": "pages/process-expense-reimbursement.html"
+    },
+    {
+      "id": "rider-payroll",
+      "name": "Rider Payroll Processing",
+      "owner": "AP Officer / Intern",
+      "category": "Expense / AP",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "ตรวจสอบเอกสารและบันทึกบัญชีค่าจ้าง Rider ทั้ง Full-time และ Part-time เข้าระบบ",
+      "timing": "TBD — รายสัปดาห์/รายเดือน",
+      "stakeholders": [
+        { "name": "AP Officer", "involvement": "ตรวจเช็คเอกสาร บันทึกบัญชี", "type": "internal" },
+        { "name": "Intern Accounting", "involvement": "ตรวจเช็คเอกสาร บันทึกบัญชี", "type": "internal" },
+        { "name": "Rider / Operations", "involvement": "ผู้รับค่าจ้าง", "type": "internal" }
+      ],
+      "tools": [{ "name": "PEAK", "purpose": "บันทึกบัญชีค่าจ้าง" }],
+      "inputs": ["เอกสารเบิกค่าจ้าง Rider"],
+      "outputs": ["ค่าจ้าง Rider จ่ายออก", "รายการบัญชีใน PEAK"],
+      "crossLinks": {
+        "from": [{ "process": "Operations / HR", "department": "operations", "detail": "ข้อมูล Rider" }],
+        "to": []
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "รับเอกสารเบิกค่าจ้าง Rider", "actor": "AP Officer / Intern", "tool": "เอกสาร", "output": "เอกสารค่าจ้าง", "notes": "Full-time และ Part-time" },
+        { "num": 2, "name": "ตรวจเช็คความถูกต้อง", "actor": "AP Officer / Intern", "tool": "เอกสาร", "output": "เอกสารผ่านตรวจ", "notes": "" },
+        { "num": 3, "name": "บันทึกบัญชีค่าจ้างเข้าระบบ", "actor": "AP Officer / Intern", "tool": "PEAK", "output": "รายการบัญชี", "notes": "" },
+        { "num": 4, "name": "จ่ายค่าจ้าง Rider", "actor": "TBD", "tool": "TBD", "output": "—", "notes": "TBD — ช่องทาง" }
+      ],
+      "subPage": "pages/process-rider-payroll.html"
+    },
+    {
+      "id": "commission-payment",
+      "name": "Commission Payment (MS Go / Partner)",
+      "owner": "AP Officer",
+      "category": "Expense / AP",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "จัดทำ Payment Voucher และดำเนินการจ่าย Commission ประจำเดือนให้กับ MS Go และ Partner พร้อมออกหัก ณ ที่จ่าย",
+      "timing": "Monthly",
+      "stakeholders": [
+        { "name": "AP Officer", "involvement": "จัดทำ Payment Voucher ออกหัก ณ ที่จ่าย", "type": "internal" },
+        { "name": "Accounting Manager", "involvement": "ตรวจสอบอนุมัติ", "type": "internal" },
+        { "name": "MS Go / Partner", "involvement": "ผู้รับ Commission", "type": "external" }
+      ],
+      "tools": [{ "name": "PEAK", "purpose": "บันทึกบัญชี Payment Voucher" }],
+      "inputs": ["ข้อมูล Commission ประจำเดือน (TBD)"],
+      "outputs": ["Payment Voucher", "เอกสารหัก ณ ที่จ่าย", "Commission จ่ายออก"],
+      "crossLinks": {
+        "from": [],
+        "to": [{ "process": "Tax Filing & Reporting", "department": "airportels-financial", "detail": "ภงด.3/53" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "รวบรวมข้อมูล Commission ประจำเดือน", "actor": "AP Officer", "tool": "TBD", "output": "ข้อมูล Commission", "notes": "" },
+        { "num": 2, "name": "จัดทำ Payment Voucher Commission", "actor": "AP Officer", "tool": "PEAK", "output": "Payment Voucher", "notes": "MS Go / Partner" },
+        { "num": 3, "name": "ออกหัก ณ ที่จ่าย", "actor": "AP Officer", "tool": "เอกสาร", "output": "ภ.ง.ด.3 / 53", "notes": "" },
+        { "num": 4, "name": "จ่าย Commission", "actor": "TBD", "tool": "TBD", "output": "—", "notes": "" },
+        { "num": 5, "name": "บันทึกบัญชีค่าใช้จ่าย", "actor": "AP Officer", "tool": "PEAK", "output": "รายการบัญชี", "notes": "" }
+      ],
+      "subPage": "pages/process-commission-payment.html"
+    },
+    {
+      "id": "tax-filing-reporting",
+      "name": "Tax Filing & Reporting",
+      "owner": "Accounting Manager / AP Officer",
+      "category": "Compliance",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "จัดทำรายงานภาษีทุกประเภท และยื่นแบบภาษีต่อกรมสรรพากรให้ครบถ้วนตามกำหนดเวลา",
+      "timing": "Monthly (ภพ.30, ภงด.3, ภงด.53) + Annual (ภงด.50, 51)",
+      "stakeholders": [
+        { "name": "Accounting Manager", "involvement": "ภาษีขาย, Reconcile GL, ตรวจสอบ, ยื่น ภพ.30/ภงด.50/51", "type": "internal" },
+        { "name": "AP Officer", "involvement": "ภาษีซื้อ, ภงด.3/53, ยื่นแบบ", "type": "internal" },
+        { "name": "กรมสรรพากร", "involvement": "หน่วยงานรับยื่น", "type": "external" }
+      ],
+      "tools": [
+        { "name": "PEAK", "purpose": "ดึงข้อมูลภาษี GL" },
+        { "name": "ระบบ RD", "purpose": "ยื่นแบบออนไลน์" }
+      ],
+      "inputs": ["ข้อมูลภาษีขาย/ซื้อจาก PEAK", "เอกสารหัก ณ ที่จ่าย"],
+      "outputs": ["รายงานภาษีขาย/ซื้อ", "ภพ.30", "ภงด.1/3/53/50/51 (ยื่นแล้ว)"],
+      "crossLinks": {
+        "from": [{ "process": "Commission Payment", "department": "airportels-financial", "detail": "ข้อมูลหัก ณ ที่จ่าย" }],
+        "to": [{ "process": "Monthly Financial Close", "department": "airportels-financial", "detail": "" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "จัดทำรายงานภาษีขาย", "actor": "Accounting Manager", "tool": "PEAK", "output": "รายงานภาษีขาย", "notes": "รายเดือน" },
+        { "num": 2, "name": "Reconcile GL ภาษีขาย", "actor": "Accounting Manager", "tool": "PEAK", "output": "GL กระทบยอด", "notes": "" },
+        { "num": 3, "name": "จัดทำรายงานภาษีซื้อ", "actor": "AP Officer", "tool": "PEAK", "output": "รายงานภาษีซื้อ", "notes": "" },
+        { "num": 4, "name": "จัดทำรายงาน ภ.ง.ด.3/53", "actor": "AP Officer", "tool": "เอกสาร", "output": "ภงด.3/53", "notes": "" },
+        { "num": 5, "name": "ตรวจสอบก่อนยื่น", "actor": "Accounting Manager", "tool": "เอกสาร", "output": "ผลตรวจสอบ", "notes": "" },
+        { "num": 6, "name": "ยื่นแบบ ภงด.3, 53", "actor": "AP Officer", "tool": "ระบบ RD", "output": "ใบยื่นแบบ", "notes": "" },
+        { "num": 7, "name": "ยื่นแบบ ภพ.30", "actor": "Accounting Manager / AP", "tool": "ระบบ RD", "output": "ใบยื่นแบบ", "notes": "" },
+        { "num": 8, "name": "ยื่นแบบ ภงด.50/51 (ประจำปี)", "actor": "Accounting Manager", "tool": "ระบบ RD", "output": "ใบยื่นแบบ", "notes": "ปีละครั้ง" }
+      ],
+      "subPage": "pages/process-tax-filing-reporting.html"
+    },
+    {
+      "id": "fixed-assets",
+      "name": "Fixed Assets Management",
+      "owner": "AP Officer / Accounting Manager",
+      "category": "Assets",
+      "status": "active",
+      "completeness": "stub",
+      "purpose": "บันทึก ควบคุม และดูแลบัญชีสินทรัพย์ถาวร ตั้งแต่การซื้อ คิดค่าเสื่อมราคา จนถึงการตัดจำหน่าย",
+      "timing": "As-needed + Monthly (ค่าเสื่อมราคา)",
+      "stakeholders": [
+        { "name": "AP Officer", "involvement": "บันทึกซื้อสินทรัพย์", "type": "internal" },
+        { "name": "Accounting Manager", "involvement": "ควบคุมบัญชีทรัพย์สิน", "type": "internal" }
+      ],
+      "tools": [{ "name": "PEAK", "purpose": "บันทึกสินทรัพย์" }],
+      "inputs": ["ใบเสร็จ/Invoice ซื้อสินทรัพย์"],
+      "outputs": ["รายการสินทรัพย์ในระบบ", "ค่าเสื่อมราคาประจำเดือน"],
+      "crossLinks": {
+        "from": [],
+        "to": [{ "process": "Monthly Financial Close", "department": "airportels-financial", "detail": "ค่าเสื่อมราคา" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "รับเอกสารซื้อสินทรัพย์", "actor": "AP Officer", "tool": "ใบเสร็จ", "output": "เอกสารซื้อ", "notes": "" },
+        { "num": 2, "name": "บันทึกซื้อสินทรัพย์เข้าระบบ", "actor": "AP Officer", "tool": "PEAK", "output": "รายการสินทรัพย์", "notes": "" },
+        { "num": 3, "name": "คิดค่าเสื่อมราคา", "actor": "Accounting Manager", "tool": "PEAK", "output": "ค่าเสื่อมราคา", "notes": "TBD — กระบวนการ" }
+      ],
+      "subPage": "pages/process-fixed-assets.html"
+    },
+    {
+      "id": "monthly-financial-close",
+      "name": "Monthly Financial Close",
+      "owner": "Accounting Manager",
+      "category": "Reporting",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "ปิดงบการเงินประจำเดือนและประจำปี จัดทำงบดุลและงบกำไรขาดทุน พร้อมตรวจสอบความถูกต้องของตัวเลขทุกด้าน",
+      "timing": "Monthly + Annual",
+      "stakeholders": [
+        { "name": "Accounting Manager", "involvement": "ดำเนินการหลัก จัดทำงบ ปิดงบ", "type": "internal" },
+        { "name": "AR Officer", "involvement": "ตรวจสอบ Sheet Income vs Business Performance", "type": "internal" },
+        { "name": "AP Officer", "involvement": "ตรวจสอบรายการค้างจ่าย", "type": "internal" },
+        { "name": "คุณโฮ่", "involvement": "รับรายงาน", "type": "internal" }
+      ],
+      "tools": [
+        { "name": "PEAK", "purpose": "บันทึกบัญชีปิดงบ ดึงรายงาน" },
+        { "name": "Sheet Business Performance", "purpose": "Reconcile กับ Sheet Income" }
+      ],
+      "inputs": ["รายการบัญชีครบทุกด้านจาก PEAK", "Bank Statement กระทบยอดแล้ว", "รายงานภาษีครบ"],
+      "outputs": ["งบดุล", "งบกำไรขาดทุน", "รายงานปิดงบประจำเดือน"],
+      "crossLinks": {
+        "from": [
+          { "process": "Bank Statement Reconciliation", "department": "airportels-financial", "detail": "" },
+          { "process": "Tax Filing & Reporting", "department": "airportels-financial", "detail": "" }
+        ],
+        "to": [{ "process": "คุณโฮ่ / Management", "department": "internal", "detail": "รายงาน" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "ตรวจสอบว่าทุก Process บันทึกครบ", "actor": "Accounting Manager", "tool": "PEAK", "output": "checklist", "notes": "" },
+        { "num": 2, "name": "ตรวจสอบ Sheet Income vs Business Performance", "actor": "AR Officer", "tool": "Sheet", "output": "ผลกระทบยอด", "notes": "" },
+        { "num": 3, "name": "ปรับปรุงรายการค้างรับ/จ่าย", "actor": "Accounting Manager", "tool": "PEAK", "output": "รายการปรับปรุง", "notes": "Accrual" },
+        { "num": 4, "name": "บันทึกค่าเสื่อมราคา", "actor": "Accounting Manager", "tool": "PEAK", "output": "ค่าเสื่อมราคา", "notes": "" },
+        { "num": 5, "name": "Reconcile GL ทุกบัญชีสำคัญ", "actor": "Accounting Manager", "tool": "PEAK", "output": "GL กระทบแล้ว", "notes": "" },
+        { "num": 6, "name": "จัดทำงบดุล", "actor": "Accounting Manager", "tool": "PEAK", "output": "งบดุล", "notes": "" },
+        { "num": 7, "name": "จัดทำงบกำไรขาดทุน", "actor": "Accounting Manager", "tool": "PEAK", "output": "งบ P&L", "notes": "" },
+        { "num": 8, "name": "นำส่งงบการเงินให้คุณโฮ่", "actor": "Accounting Manager", "tool": "—", "output": "รายงานงบการเงิน", "notes": "ตามกำหนด" }
+      ],
+      "subPage": "pages/process-monthly-financial-close.html"
+    }
+  ],
   "plans": [],
   "activity": [
+    {
+      "date": "2026-04-27",
+      "time": "19:30",
+      "user": "Oh",
+      "action": "created",
+      "target": "12 Accounting Processes",
+      "detail": "สร้าง 12 processes จาก Job Description ทีมบัญชี 4 ตำแหน่ง — Revenue/AR, Expense/AP, Compliance, Assets, Reporting",
+      "type": "process"
+    },
     {
       "date": "2026-04-27",
       "time": "18:52",
