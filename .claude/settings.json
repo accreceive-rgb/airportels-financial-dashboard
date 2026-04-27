@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "statusMessage": "Pulling latest from GitHub...",
+            "timeout": 30,
+            "command": "git pull origin main --rebase 2>$null; exit 0"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "statusMessage": "Syncing to GitHub...",
+            "timeout": 30,
+            "command": "$d = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $d.tool_input.file_path; if ($f -match '\\.(md|html|json)$') { $n = Split-Path $f -Leaf; $who = git config user.name; git add -A; $staged = git diff --staged --name-only; if ($staged) { git commit -m \"auto: update $n -- by $who\"; git push origin main } } 2>$null"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "statusMessage": "Pushing session changes...",
+            "timeout": 30,
+            "command": "$who = git config user.name; git add -A; $staged = git diff --staged --name-only; if ($staged) { git commit -m \"auto: session end -- by $who\"; git push origin main } 2>$null"
+          }
+        ]
+      }
+    ]
+  }
+}
