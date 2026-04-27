@@ -1,0 +1,21 @@
+# MADGA Project .gitignore
+
+# Setup files — never commit (contains tokens)
+.setup
+*.setup
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Node (if ever used)
+node_modules/

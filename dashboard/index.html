@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAKESEND Financial — MADGA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .process-card .card-detail { display: none; }
+    .process-card.open .card-detail { display: block; }
+    .plan-card .plan-detail { display: none; }
+    .plan-card.open .plan-detail { display: block; }
+    .mermaid-pending { min-height: 60px; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-white border-b shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-bold text-gray-900" id="dept-name">MAKESEND Financial</h1>
+          <span class="text-xs font-mono bg-gray-800 text-white px-2 py-1 rounded">MADGA</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-0.5" id="dept-mission">TBD</p>
+      </div>
+      <div class="text-right text-xs text-gray-400">
+        <div>Last updated: <span id="last-updated">2026-04-27</span></div>
+        <div>v<span id="madga-version">1.3</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tab Navigation -->
+  <nav class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex gap-0">
+        <button class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-blue-500 text-blue-600" data-tab="overview">Overview</button>
+        <button class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="processes">Processes</button>
+        <button class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="plans">Plans</button>
+        <button class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="diagrams">Diagrams</button>
+        <button class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="activity">Activity</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- Overview Tab -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow-md p-4">
+          <div class="text-2xl font-bold text-blue-600" id="stat-processes">0</div>
+          <div class="text-sm text-gray-500">Total Processes</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-4">
+          <div class="text-2xl font-bold text-yellow-600" id="stat-plans">0</div>
+          <div class="text-sm text-gray-500">Active Plans</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-4">
+          <div class="text-2xl font-bold text-gray-400" id="stat-tbd">0</div>
+          <div class="text-sm text-gray-500">Items Marked TBD</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Completeness Chart -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+          <h2 class="text-base font-semibold text-gray-700 mb-3">Process Completeness</h2>
+          <div class="flex items-center justify-center" style="height:200px">
+            <canvas id="completeness-chart" width="200" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- Team Grid -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+          <h2 class="text-base font-semibold text-gray-700 mb-3">Team</h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="team-grid">
+            <!-- rendered by JS -->
+          </div>
+          <p class="text-sm text-gray-400 mt-3" id="team-empty" style="display:none">No team members added yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Processes Tab -->
+    <div id="tab-processes" class="tab-content">
+      <!-- Filter Bar -->
+      <div class="bg-white rounded-lg shadow-md p-4 mb-4 flex flex-wrap gap-3 items-center">
+        <input type="text" id="process-search" placeholder="Search processes..." class="border rounded px-3 py-1.5 text-sm flex-1 min-w-48 focus:outline-none focus:ring-2 focus:ring-blue-300">
+        <div class="flex gap-2 flex-wrap" id="status-pills">
+          <button class="status-pill px-3 py-1 rounded-full text-xs font-medium bg-blue-500 text-white" data-status="all">All</button>
+          <button class="status-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-status="active">Active</button>
+          <button class="status-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-status="under-review">Under Review</button>
+          <button class="status-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-status="inactive">Inactive</button>
+        </div>
+        <select id="category-filter" class="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+          <option value="all">All Categories</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="process-grid">
+        <!-- rendered by JS -->
+      </div>
+      <p class="text-gray-400 text-sm mt-6 text-center" id="process-empty">No processes yet — tell Claude about your team's workflows to get started.</p>
+      <p class="text-gray-400 text-sm mt-6 text-center hidden" id="process-no-match">No processes match your search.</p>
+    </div>
+
+    <!-- Plans Tab -->
+    <div id="tab-plans" class="tab-content">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="plans-grid">
+        <!-- rendered by JS -->
+      </div>
+      <p class="text-gray-400 text-sm mt-6 text-center" id="plans-empty">No plans yet — when you discuss improvements with Claude, plans will appear here.</p>
+    </div>
+
+    <!-- Diagrams Tab -->
+    <div id="tab-diagrams" class="tab-content">
+      <div class="bg-white rounded-lg shadow-md p-4 mb-4 flex flex-wrap gap-3 items-center">
+        <select id="diagram-process-filter" class="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+          <option value="all">All Processes</option>
+        </select>
+        <div class="flex gap-2 flex-wrap" id="diagram-type-pills">
+          <button class="dtype-pill px-3 py-1 rounded-full text-xs font-medium bg-blue-500 text-white" data-dtype="all">All</button>
+          <button class="dtype-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-dtype="flowchart">Flowchart</button>
+          <button class="dtype-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-dtype="swimlane">Swimlane</button>
+          <button class="dtype-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-dtype="sequence">Sequence</button>
+          <button class="dtype-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-dtype="state">State</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="diagrams-grid">
+        <!-- rendered by JS -->
+      </div>
+      <p class="text-gray-400 text-sm mt-6 text-center" id="diagrams-empty">No diagrams yet — diagrams will appear here as processes are documented.</p>
+      <p class="text-gray-400 text-sm mt-6 text-center hidden" id="diagrams-no-match">No diagrams found for this selection.</p>
+    </div>
+
+    <!-- Activity Tab -->
+    <div id="tab-activity" class="tab-content">
+      <div class="bg-white rounded-lg shadow-md p-4 mb-4 flex flex-wrap gap-3 items-center">
+        <select id="activity-user-filter" class="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+          <option value="all">All Team Members</option>
+        </select>
+        <div class="flex gap-2 flex-wrap" id="activity-type-pills">
+          <button class="atype-pill px-3 py-1 rounded-full text-xs font-medium bg-blue-500 text-white" data-atype="all">All</button>
+          <button class="atype-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-atype="process">Process</button>
+          <button class="atype-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-atype="plan">Plan</button>
+          <button class="atype-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-atype="diagram">Diagram</button>
+          <button class="atype-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" data-atype="system">System</button>
+        </div>
+      </div>
+      <div id="activity-timeline">
+        <!-- rendered by JS -->
+      </div>
+      <p class="text-gray-400 text-sm mt-6 text-center" id="activity-empty">No activity yet.</p>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-sm text-gray-400 text-center py-4 border-t mt-8">
+    <span id="footer-text">MAKESEND Financial — MADGA v1.3</span>
+  </footer>
+
+  <script>
+    // ─── DATA ────────────────────────────────────────────────────────────────
+    const DASHBOARD_DATA = {
+      version: "1.3",
+      department: {
+        name: "MAKESEND Financial",
+        mission: "TBD",
+        updatedAt: "2026-04-27"
+      },
+      members: [
+        { name: "Oh", role: "TBD" }
+      ],
+      processes: [],
+      plans: [],
+      activity: [
+        {
+          date: "2026-04-27",
+          time: "18:52",
+          user: "Oh",
+          action: "created",
+          target: "MAKESEND Financial MADGA Project",
+          detail: "Project initialized — scaffold complete, git connected to Airportels repo",
+          type: "system"
+        }
+      ]
+    };
+
+    // ─── MERMAID ─────────────────────────────────────────────────────────────
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'default',
+      flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' }
+    });
+
+    let mermaidCounter = 0;
+    async function renderVisibleMermaid() {
+      const pending = document.querySelectorAll('.mermaid-pending');
+      for (const el of pending) {
+        if (el.offsetParent !== null) {
+          const code = el.getAttribute('data-mermaid-src');
+          if (!code) continue;
+          const id = 'mmd-' + (mermaidCounter++);
+          try {
+            const { svg } = await mermaid.render(id, code);
+            el.innerHTML = svg;
+            el.classList.remove('mermaid-pending');
+            el.classList.add('mermaid-rendered');
+          } catch (e) {
+            el.innerHTML = '<div class="text-red-500 text-xs p-2">Diagram render error</div>';
+            el.classList.remove('mermaid-pending');
+          }
+        }
+      }
+    }
+
+    // ─── TABS ─────────────────────────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('border-blue-500', 'text-blue-600');
+          b.classList.add('border-transparent', 'text-gray-500');
+        });
+        btn.classList.add('border-blue-500', 'text-blue-600');
+        btn.classList.remove('border-transparent', 'text-gray-500');
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        setTimeout(renderVisibleMermaid, 50);
+      });
+    });
+
+    // ─── HELPERS ─────────────────────────────────────────────────────────────
+    function statusBadge(status) {
+      const map = {
+        'active': 'bg-green-100 text-green-800',
+        'under-review': 'bg-yellow-100 text-yellow-800',
+        'inactive': 'bg-gray-100 text-gray-600',
+        'draft': 'bg-blue-100 text-blue-800',
+        'in-progress': 'bg-yellow-100 text-yellow-800',
+        'completed': 'bg-green-100 text-green-800',
+        'on-hold': 'bg-gray-100 text-gray-600'
+      };
+      return `<span class="px-2 py-1 rounded-full text-xs font-medium ${map[status] || 'bg-gray-100 text-gray-600'}">${status}</span>`;
+    }
+
+    function completenessDot(c) {
+      const map = { full: 'bg-green-400', partial: 'bg-yellow-400', stub: 'bg-gray-300' };
+      return `<span class="inline-block w-2 h-2 rounded-full ${map[c] || 'bg-gray-300'}" title="${c}"></span>`;
+    }
+
+    function diagramTypeBadge(type) {
+      const map = {
+        flowchart: 'bg-indigo-100 text-indigo-800',
+        swimlane: 'bg-teal-100 text-teal-800',
+        sequence: 'bg-purple-100 text-purple-800',
+        state: 'bg-orange-100 text-orange-800',
+        gantt: 'bg-pink-100 text-pink-800'
+      };
+      return `<span class="px-2 py-0.5 rounded-full text-xs font-medium ${map[type] || 'bg-gray-100 text-gray-600'}">${type}</span>`;
+    }
+
+    function activityIcon(action) {
+      const map = {
+        created: '<span class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-bold">+</span>',
+        updated: '<span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">~</span>',
+        deleted: '<span class="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-bold">−</span>',
+        status_change: '<span class="w-6 h-6 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center text-xs font-bold">!</span>'
+      };
+      return map[action] || map.updated;
+    }
+
+    function activityTypeBadge(type) {
+      const map = {
+        process: 'bg-blue-50 text-blue-700',
+        plan: 'bg-yellow-50 text-yellow-700',
+        diagram: 'bg-purple-50 text-purple-700',
+        system: 'bg-gray-100 text-gray-600'
+      };
+      return `<span class="px-2 py-0.5 rounded-full text-xs ${map[type] || 'bg-gray-100 text-gray-600'}">${type}</span>`;
+    }
+
+    // ─── OVERVIEW ─────────────────────────────────────────────────────────────
+    function renderOverview() {
+      document.getElementById('dept-name').textContent = DASHBOARD_DATA.department.name;
+      document.getElementById('dept-mission').textContent = DASHBOARD_DATA.department.mission;
+      document.getElementById('last-updated').textContent = DASHBOARD_DATA.department.updatedAt;
+      document.getElementById('madga-version').textContent = DASHBOARD_DATA.version;
+      document.getElementById('footer-text').textContent = `${DASHBOARD_DATA.department.name} — MADGA v${DASHBOARD_DATA.version}`;
+
+      // Stats
+      const totalProcs = DASHBOARD_DATA.processes.length;
+      const activePlans = DASHBOARD_DATA.plans.filter(p => p.status === 'in-progress' || p.status === 'draft').length;
+      let tbdCount = 0;
+      DASHBOARD_DATA.processes.forEach(p => {
+        if (p.owner === 'TBD') tbdCount++;
+        if (p.purpose === 'TBD' || !p.purpose) tbdCount++;
+        if (p.timing === 'TBD' || !p.timing) tbdCount++;
+      });
+      document.getElementById('stat-processes').textContent = totalProcs;
+      document.getElementById('stat-plans').textContent = activePlans;
+      document.getElementById('stat-tbd').textContent = tbdCount;
+
+      // Team grid
+      const grid = document.getElementById('team-grid');
+      const empty = document.getElementById('team-empty');
+      if (DASHBOARD_DATA.members.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = '';
+      } else {
+        empty.style.display = 'none';
+        grid.innerHTML = DASHBOARD_DATA.members.map(m => `
+          <div class="bg-gray-50 rounded-lg p-3 text-center">
+            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-lg mx-auto mb-2">${m.name[0]}</div>
+            <div class="text-sm font-medium text-gray-800">${m.name}</div>
+            <div class="text-xs text-gray-500">${m.role}</div>
+          </div>`).join('');
+      }
+
+      // Completeness chart
+      const full = DASHBOARD_DATA.processes.filter(p => p.completeness === 'full').length;
+      const partial = DASHBOARD_DATA.processes.filter(p => p.completeness === 'partial').length;
+      const stub = DASHBOARD_DATA.processes.filter(p => p.completeness === 'stub').length;
+      const ctx = document.getElementById('completeness-chart').getContext('2d');
+      if (window._completenessChart) window._completenessChart.destroy();
+      window._completenessChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Full', 'Partial', 'Stub'],
+          datasets: [{
+            data: [full || 0.001, partial || 0.001, stub || 0.001],
+            backgroundColor: ['#22c55e', '#eab308', '#9ca3af'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: false,
+          plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } }
+        }
+      });
+    }
+
+    // ─── PROCESSES ────────────────────────────────────────────────────────────
+    function renderProcesses() {
+      const grid = document.getElementById('process-grid');
+      const emptyEl = document.getElementById('process-empty');
+      const noMatchEl = document.getElementById('process-no-match');
+      const search = document.getElementById('process-search').value.toLowerCase();
+      const statusFilter = document.querySelector('.status-pill.bg-blue-500')?.dataset.status || 'all';
+      const catFilter = document.getElementById('category-filter').value;
+
+      // Populate category dropdown
+      const cats = [...new Set(DASHBOARD_DATA.processes.map(p => p.category).filter(Boolean))];
+      const catSel = document.getElementById('category-filter');
+      const currentCat = catSel.value;
+      catSel.innerHTML = '<option value="all">All Categories</option>' + cats.map(c => `<option value="${c}" ${c === currentCat ? 'selected' : ''}>${c}</option>`).join('');
+
+      if (DASHBOARD_DATA.processes.length === 0) {
+        grid.innerHTML = '';
+        emptyEl.style.display = '';
+        noMatchEl.classList.add('hidden');
+        return;
+      }
+      emptyEl.style.display = 'none';
+
+      const filtered = DASHBOARD_DATA.processes.filter(p => {
+        const matchSearch = !search || p.name.toLowerCase().includes(search);
+        const matchStatus = statusFilter === 'all' || p.status === statusFilter;
+        const matchCat = catFilter === 'all' || p.category === catFilter;
+        return matchSearch && matchStatus && matchCat;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        noMatchEl.classList.remove('hidden');
+        return;
+      }
+      noMatchEl.classList.add('hidden');
+
+      grid.innerHTML = filtered.map(p => {
+        const diagCount = (p.diagrams || []).length;
+        const diagBadge = diagCount > 0 ? `<button class="text-xs text-indigo-600 hover:underline" onclick="switchTab('diagrams')">${diagCount} diagram${diagCount > 1 ? 's' : ''}</button>` : '';
+        return `
+        <div class="process-card bg-white rounded-lg shadow-md overflow-hidden" id="card-${p.id}">
+          <div class="p-4 cursor-pointer" onclick="toggleCard('${p.id}')">
+            <div class="flex items-start justify-between mb-2">
+              <h3 class="font-semibold text-gray-800 text-sm">${p.name}</h3>
+              <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+                ${completenessDot(p.completeness)}
+                ${statusBadge(p.status)}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-500">
+              <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">${p.category || 'Uncategorized'}</span>
+              <span>Owner: ${p.owner || 'TBD'}</span>
+              ${diagBadge}
+            </div>
+          </div>
+          <div class="card-detail border-t px-4 pb-4 pt-3">
+            <p class="text-sm text-gray-600 mb-3">${p.purpose || 'TBD'}</p>
+            ${p.stakeholders && p.stakeholders.length ? `<div class="mb-2"><span class="text-xs font-medium text-gray-500">Stakeholders:</span> <span class="text-xs text-gray-700">${p.stakeholders.map(s => s.name).join(', ')}</span></div>` : ''}
+            ${p.tools && p.tools.length ? `<div class="mb-2"><span class="text-xs font-medium text-gray-500">Tools:</span> <span class="text-xs text-gray-700">${p.tools.map(t => t.name).join(', ')}</span></div>` : ''}
+            ${p.timing ? `<div class="mb-3"><span class="text-xs font-medium text-gray-500">Timing:</span> <span class="text-xs text-gray-700">${p.timing}</span></div>` : ''}
+            ${p.steps && p.steps.length ? `
+            <table class="w-full text-xs mb-3 border-collapse">
+              <thead><tr class="bg-gray-50"><th class="text-left p-1 border border-gray-200">#</th><th class="text-left p-1 border border-gray-200">Step</th><th class="text-left p-1 border border-gray-200">Actor</th></tr></thead>
+              <tbody>${p.steps.map(s => `<tr><td class="p-1 border border-gray-200">${s.num}</td><td class="p-1 border border-gray-200">${s.name}</td><td class="p-1 border border-gray-200">${s.actor || 'TBD'}</td></tr>`).join('')}</tbody>
+            </table>` : ''}
+            ${p.painPoints && p.painPoints.length ? `<div class="mb-3"><span class="text-xs font-medium text-red-500">Pain Points:</span><ul class="list-disc list-inside text-xs text-gray-600 mt-1">${p.painPoints.map(pp => `<li>${pp}</li>`).join('')}</ul></div>` : ''}
+            ${p.subPage ? `<a href="${p.subPage}" class="text-xs text-blue-600 hover:underline">View full detail page ›</a>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function toggleCard(id) {
+      document.getElementById('card-' + id)?.classList.toggle('open');
+      setTimeout(renderVisibleMermaid, 50);
+    }
+
+    function switchTab(name) {
+      document.querySelector(`.tab-btn[data-tab="${name}"]`)?.click();
+    }
+
+    // Process filter events
+    document.getElementById('process-search').addEventListener('input', renderProcesses);
+    document.getElementById('category-filter').addEventListener('change', renderProcesses);
+    document.querySelectorAll('.status-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.status-pill').forEach(p => {
+          p.classList.remove('bg-blue-500', 'text-white');
+          p.classList.add('bg-gray-100', 'text-gray-600');
+        });
+        pill.classList.add('bg-blue-500', 'text-white');
+        pill.classList.remove('bg-gray-100', 'text-gray-600');
+        renderProcesses();
+      });
+    });
+
+    // ─── PLANS ────────────────────────────────────────────────────────────────
+    function renderPlans() {
+      const grid = document.getElementById('plans-grid');
+      const emptyEl = document.getElementById('plans-empty');
+      if (DASHBOARD_DATA.plans.length === 0) { grid.innerHTML = ''; emptyEl.style.display = ''; return; }
+      emptyEl.style.display = 'none';
+      grid.innerHTML = DASHBOARD_DATA.plans.map(plan => {
+        const done = plan.actions.filter(a => a.status === 'completed').length;
+        const total = plan.actions.length;
+        const pct = total ? Math.round((done / total) * 100) : 0;
+        const ganttHtml = plan.gantt ? `<div class="mermaid-pending mt-3 bg-gray-50 rounded p-2" data-mermaid-src="${plan.gantt.replace(/"/g, '&quot;')}"></div>` : '';
+        return `
+        <div class="plan-card bg-white rounded-lg shadow-md overflow-hidden" id="plan-${plan.id}">
+          <div class="p-4 cursor-pointer" onclick="togglePlan('${plan.id}')">
+            <div class="flex items-start justify-between mb-1">
+              <h3 class="font-semibold text-gray-800 text-sm">${plan.title}</h3>
+              ${statusBadge(plan.status)}
+            </div>
+            <div class="text-xs text-gray-500">Related: ${plan.relatedProcess || 'Department-wide'} · Owner: ${plan.owner || 'TBD'}</div>
+            ${total ? `<div class="mt-2"><div class="text-xs text-gray-500 mb-1">${done}/${total} actions complete</div><div class="h-1.5 bg-gray-100 rounded-full"><div class="h-1.5 bg-green-400 rounded-full" style="width:${pct}%"></div></div></div>` : ''}
+          </div>
+          <div class="plan-detail border-t px-4 pb-4 pt-3">
+            <p class="text-xs font-medium text-gray-500 mb-1">Problem</p>
+            <p class="text-sm text-gray-700 mb-3">${plan.problem || 'TBD'}</p>
+            ${total ? `
+            <p class="text-xs font-medium text-gray-500 mb-1">Actions</p>
+            <table class="w-full text-xs mb-3 border-collapse">
+              <thead><tr class="bg-gray-50"><th class="text-left p-1 border border-gray-200">Action</th><th class="text-left p-1 border border-gray-200">Owner</th><th class="text-left p-1 border border-gray-200">Target</th><th class="text-left p-1 border border-gray-200">Status</th></tr></thead>
+              <tbody>${plan.actions.map(a => `<tr><td class="p-1 border border-gray-200">${a.action}</td><td class="p-1 border border-gray-200">${a.owner || 'TBD'}</td><td class="p-1 border border-gray-200">${a.target || 'TBD'}</td><td class="p-1 border border-gray-200">${statusBadge(a.status)}</td></tr>`).join('')}</tbody>
+            </table>` : ''}
+            ${ganttHtml}
+            ${plan.subPage ? `<a href="${plan.subPage}" class="text-xs text-blue-600 hover:underline">View full plan ›</a>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function togglePlan(id) {
+      document.getElementById('plan-' + id)?.classList.toggle('open');
+      setTimeout(renderVisibleMermaid, 50);
+    }
+
+    // ─── DIAGRAMS ─────────────────────────────────────────────────────────────
+    function renderDiagrams() {
+      const grid = document.getElementById('diagrams-grid');
+      const emptyEl = document.getElementById('diagrams-empty');
+      const noMatchEl = document.getElementById('diagrams-no-match');
+      const procFilter = document.getElementById('diagram-process-filter').value;
+      const typeFilter = document.querySelector('.dtype-pill.bg-blue-500')?.dataset.dtype || 'all';
+
+      // Flatten all diagrams
+      let all = [];
+      DASHBOARD_DATA.processes.forEach(p => {
+        (p.diagrams || []).forEach(d => all.push({ ...d, processId: p.id, processName: p.name }));
+      });
+
+      // Populate process selector
+      const sel = document.getElementById('diagram-process-filter');
+      const curVal = sel.value;
+      const procOpts = DASHBOARD_DATA.processes.map(p => `<option value="${p.id}" ${p.id === curVal ? 'selected' : ''}>${p.name}</option>`).join('');
+      sel.innerHTML = `<option value="all">All Processes</option>${procOpts}`;
+
+      if (all.length === 0) { grid.innerHTML = ''; emptyEl.style.display = ''; noMatchEl.classList.add('hidden'); return; }
+      emptyEl.style.display = 'none';
+
+      const filtered = all.filter(d => {
+        const matchProc = procFilter === 'all' || d.processId === procFilter;
+        const matchType = typeFilter === 'all' || d.type === typeFilter;
+        return matchProc && matchType;
+      });
+
+      if (filtered.length === 0) { grid.innerHTML = ''; noMatchEl.classList.remove('hidden'); return; }
+      noMatchEl.classList.add('hidden');
+
+      grid.innerHTML = filtered.map((d, i) => `
+        <div class="bg-white rounded-lg shadow-md p-4">
+          <div class="flex items-center gap-2 mb-2">
+            ${diagramTypeBadge(d.type)}
+            <span class="text-xs text-gray-500">${d.processName}</span>
+          </div>
+          <p class="text-sm font-medium text-gray-700 mb-3">${d.title}</p>
+          <div class="mermaid-pending bg-gray-50 rounded p-2" data-mermaid-src="${d.mermaid.replace(/"/g, '&quot;')}"></div>
+        </div>`).join('');
+
+      setTimeout(renderVisibleMermaid, 50);
+    }
+
+    document.getElementById('diagram-process-filter').addEventListener('change', renderDiagrams);
+    document.querySelectorAll('.dtype-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.dtype-pill').forEach(p => { p.classList.remove('bg-blue-500', 'text-white'); p.classList.add('bg-gray-100', 'text-gray-600'); });
+        pill.classList.add('bg-blue-500', 'text-white'); pill.classList.remove('bg-gray-100', 'text-gray-600');
+        renderDiagrams();
+      });
+    });
+
+    // ─── ACTIVITY ─────────────────────────────────────────────────────────────
+    function renderActivity() {
+      const timeline = document.getElementById('activity-timeline');
+      const emptyEl = document.getElementById('activity-empty');
+      const userFilter = document.getElementById('activity-user-filter').value;
+      const typeFilter = document.querySelector('.atype-pill.bg-blue-500')?.dataset.atype || 'all';
+
+      // Populate user selector
+      const users = [...new Set(DASHBOARD_DATA.activity.map(a => a.user))];
+      const sel = document.getElementById('activity-user-filter');
+      const curUser = sel.value;
+      sel.innerHTML = `<option value="all">All Team Members</option>${users.map(u => `<option value="${u}" ${u === curUser ? 'selected' : ''}>${u}</option>`).join('')}`;
+
+      const filtered = DASHBOARD_DATA.activity.filter(a => {
+        const matchUser = userFilter === 'all' || a.user === userFilter;
+        const matchType = typeFilter === 'all' || a.type === typeFilter;
+        return matchUser && matchType;
+      });
+
+      if (filtered.length === 0) { timeline.innerHTML = ''; emptyEl.style.display = ''; return; }
+      emptyEl.style.display = 'none';
+
+      // Group by date
+      const byDate = {};
+      filtered.forEach(a => { if (!byDate[a.date]) byDate[a.date] = []; byDate[a.date].push(a); });
+
+      timeline.innerHTML = Object.keys(byDate).sort((a, b) => b.localeCompare(a)).map(date => {
+        const dateLabel = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const entries = byDate[date].map(a => `
+          <div class="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
+            <div class="flex-shrink-0 mt-0.5">${activityIcon(a.action)}</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm"><strong>${a.user}</strong> ${a.action} <strong>${a.target}</strong> ${activityTypeBadge(a.type)}</div>
+              <div class="text-xs text-gray-500 mt-0.5">${a.detail}</div>
+            </div>
+            <div class="text-xs text-gray-400 flex-shrink-0">${a.time}</div>
+          </div>`).join('');
+        return `<div class="mb-4"><div class="text-xs uppercase tracking-wide text-gray-500 bg-gray-50 px-3 py-1 rounded mb-1">${dateLabel}</div><div class="bg-white rounded-lg shadow-md px-4">${entries}</div></div>`;
+      }).join('');
+    }
+
+    document.getElementById('activity-user-filter').addEventListener('change', renderActivity);
+    document.querySelectorAll('.atype-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.atype-pill').forEach(p => { p.classList.remove('bg-blue-500', 'text-white'); p.classList.add('bg-gray-100', 'text-gray-600'); });
+        pill.classList.add('bg-blue-500', 'text-white'); pill.classList.remove('bg-gray-100', 'text-gray-600');
+        renderActivity();
+      });
+    });
+
+    // ─── INIT ─────────────────────────────────────────────────────────────────
+    renderOverview();
+    renderProcesses();
+    renderPlans();
+    renderDiagrams();
+    renderActivity();
+    setTimeout(renderVisibleMermaid, 100);
+  </script>
+</body>
+</html>

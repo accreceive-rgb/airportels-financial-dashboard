@@ -1,0 +1,27 @@
+{
+  "madga": "1.3",
+  "exportedAt": "2026-04-27",
+  "exportedBy": "Claude",
+  "department": {
+    "name": "MAKESEND Financial",
+    "org": "Airportels",
+    "mission": "TBD",
+    "updatedAt": "2026-04-27"
+  },
+  "members": [
+    { "name": "Oh", "role": "TBD", "responsibility": "TBD" }
+  ],
+  "processes": [],
+  "plans": [],
+  "activity": [
+    {
+      "date": "2026-04-27",
+      "time": "18:52",
+      "user": "Oh",
+      "action": "created",
+      "target": "MAKESEND Financial MADGA Project",
+      "detail": "Project initialized — scaffold complete, git connected to Airportels repo",
+      "type": "system"
+    }
+  ]
+}

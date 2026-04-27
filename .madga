@@ -1,0 +1,13 @@
+{
+  "madga": "1.3",
+  "department": "MAKESEND Financial",
+  "org": "Airportels",
+  "created": "2026-04-27",
+  "structure": "standard",
+  "features": ["processes", "plans", "dashboard", "data-export"],
+  "sync": "git",
+  "central": {
+    "registered": false,
+    "url": null
+  }
+}
