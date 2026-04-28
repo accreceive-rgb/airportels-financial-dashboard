@@ -174,5 +174,35 @@
     Airportels Financial — MADGA v1.3 &bull; <a href="../index.html" class="hover:underline">Back to Dashboard</a>
   </footer>
 
+  <script>
+    mermaid.initialize({ startOnLoad: false, theme: 'default' });
+
+    const ANNUAL_FLOW = `graph TD
+  S([เริ่มต้น]) --> A
+  A["1-2. กระทบยอด GL\n+ จัดเตรียมเอกสาร Audit"] --> B
+  B[["3. คุณพอร์ชตรวจสอบ\nออก Audit Report"]] --> C
+  C["4. ลงประกาศหนังสือพิมพ์\nก่อนประชุม ≥ 7 วัน"] --> D
+  D["5. ประชุมสามัญผู้ถือหุ้น\nภายใน 120 วัน"] --> E
+  E["6. นำส่ง บอจ.5\nภายใน 14 วัน"] --> F
+  F[["7. คุณพอร์ชตรวจเช็คงบ\nก่อนนำส่ง DBD"]] --> G
+  G["8. นำส่งงบการเงิน\n→ กรมพัฒนาธุรกิจ"] --> H
+  H[["9. คุณพอร์ชตรวจเช็ค\nภงด.50"]] --> I
+  I["10. ยื่น ภงด.50\n150 วันหลังสิ้นรอบ"] --> J
+  J[["11. คุณพอร์ชตรวจเช็ค\nภงด.51"]] --> K
+  K["12. ยื่น ภงด.51\nส.ค. / ออนไลน์ถึง 8 ก.ย."] --> Z
+  Z([เสร็จสิ้น])
+  classDef ohh fill:#f3e8ff,stroke:#7c3aed,color:#4c1d95
+  classDef porch fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
+  classDef term fill:#dcfce7,stroke:#16a34a,color:#14532d
+  class A,C,D,E,G,I,K ohh
+  class B,F,H,J porch
+  class S,Z term`;
+
+    window.addEventListener('load', function () {
+      mermaid.render('annual-flow', ANNUAL_FLOW).then(function (result) {
+        document.getElementById('annual-flow-diagram').innerHTML = result.svg;
+      });
+    });
+  </script>
 </body>
 </html>
