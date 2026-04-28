@@ -1,3 +1,28 @@
+## 2026-04-28 — สร้าง Mermaid Flowcharts 5 กระบวนการหลัก
+
+### What was done
+- สร้าง Mermaid flowchart ให้ 5 กระบวนการ โดยใช้ deferred rendering (`startOnLoad: false` + `mermaid.run()`)
+- แต่ละ diagram แสดง decision branches, actors, และ tools จาก SOP จริง
+
+### Files changed
+- `dashboard/pages/process-partner-billing-ar.html` — เพิ่ม flowchart (11 nodes): Order → ตรวจ Sheet → INV → Email → Credit Term → RV → WHT
+- `dashboard/pages/process-rider-payroll.html` — เพิ่ม flowchart (13 nodes): FT/PT branches, WHT decision
+- `dashboard/pages/process-tax-filing-reporting.html` — เพิ่ม flowchart (3 branches): ภงด.3/53 / ภาษีซื้อ / ภาษีขาย
+- `dashboard/pages/process-branch-income-recording.html` — เพิ่ม flowchart (LR): Lark → Sheet → PEAK → AI Statement
+- `dashboard/pages/process-commission-payment.html` — เพิ่ม flowchart (10 nodes): ไฟล์โอ๋ → CALCULATE → PV → confirm loop → JVFN → EXP
+- `dashboard/index.html` — อัพเดท diagrams arrays + activity log
+
+### Still TBD
+- Flowcharts สำหรับ Online Payment Recording, Landlord Revenue Reporting (ยังไม่ได้สร้าง)
+- Fixed Assets, Monthly Financial Close — ยังไม่มีข้อมูล
+
+### Suggested next steps
+- ตรวจสอบ flowcharts กับมุกและมอสว่าขั้นตอนถูกต้องไหม
+- สร้าง flowchart เพิ่มเติมสำหรับ Online Payment (PayPal/Omise)
+- อัพเดท overview.md ที่ยังไม่ครบ (Bank Statement, Landlord)
+
+---
+
 ## 2026-04-28 — อัพเดทกระบวนการจาก SOP จริง (AP / AR / Internship)
 
 ### What was done
