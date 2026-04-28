@@ -17,8 +17,7 @@ updated: 2026-04-28
 
 | Name / Role | Involvement | Internal/External |
 |---|---|---|
-| AR Officer | ดูแลเงินสดย่อย (Custodian) | Internal |
-| AP Officer | ตรวจเช็คเอกสารเบิกเงินสดย่อย/Advance บันทึกบัญชี | Internal |
+| AP Officer (มอส) | ดูแลเงินสดย่อย (Custodian) + ตรวจเช็คเอกสาร + บันทึกบัญชี PEAK | Internal |
 | Accounting Manager | ตรวจสอบเอกสารเบิกเงินสดย่อย/Advance ที่ มอส บันทึกแล้ว | Internal |
 | พนักงาน / ผู้เบิก | ยื่นขอเบิกเงินสดย่อย / Advance | Internal |
 
