@@ -173,6 +173,31 @@
       </div>
     </div>
 
+    <!-- Process Flowchart -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Process Flowchart</h2>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph TD
+  A([เริ่ม]) --> B{AR หรือ AP}
+  B -->|AR รายวัน| C[Download Statement Kbank Website]
+  B -->|AP รายเดือน| G[เปิด Statement ดู Column E ถอนเงิน]
+  C --> D[วางข้อมูลใน Sheet AI_Statement]
+  D --> E[Reconcile RV vs Statement Col J=RV Col K=สาขา+วันที่]
+  E --> F[ตรวจ Col C+F ครบถ้วน]
+  F --> ZAR([AR เสร็จ])
+  G --> H[แยกประเภท บัญชีแจ้งเบิก vs เบิกตรงคุณโฮ่]
+  H --> I[ติดตามเอกสาร บันทึก EXP ตรงเดือน]
+  I --> J[กระทบยอดถอน ทุกรายการครบ]
+  J --> ZAP([AP เสร็จ])
+  style A fill:#d1fae5,stroke:#059669
+  style ZAR fill:#d1fae5,stroke:#059669
+  style ZAP fill:#d1fae5,stroke:#059669
+  style B fill:#dbeafe,stroke:#2563eb
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
