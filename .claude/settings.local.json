@@ -11,7 +11,12 @@
       "Bash(git push *)",
       "Bash(git commit *)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "Bash(python -c \"from pypdf import PdfReader; r = PdfReader\\(r'C:\\\\Users\\\\Acc Poh\\\\Downloads\\\\Accounting office AP Sop moss.pdf'\\); print\\(f'Pages: {len\\(r.pages\\)}'\\); [print\\(f'--- Page {i+1} ---\\\\n{p.extract_text\\(\\)}'\\) for i,p in enumerate\\(r.pages\\)]\")",
+      "Bash(python -c \"from pypdf import PdfReader; r = PdfReader\\(r'C:\\\\Users\\\\Acc Poh\\\\Downloads\\\\Ai Account receivable SOP.pdf'\\); print\\(f'Pages: {len\\(r.pages\\)}'\\); [print\\(f'--- Page {i+1} ---\\\\n{p.extract_text\\(\\)}'\\) for i,p in enumerate\\(r.pages\\)]\")",
+      "PowerShell($soffice = @\\(\"C:\\\\Program Files\\\\LibreOffice\\\\program\\\\soffice.exe\",\"C:\\\\Program Files \\(x86\\)\\\\LibreOffice\\\\program\\\\soffice.exe\"\\) | Where-Object { Test-Path $_ } | Select-Object -First 1; if \\($soffice\\) { Write-Host \"Found: $soffice\" } else { Write-Host \"LibreOffice not found\" })",
+      "PowerShell($d = [System.Environment]::GetFolderPath\\('UserProfile'\\) + \"\\\\Downloads\"; Write-Host \"Dir: $d\"; if \\(Test-Path $d\\) { Get-ChildItem $d | Select-Object Name } else { \"Not found\" })",
+      "PowerShell($items = [System.IO.Directory]::GetFileSystemEntries\\(\"G:\\\\Shared drives\"\\); $items | Select-Object -First 10)"
     ]
   }
 }
