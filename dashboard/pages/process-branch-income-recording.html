@@ -182,6 +182,31 @@
       </div>
     </div>
 
+    <!-- Process Flowchart -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Process Flowchart — AI Income Daily</h2>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph LR
+  A([Lark Notification]) --> B[กรอก Sheet Income\nStorage / Delivery / ซิลิโคน\nCash / QR / Credit]
+  B --> C[Save Payslip ใน Drive\nโฟลเดอร์ pay-in]
+  C --> D[ตรวจสอบยอด\nvs Lark]
+  D --> E{ประเภทรายได้}
+  E -->|Storage| F[RT ใน PEAK\nP00001]
+  E -->|Delivery| G[RE ใน PEAK\nP00002]
+  E -->|ซิลิโคน / อื่นๆ| H[RV ใน PEAK\nP00010]
+  F --> I[บันทึก AI Statement\nCol J = เลข RV\nCol K = สาขา + วันที่]
+  G --> I
+  H --> I
+  I --> J[พิมพ์ RT/RV\n+ Credit Advice]
+  J --> K([เก็บแฟ้มใบสำคัญรับ])
+  style A fill:#d1fae5,stroke:#059669
+  style K fill:#d1fae5,stroke:#059669
+  style E fill:#fef3c7,stroke:#d97706
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
