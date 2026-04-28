@@ -12,6 +12,27 @@
 
 ---
 
+## 2026-04-28 — สร้าง Mermaid Flowcharts ครบทุกกระบวนการที่มีข้อมูล SOP
+
+### What was done
+- สร้าง flowchart เพิ่มอีก 7 กระบวนการ ครบทุก process ที่มีขั้นตอนจริง (ยกเว้น Fixed Assets ที่ยังเป็น stub)
+- รวมทั้งหมด 12 กระบวนการที่มี flowchart แล้ว
+
+### Files changed
+- `dashboard/pages/process-online-payment-recording.html` — PayPal + Omise 2-branch TD diagram
+- `dashboard/pages/process-landlord-revenue-reporting.html` — 2 diagrams: รายวัน (TPY/ICS/MBK) + รายเดือน (CNX special branch)
+- `dashboard/pages/process-bank-statement-reconciliation.html` — AR รายวัน + AP รายเดือน 2-path diagram
+- `dashboard/pages/process-expense-reimbursement.html` — ตั้งหนี้ → ชำระ → WHT decision branch
+- `dashboard/pages/process-petty-cash-advance.html` — วงเงิน decision → เคลีย 7 วัน → PEAK → เติมเงิน
+- `dashboard/pages/process-annual-financial-close.html` — 12-node linear flow + 4 คุณพอร์ช review gates
+- `dashboard/pages/process-monthly-financial-close.html` — 8-node linear flow เดือนละครั้ง
+- `dashboard/index.html` — diagrams arrays + activity log อัพเดทครบทุก process
+
+### Still TBD
+- Fixed Assets: stub — ยังไม่มีข้อมูล SOP
+
+---
+
 ## 2026-04-28 — สร้าง Mermaid Flowcharts 5 กระบวนการหลัก
 
 ### What was done
