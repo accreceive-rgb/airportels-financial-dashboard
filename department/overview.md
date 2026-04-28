@@ -18,6 +18,7 @@ TBD
 | Name | Role | Responsibility |
 |---|---|---|
 | คุณโฮ่ | CEO | อนุมัติขั้นสุดท้าย, รับรายงานงบการเงิน |
+| คุณพอร์ช | ที่ปรึกษาบัญชี | ที่ปรึกษาด้านบัญชีและการเงิน |
 | โอ๋ | Accounting Manager | ตรวจสอบเอกสาร, ภาษีขาย, Omise, Statement, งบการเงิน, บริหารทีม |
 | มอส | AP Officer | จัดทำใบเบิก, Payment Voucher, ภาษีซื้อ, ภงด.3/53, Rider Payroll |
 | มุก | AR Officer | รายได้สาขา, Landlord Report, Partner Invoice, Petty Cash |
