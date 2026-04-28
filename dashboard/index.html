@@ -591,6 +591,50 @@
           ],
           diagrams: [{ type: "flowchart", title: "Annual Close Flow", subPage: "pages/process-annual-financial-close.html" }],
           subPage: "pages/process-annual-financial-close.html"
+        },
+        {
+          id: "branch-opening-compliance",
+          name: "Branch Opening — Compliance Registration (DBD / สรรพากร / ภพ.06)",
+          owner: "Accounting Manager (โอ๋)",
+          category: "Compliance",
+          status: "active",
+          completeness: "stub",
+          purpose: "ดำเนินการจดทะเบียนและขออนุมัติด้านกฎหมายทุกอย่างเมื่อเปิดสาขาใหม่ ครอบคลุม 3 ส่วนหลัก: จดทะเบียนสาขากับ DBD, แจ้งเพิ่มสถานประกอบการกับกรมสรรพากร, และยื่น ภพ.06 ขออนุมัติใช้เครื่องบันทึกการเก็บเงินเพื่อออกใบกำกับภาษี",
+          timing: "Event-based — เมื่อเปิดสาขาใหม่ทุกครั้ง",
+          stakeholders: [
+            { name: "โอ๋ (Accounting Manager)", involvement: "ดำเนินการยื่นเอกสารทุกขั้นตอน", type: "internal" },
+            { name: "คุณโฮ่ (CEO)", involvement: "ลงนามเอกสารยื่นราชการ", type: "internal" },
+            { name: "กรมพัฒนาธุรกิจการค้า (DBD)", involvement: "รับจดทะเบียนสาขา", type: "external" },
+            { name: "กรมสรรพากร (สรรพากรพื้นที่)", involvement: "รับแจ้งสถานประกอบการ / อนุมัติ ภพ.06", type: "external" }
+          ],
+          tools: [
+            { name: "DBD e-Filing", purpose: "จดทะเบียนสาขา" },
+            { name: "ระบบ e-Registration กรมสรรพากร", purpose: "ยื่น ภพ.09 เพิ่มสถานประกอบการ" },
+            { name: "เอกสารตัวจริง", purpose: "ยื่น ภพ.06 ที่สรรพากรพื้นที่" }
+          ],
+          inputs: ["สัญญาเช่าสถานที่สาขาใหม่", "ที่อยู่/แผนที่สาขา", "รูปถ่ายสถานที่", "ข้อมูลเครื่อง ECR/POS (รุ่น, Serial No.)"],
+          outputs: ["ทะเบียนสาขา DBD", "ภ.พ.20 สาขาใหม่ (กรมสรรพากร)", "หนังสืออนุมัติ ภพ.06"],
+          crossLinks: {
+            from: [{ process: "CEO / Operations", department: "internal", detail: "แจ้งแผนเปิดสาขา" }],
+            to: [
+              { process: "Tax Filing & Reporting", department: "airportels-financial", detail: "เพิ่มสาขาในระบบภาษีรายเดือน" },
+              { process: "Branch Income Recording", department: "airportels-financial", detail: "เริ่มบันทึกรายได้สาขาใหม่" }
+            ]
+          },
+          painPoints: [],
+          steps: [
+            { num: 1, name: "TBD — เตรียมเอกสารจดทะเบียนสาขา (DBD)", actor: "โอ๋", tool: "TBD", output: "เอกสารครบชุด", notes: "TBD" },
+            { num: 2, name: "TBD — ยื่นจดทะเบียนสาขาผ่าน DBD e-Filing", actor: "โอ๋", tool: "DBD e-Filing", output: "ทะเบียนสาขา", notes: "TBD" },
+            { num: 3, name: "TBD — รอการอนุมัติ DBD", actor: "โอ๋", tool: "—", output: "ทะเบียนสาขา DBD", notes: "TBD — ระยะเวลา" },
+            { num: 4, name: "TBD — ยื่น ภพ.09 แจ้งเพิ่มสถานประกอบการ VAT", actor: "โอ๋", tool: "ระบบ e-Registration", output: "ภ.พ.20 สาขา", notes: "TBD" },
+            { num: 5, name: "TBD — รับ ภ.พ.20 สาขาใหม่", actor: "โอ๋", tool: "—", output: "ภ.พ.20", notes: "ต้องแสดง ณ สาขา" },
+            { num: 6, name: "TBD — เตรียมเอกสารประกอบ ภพ.06", actor: "โอ๋", tool: "เอกสาร", output: "ชุดเอกสาร ภพ.06", notes: "สัญญาเช่า, แผนที่, รูปถ่าย, ข้อมูลเครื่อง" },
+            { num: 7, name: "TBD — ยื่น ภพ.06 ที่สรรพากรพื้นที่", actor: "โอ๋", tool: "ยื่นตัวจริง", output: "คำขอรับแล้ว", notes: "TBD" },
+            { num: 8, name: "TBD — รอเจ้าหน้าที่ตรวจสอบสถานที่", actor: "โอ๋", tool: "—", output: "ผลการตรวจ", notes: "TBD — ระยะเวลารอ" },
+            { num: 9, name: "TBD — รับหนังสืออนุมัติ ภพ.06", actor: "โอ๋", tool: "—", output: "หนังสืออนุมัติ ภพ.06", notes: "เครื่องออกใบกำกับภาษีได้หลังอนุมัติ" }
+          ],
+          diagrams: [{ type: "flowchart", title: "Branch Opening Compliance Flow (3 ส่วน)", description: "DBD จดทะเบียนสาขา → กรมสรรพากร ภพ.09 → ภพ.06 คำขออนุมัติเครื่อง ECR/POS" }],
+          subPage: "pages/process-branch-opening-compliance.html"
         }
       ],
       plans: [],
