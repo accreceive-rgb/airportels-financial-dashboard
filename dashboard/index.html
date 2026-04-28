@@ -558,8 +558,7 @@
           stakeholders: [
             { name: "โอ๋ (Accounting Manager)", involvement: "ดำเนินการหลักทุกขั้นตอน", type: "internal" },
             { name: "คุณโฮ่ (CEO)", involvement: "อนุมัติงบ, เข้าร่วมประชุมผู้ถือหุ้น", type: "internal" },
-            { name: "คุณพอร์ช (ที่ปรึกษาบัญชี)", involvement: "ให้คำปรึกษา / ตรวจสอบงบ", type: "internal" },
-            { name: "ผู้สอบบัญชี", involvement: "ออก Audit Request, ตรวจสอบงบ", type: "external" },
+            { name: "คุณพอร์ช (ที่ปรึกษาบัญชี / ผู้สอบบัญชี)", involvement: "ออก Audit Request, ตรวจสอบงบ, ตรวจเช็คก่อนยื่น DBD / ภงด.50 / ภงด.51", type: "internal" },
             { name: "กรมพัฒนาธุรกิจการค้า (DBD)", involvement: "รับงบการเงิน, บอจ.5", type: "external" },
             { name: "กรมสรรพากร (RD)", involvement: "รับ ภงด.50 / ภงด.51", type: "external" }
           ],
@@ -569,7 +568,7 @@
             { name: "DBD e-Filing", purpose: "นำส่งงบการเงิน, บอจ.5" },
             { name: "หนังสือพิมพ์", purpose: "ลงประกาศเชิญประชุมผู้ถือหุ้น" }
           ],
-          inputs: ["GL ใน PEAK (ปิดงบรายเดือนครบแล้ว)", "Audit Request จากผู้สอบบัญชี", "งบการเงินที่ผ่านการตรวจสอบแล้ว"],
+          inputs: ["GL ใน PEAK (ปิดงบรายเดือนครบแล้ว)", "Audit Request จากคุณพอร์ช", "งบการเงินที่ผ่านการตรวจสอบแล้ว"],
           outputs: ["งบการเงินประจำปี", "บอจ.5", "งบการเงิน → DBD", "ภงด.50 / ภงด.51"],
           crossLinks: {
             from: [{ process: "Monthly Financial Close", department: "airportels-financial", detail: "งบรายเดือนครบ 12 เดือน" }],
@@ -577,14 +576,18 @@
           },
           painPoints: [],
           steps: [
-            { num: 1, name: "กระทบยอด Audit Request กับ GL", actor: "โอ๋", tool: "PEAK", output: "GL กระทบยอดแล้ว", notes: "ตามที่ Auditor ขอ" },
-            { num: 2, name: "จัดเตรียมเอกสารตาม Audit Request", actor: "โอ๋", tool: "PEAK / เอกสาร", output: "เอกสารชุด Audit", notes: "ส่งให้ผู้สอบบัญชี" },
-            { num: 3, name: "ลงประกาศหนังสือพิมพ์เชิญประชุมผู้ถือหุ้น", actor: "โอ๋", tool: "หนังสือพิมพ์", output: "หลักฐานลงประกาศ", notes: "ก่อนประชุมไม่น้อยกว่า 7 วัน" },
-            { num: 4, name: "ประชุมสามัญผู้ถือหุ้นประจำปี", actor: "โอ๋ / คุณโฮ่", tool: "—", output: "รายงานการประชุม", notes: "ภายใน 120 วัน หลัง 31 ธ.ค." },
-            { num: 5, name: "นำส่ง บอจ.5", actor: "โอ๋", tool: "DBD e-Filing", output: "บอจ.5 ยื่นแล้ว", notes: "ภายใน 14 วัน หลังประชุมสามัญ" },
-            { num: 6, name: "นำส่งงบการเงิน → กรมพัฒนาธุรกิจการค้า", actor: "โอ๋", tool: "DBD e-Filing", output: "งบนำส่งแล้ว", notes: "ไม่เกิน 1 เดือน หลังประชุมผู้ถือหุ้น" },
-            { num: 7, name: "ยื่น ภงด.50 → กรมสรรพากร", actor: "โอ๋", tool: "ระบบ RD", output: "ภงด.50 ยื่นแล้ว", notes: "ภายใน 150 วัน หลัง 31 ธ.ค." },
-            { num: 8, name: "ยื่น ภงด.51 → กรมสรรพากร", actor: "โอ๋", tool: "ระบบ RD", output: "ภงด.51 ยื่นแล้ว", notes: "ภายใน ส.ค. (ออนไลน์ถึง 8 ก.ย.)" }
+            { num: 1, name: "กระทบยอด Audit Request กับ GL", actor: "โอ๋", tool: "PEAK", output: "GL กระทบยอดแล้ว", notes: "ตามที่คุณพอร์ชขอ" },
+            { num: 2, name: "จัดเตรียมเอกสารตาม Audit Request", actor: "โอ๋", tool: "PEAK / เอกสาร", output: "เอกสารชุด Audit", notes: "ส่งให้คุณพอร์ช" },
+            { num: 3, name: "คุณพอร์ชตรวจสอบ / ออก Audit Report", actor: "คุณพอร์ช", tool: "เอกสาร", output: "Audit Report", notes: "ในฐานะผู้สอบบัญชี" },
+            { num: 4, name: "ลงประกาศหนังสือพิมพ์เชิญประชุมผู้ถือหุ้น", actor: "โอ๋", tool: "หนังสือพิมพ์", output: "หลักฐานลงประกาศ", notes: "ก่อนประชุมไม่น้อยกว่า 7 วัน" },
+            { num: 5, name: "ประชุมสามัญผู้ถือหุ้นประจำปี", actor: "โอ๋ / คุณโฮ่", tool: "—", output: "รายงานการประชุม", notes: "ภายใน 120 วัน หลัง 31 ธ.ค." },
+            { num: 6, name: "นำส่ง บอจ.5", actor: "โอ๋", tool: "DBD e-Filing", output: "บอจ.5 ยื่นแล้ว", notes: "ภายใน 14 วัน หลังประชุมสามัญ" },
+            { num: 7, name: "คุณพอร์ชตรวจเช็คงบการเงินก่อนนำส่ง DBD", actor: "คุณพอร์ช", tool: "เอกสาร", output: "งบผ่านการตรวจแล้ว", notes: "ก่อนยื่น DBD" },
+            { num: 8, name: "นำส่งงบการเงิน → กรมพัฒนาธุรกิจการค้า", actor: "โอ๋", tool: "DBD e-Filing", output: "งบนำส่งแล้ว", notes: "ไม่เกิน 1 เดือน หลังประชุมผู้ถือหุ้น" },
+            { num: 9, name: "คุณพอร์ชตรวจเช็ค ภงด.50 ก่อนยื่น", actor: "คุณพอร์ช", tool: "เอกสาร", output: "ภงด.50 ผ่านตรวจแล้ว", notes: "ก่อนยื่น RD" },
+            { num: 10, name: "ยื่น ภงด.50 → กรมสรรพากร", actor: "โอ๋", tool: "ระบบ RD", output: "ภงด.50 ยื่นแล้ว", notes: "ภายใน 150 วัน หลัง 31 ธ.ค." },
+            { num: 11, name: "คุณพอร์ชตรวจเช็ค ภงด.51 ก่อนยื่น", actor: "คุณพอร์ช", tool: "เอกสาร", output: "ภงด.51 ผ่านตรวจแล้ว", notes: "ก่อนยื่น RD" },
+            { num: 12, name: "ยื่น ภงด.51 → กรมสรรพากร", actor: "โอ๋", tool: "ระบบ RD", output: "ภงด.51 ยื่นแล้ว", notes: "ภายใน ส.ค. (ออนไลน์ถึง 8 ก.ย.)" }
           ],
           diagrams: [],
           subPage: "pages/process-annual-financial-close.html"
