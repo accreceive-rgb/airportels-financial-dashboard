@@ -189,11 +189,41 @@
       </div>
     </div>
 
+    <!-- Process Flowchart -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Process Flowchart</h2>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph TD
+  A([รับ Order Report จาก Partner]) --> B[ตรวจสอบ Sheet Orders\nVlookup Booking Ref]
+  B --> C{ยอดตรงกัน}
+  C -->|ไม่ตรง| D[แจ้ง Guest Service\nให้ตรวจสอบ]
+  D --> B
+  C -->|ตรง| E[ออก Invoice ใน PEAK\nแบ่ง ฝาก / ส่ง / ล้อยาง]
+  E --> F[Email วางบิลให้ Partner]
+  F --> G[รอ Credit Term]
+  G --> H[รับชำระ → ออก RV ใน PEAK]
+  H --> I[พิมพ์ RV + RT/RE + Credit Advice\nเก็บแฟ้มใบสำคัญรับ]
+  I --> J[ติดตามเอกสาร WHT จาก Partner]
+  J --> K([เสร็จ])
+  style A fill:#d1fae5,stroke:#059669
+  style K fill:#d1fae5,stroke:#059669
+  style C fill:#fef3c7,stroke:#d97706
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
     Airportels Financial — MADGA v1.3 &bull; <a href="../index.html" class="hover:underline">Back to Dashboard</a>
   </footer>
 
+  <script>
+    mermaid.initialize({ startOnLoad: false, theme: 'default', flowchart: { curve: 'basis' } });
+    document.addEventListener('DOMContentLoaded', function() {
+      mermaid.run({ querySelector: '.mermaid' });
+    });
+  </script>
 </body>
 </html>
