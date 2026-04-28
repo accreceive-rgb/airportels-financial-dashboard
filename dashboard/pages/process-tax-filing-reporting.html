@@ -37,7 +37,10 @@
     <!-- Steps -->
     <div class="bg-white rounded-lg shadow-sm p-5">
       <h2 class="text-base font-semibold text-gray-800 mb-3">Steps</h2>
-      <div class="overflow-x-auto">
+
+      <!-- ภงด.3/53 -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-2 mb-2">ภ.ง.ด.3 และ ภ.ง.ด.53 (รายเดือน)</h3>
+      <div class="overflow-x-auto mb-6">
         <table class="w-full text-left">
           <thead>
             <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
@@ -50,14 +53,85 @@
             </tr>
           </thead>
           <tbody>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">จัดทำรายงานภาษีขาย</td><td class="py-2 px-3 text-sm text-blue-700">Accounting Manager</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">รายงานภาษีขาย</td><td class="py-2 px-3 text-sm text-gray-500">รายเดือน</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">Reconcile GL ภาษีขาย</td><td class="py-2 px-3 text-sm text-blue-700">Accounting Manager</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">GL กระทบยอด</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">จัดทำรายงานภาษีซื้อ</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">รายงานภาษีซื้อ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">จัดทำรายงาน ภ.ง.ด.3/53</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">ภงด.3/53</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">ตรวจสอบก่อนยื่น</td><td class="py-2 px-3 text-sm text-blue-700">Accounting Manager</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">ผลตรวจสอบ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">ยื่นแบบ ภงด.3, 53</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">ระบบ RD</td><td class="py-2 px-3 text-sm">ใบยื่นแบบ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">ยื่นแบบ ภพ.30</td><td class="py-2 px-3 text-sm text-blue-700">Accounting Manager / AP</td><td class="py-2 px-3 text-sm text-gray-600">ระบบ RD</td><td class="py-2 px-3 text-sm">ใบยื่นแบบ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">8</td><td class="py-2 px-3 text-sm">ยื่นแบบ ภงด.50/51 (ประจำปี)</td><td class="py-2 px-3 text-sm text-blue-700">Accounting Manager</td><td class="py-2 px-3 text-sm text-gray-600">ระบบ RD</td><td class="py-2 px-3 text-sm">ใบยื่นแบบ</td><td class="py-2 px-3 text-sm text-gray-500">ปีละครั้ง</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ดึงรายงาน GL ภงด.3 ค้างจ่าย / ภงด.53 ค้างจ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → บัญชี → บัญชีแยกประเภท</td><td class="py-2 px-3 text-sm">ไฟล์ Excel GL</td><td class="py-2 px-3 text-sm text-gray-500">เลือกช่วงเวลา + เลขที่บัญชีที่ถูกต้อง</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">ดาวน์โหลดรายงาน ภงด.3/53 จาก Peak Tax</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK Tax → ภาษีหัก ณ ที่จ่าย → ดึงข้อมูล</td><td class="py-2 px-3 text-sm">ไฟล์ Excel ภาษีหัก ณ ที่จ่าย</td><td class="py-2 px-3 text-sm text-gray-500">เลือกช่วงเวลา → ดึงข้อมูล → พิมพ์รายงาน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">ตรวจสอบยอด GL กับรายงานภาษีหัก ณ ที่จ่าย ต้องตรงกัน</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">ยอดตรงกัน</td><td class="py-2 px-3 text-sm text-gray-500">GL ดูที่ยอดเครดิต (ไม่รวมยกมา); ภาษีฯ ดูยอดรวมหัก ณ ที่จ่าย</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">บันทึกรายงานทั้ง 2 ไฟล์ลง Drive</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">Drive: MAKESEND / AI Accounting</td><td class="py-2 px-3 text-sm">ไฟล์จัดเก็บตามเดือน</td><td class="py-2 px-3 text-sm text-gray-500">ใช้ชื่อตามมาตรฐาน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">สร้างแบบ ภงด.3 หรือ 53 ใน Peak Tax</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK Tax</td><td class="py-2 px-3 text-sm">แบบ ภงด. ที่สร้างแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">เลือกงวดภาษี + ประเภทการยื่น → ตรวจยอดอีกรอบ → ยืนยัน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">ดาวน์โหลดไฟล์ .txt เพื่อโอนย้ายข้อมูลผ่าน RD Prep</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK Tax</td><td class="py-2 px-3 text-sm">ไฟล์ .txt</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">โอนย้ายข้อมูลผ่านโปรแกรม RD Prep → ได้ไฟล์ .rdx</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">RD Prep</td><td class="py-2 px-3 text-sm">ไฟล์ .rdx</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">8</td><td class="py-2 px-3 text-sm">อัพโหลดไฟล์ .rdx ที่ระบบ e-Filing กรมสรรพากร</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">ระบบ e-Filing (RD)</td><td class="py-2 px-3 text-sm">แบบที่ยื่นแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">นำเข้าไฟล์ → ตรวจสอบ → ยืนยัน → ยื่นแบบ</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">9</td><td class="py-2 px-3 text-sm">พิมพ์ใบแนบ + แบบ + บันทึกไฟล์</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">ระบบ RD</td><td class="py-2 px-3 text-sm">เอกสารยื่นแบบ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">10</td><td class="py-2 px-3 text-sm">ชำระภาษี (แสกนจ่าย / ช่องทางอื่นๆ)</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">ระบบ RD</td><td class="py-2 px-3 text-sm">ใบแสกนจ่าย</td><td class="py-2 px-3 text-sm text-gray-500">กด "ช่องทางอื่นๆ" → ดาวน์โหลดไฟล์แสกน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">11</td><td class="py-2 px-3 text-sm">บันทึกปิดภาษีใน PEAK → พิมพ์ EXP + PV แนบชุดจ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">EXP + PV</td><td class="py-2 px-3 text-sm text-gray-500">แนบสลิปโอน + ไฟล์ยื่นแบบในระบบ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- รายงานภาษีซื้อ -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">รายงานภาษีซื้อ (รายเดือน)</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ดึงรายงาน GL ภาษีซื้อ</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → บัญชี → บัญชีแยกประเภท → เลขบัญชีภาษีซื้อ</td><td class="py-2 px-3 text-sm">ไฟล์ Excel GL</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">ดึงรายงานภาษีซื้อจาก Peak Tax</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK Tax → ภาษีมูลค่าเพิ่ม → รายการภาษีซื้อ → ดึงข้อมูล</td><td class="py-2 px-3 text-sm">ไฟล์ Excel ภาษีซื้อ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">นำเข้ารายงาน 2 ฉบับลง Sheet รายงานภาษีซื้อ-ขาย_2024</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">Google Sheets</td><td class="py-2 px-3 text-sm">Sheet รายงาน</td><td class="py-2 px-3 text-sm text-gray-500">สร้างแผ่นงานใหม่ตามเดือน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">ตรวจสอบยอด GL (คอลัมน์เดบิต) กับ ภาษีซื้อ (คอลัมน์ VAT) ต้องเท่ากัน</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">ยอดตรงกัน</td><td class="py-2 px-3 text-sm text-gray-500">ไม่รวมยอดยกมา</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">คำนวณภาษีซื้อที่ใช้ได้ (4 คอลัมน์: ก่อน 0.65 / ×7% / รวม / คงเหลือ)</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">ยอดภาษีซื้อที่ใช้ได้</td><td class="py-2 px-3 text-sm text-gray-500">อัตรา 0.65 ดูจากรายงานภาษีขายของเดือนนั้น</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- รายงานภาษีขาย -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">รายงานภาษีขาย (รายเดือน)</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ดึงรายงานภาษีขายจาก PEAK Tax</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK Tax → ภาษีมูลค่าเพิ่ม → รายการภาษีขาย</td><td class="py-2 px-3 text-sm">รายงาน</td><td class="py-2 px-3 text-sm text-gray-500">ตรวจ RE/RT ว่ามีครบ; ถ้าไม่มีต้องแอดแมนวน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">ดาวน์โหลดใบกำกับภาษีขาย + เรียงตามเลขที่</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK Tax → พิมพ์รายงาน</td><td class="py-2 px-3 text-sm">ไฟล์ Excel</td><td class="py-2 px-3 text-sm text-gray-500">แสดงเลขอ้างอิง, แบ่งมูลค่าก่อนภาษี, เรียงเลขที่</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">เพิ่ม JV Omise (รายได้ / refund) ที่ 2 บรรทัดสุดท้าย</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">รายการครบถ้วน</td><td class="py-2 px-3 text-sm text-gray-500">กรณีมี RE Omise เพิ่มแค่ JV refund</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">ดึง GL รายได้ (หมวด 4 แรก ถึง 4 สุดท้าย)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → บัญชีแยกประเภท</td><td class="py-2 px-3 text-sm">GL รายได้</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">ดึง GL ภาษีขาย (บัญชี 215101 ภาษีขาย ภพ.30)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → บัญชีแยกประเภท</td><td class="py-2 px-3 text-sm">GL ภาษีขาย</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">Reconcile รายงานภาษีขาย vs GL ตามสูตร</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Sheet รายงานภาษีซื้อ-ขาย</td><td class="py-2 px-3 text-sm">ยอด Reconcile</td><td class="py-2 px-3 text-sm text-gray-500">ดูยอด INV ที่ออก ณ เดือนนั้นที่ลูกค้ายังไม่ชำระ</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">ตรวจสอบ AI Income กับ รายงานภาษีขาย (ขนส่ง vs บริการ)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">ผ่านการตรวจ</td><td class="py-2 px-3 text-sm text-gray-500">บันทึกผลลงลิ้งค์รวม</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Deadline Summary -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">Deadline Summary (รายเดือน)</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">แบบ</th>
+              <th class="py-2 px-3">กำหนดยื่น</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm">ภ.ง.ด.3 (หัก ณ ที่จ่าย บุคคลธรรมดา)</td><td class="py-2 px-3 text-sm text-gray-600">ภายในวันที่ 7 ของเดือนถัดไป (ออนไลน์ถึงวันที่ 15)</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm">ภ.ง.ด.53 (หัก ณ ที่จ่าย นิติบุคคล)</td><td class="py-2 px-3 text-sm text-gray-600">ภายในวันที่ 7 ของเดือนถัดไป (ออนไลน์ถึงวันที่ 15)</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm">ภพ.30 (ภาษีมูลค่าเพิ่ม)</td><td class="py-2 px-3 text-sm text-gray-600">ภายในวันที่ 15 ของเดือนถัดไป (ออนไลน์ถึงวันที่ 23)</td></tr>
           </tbody>
         </table>
       </div>
