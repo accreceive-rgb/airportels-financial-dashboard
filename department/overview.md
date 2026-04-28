@@ -17,8 +17,8 @@ TBD
 
 | Name | Role | Responsibility |
 |---|---|---|
-| คุณโฮ่ | Director / CFO (TBD) | อนุมัติขั้นสุดท้าย, รับรายงานงบการเงิน |
-| Accounting Manager | Accounting Manager | ตรวจสอบเอกสาร, ภาษีขาย, Omise, Statement, งบการเงิน, บริหารทีม |
-| มอส (TBD) | AP Officer (TBD) | จัดทำใบเบิก, Payment Voucher, ภาษีซื้อ, ภงด.3/53, Rider Payroll |
-| AR Officer | AR Officer | รายได้สาขา, Landlord Report, Partner Invoice, Petty Cash |
+| คุณโฮ่ | CEO | อนุมัติขั้นสุดท้าย, รับรายงานงบการเงิน |
+| โอ๋ | Accounting Manager | ตรวจสอบเอกสาร, ภาษีขาย, Omise, Statement, งบการเงิน, บริหารทีม |
+| มอส | AP Officer | จัดทำใบเบิก, Payment Voucher, ภาษีซื้อ, ภงด.3/53, Rider Payroll |
+| มุก | AR Officer | รายได้สาขา, Landlord Report, Partner Invoice, Petty Cash |
 | Intern | Intern Accounting | AI Income, ฝากเงินสด, RV/RE, สรุปรายได้รายวัน |
