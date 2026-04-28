@@ -37,7 +37,10 @@
     <!-- Steps -->
     <div class="bg-white rounded-lg shadow-sm p-5">
       <h2 class="text-base font-semibold text-gray-800 mb-3">Steps</h2>
-      <div class="overflow-x-auto">
+
+      <!-- PayPal -->
+      <h3 class="text-sm font-semibold text-gray-700 mb-2 mt-1 px-1 border-l-4 border-blue-400 pl-3">PayPal (รายเดือน)</h3>
+      <div class="overflow-x-auto mb-5">
         <table class="w-full text-left">
           <thead>
             <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
@@ -50,9 +53,57 @@
             </tr>
           </thead>
           <tbody>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ดึง Report จาก Omise</td><td class="py-2 px-3 text-sm text-blue-700">Accounting Manager</td><td class="py-2 px-3 text-sm text-gray-600">Omise</td><td class="py-2 px-3 text-sm">Report Omise</td><td class="py-2 px-3 text-sm text-gray-500">TBD — frequency</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">บันทึกบัญชี Omise เข้า PEAK</td><td class="py-2 px-3 text-sm text-blue-700">Accounting Manager</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">รายการบัญชี</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">บันทึกรายได้ PayPal</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">รายการบัญชี PayPal</td><td class="py-2 px-3 text-sm text-gray-500">TBD</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">Login PayPal → กิจกรรม → รายงานทั้งหมด → สร้างรายงาน → เลือกวันที่</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PayPal Dashboard</td><td class="py-2 px-3 text-sm">รายงาน PayPal</td><td class="py-2 px-3 text-sm text-gray-500">user: airsudarat</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">Copy ข้อมูลจากรายงาน → วางใน Sheet Statement Paypal.xlsx (Tab เดือนล่าสุด)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Google Sheets</td><td class="py-2 px-3 text-sm">Sheet Statement Paypal</td><td class="py-2 px-3 text-sm text-gray-500">Drive: AI Accounting → AI Statement → Paypal</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">SUM คอลัมน์ F, G, H</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">ยอดรวม</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">คำนวณรายได้: คอลัมน์ H ลบยอดถอนใน Statement (เข้า Kbank + Trazy)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">ยอดรายได้</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">คำนวณรายได้สุทธิ: คอลัมน์ H ลบ คอลัมน์ I (ลบค่าธรรมเนียม)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">ยอดรายได้สุทธิ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">สร้างใบเสร็จใน PEAK ใส่รายละเอียดค่าธรรมเนียม (บันทึกเงินเข้ากระเป๋า PayPal)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ใบเสร็จ RE + RV</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">นำเลข RE + RV บันทึกใน Statement Paypal</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">Statement Paypal อัปเดต</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">8</td><td class="py-2 px-3 text-sm">PEAK → การเงิน → กระเป๋าเงิน PayPal → ทำรายการ → โอนเงินออก → ใส่วันที่ + ยอดตาม Kbank</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">รายการ JVFN</td><td class="py-2 px-3 text-sm text-gray-500">บันทึกรับเงินเข้า Kbank</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">9</td><td class="py-2 px-3 text-sm">นำเลข JVFN บันทึกใน AI Statement (Kbank)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Google Sheets</td><td class="py-2 px-3 text-sm">Statement Kbank อัปเดต</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">10</td><td class="py-2 px-3 text-sm">แคปกระเป๋า PayPal → วางใน Statement Paypal (ยอดสุทธิต้องเท่ากับ SUM คอลัมน์ J)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Excel</td><td class="py-2 px-3 text-sm">ยืนยันยอดถูกต้อง</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Omise -->
+      <h3 class="text-sm font-semibold text-gray-700 mb-2 mt-1 px-1 border-l-4 border-purple-400 pl-3">Omise (รายเดือน / ระหว่างเดือน)</h3>
+      <div class="overflow-x-auto mb-5">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">Login Omise Dashboard → เมนู Transfer → ดูรายการที่ถูกโอนเข้า Kbank</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">dashboard.omise.co</td><td class="py-2 px-3 text-sm">รายการโอน Omise</td><td class="py-2 px-3 text-sm text-gray-500">user: sudarat@airportels.co</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">นำยอดที่โอนเข้ากสิกรมาบันทึกใน PEAK → สร้าง JV หักค่าธรรมเนียมการโอน → อนุมัติเอกสาร</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">JV Omise</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">ดาวน์โหลดไฟล์จาก Omise → เมนู Transfer → Export → เลือกเดือน</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Omise / Drive</td><td class="py-2 px-3 text-sm">ไฟล์ Omise</td><td class="py-2 px-3 text-sm text-gray-500">ถ้าไม่มีเมนู Export → หาจาก Drive (Omise statement ตามเดือน)</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">สร้าง JV บันทึกเงิน Omise เข้าธนาคาร → แนบไฟล์ Omise + Kbank Statement</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">JV พร้อมเอกสารแนบ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Output VAT note -->
+      <h3 class="text-sm font-semibold text-gray-700 mb-2 mt-1 px-1 border-l-4 border-green-400 pl-3">ภาษีขาย (Output VAT) — Omise / PayPal</h3>
+      <p class="text-sm text-gray-600 mb-2 px-1">หลังบันทึก JV ครบแล้ว ให้ทำรายงาน Reconcile ภาษีขาย VS AI Income ตามกระบวนการ <strong>Tax Filing &amp; Reporting</strong> (ขั้นตอนภาษีขาย)</p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">รายการ</th>
+              <th class="py-2 px-3">ผลที่ต้องการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm">JV รายได้ Omise / PayPal</td><td class="py-2 px-3 text-sm text-gray-600">ถูกรวมในรายงานภาษีขาย (ตรวจจากหมวด 410212 delivery)</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm">JV Refund ข้ามเดือน</td><td class="py-2 px-3 text-sm text-gray-600">บันทึกเป็นติดลบในรายได้ (ดูคำอธิบาย JV ก่อน)</td></tr>
           </tbody>
         </table>
       </div>
