@@ -168,6 +168,35 @@
       </div>
     </div>
 
+    <!-- Process Flowchart -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Process Flowchart — Annual Compliance Timeline</h2>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph TD
+  A([สิ้นรอบบัญชี 31 ธ.ค.]) --> B[กระทบยอด Audit Request vs GL ใน PEAK]
+  B --> C[จัดเตรียมเอกสาร ตาม Audit Request]
+  C --> D[คุณพอร์ช ออก Audit Report]
+  D --> E[ลงหนังสือพิมพ์ เชิญประชุมผู้ถือหุ้น ล่วงหน้า 7 วัน]
+  E --> F[ประชุมสามัญผู้ถือหุ้น ภายใน 120 วัน]
+  F --> G[นำส่ง บอจ.5 ภายใน 14 วัน หลังประชุม]
+  G --> H[คุณพอร์ชตรวจงบ ก่อนยื่น DBD]
+  H --> I[ยื่นงบการเงิน DBD ภายใน 1 เดือน หลังประชุม]
+  I --> J[คุณพอร์ชตรวจ ภงด.50]
+  J --> K[ยื่น ภงด.50 RD ภายใน 150 วัน]
+  K --> L[คุณพอร์ชตรวจ ภงด.51]
+  L --> M[ยื่น ภงด.51 RD ภายในสิงหาคม]
+  M --> N([เสร็จ])
+  style A fill:#d1fae5,stroke:#059669
+  style N fill:#d1fae5,stroke:#059669
+  style D fill:#e0e7ff,stroke:#4f46e5
+  style H fill:#e0e7ff,stroke:#4f46e5
+  style J fill:#e0e7ff,stroke:#4f46e5
+  style L fill:#e0e7ff,stroke:#4f46e5
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
@@ -175,33 +204,9 @@
   </footer>
 
   <script>
-    mermaid.initialize({ startOnLoad: false, theme: 'default' });
-
-    const ANNUAL_FLOW = `graph TD
-  S([เริ่มต้น]) --> A
-  A["1-2. กระทบยอด GL\n+ จัดเตรียมเอกสาร Audit"] --> B
-  B[["3. คุณพอร์ชตรวจสอบ\nออก Audit Report"]] --> C
-  C["4. ลงประกาศหนังสือพิมพ์\nก่อนประชุม ≥ 7 วัน"] --> D
-  D["5. ประชุมสามัญผู้ถือหุ้น\nภายใน 120 วัน"] --> E
-  E["6. นำส่ง บอจ.5\nภายใน 14 วัน"] --> F
-  F[["7. คุณพอร์ชตรวจเช็คงบ\nก่อนนำส่ง DBD"]] --> G
-  G["8. นำส่งงบการเงิน\n→ กรมพัฒนาธุรกิจ"] --> H
-  H[["9. คุณพอร์ชตรวจเช็ค\nภงด.50"]] --> I
-  I["10. ยื่น ภงด.50\n150 วันหลังสิ้นรอบ"] --> J
-  J[["11. คุณพอร์ชตรวจเช็ค\nภงด.51"]] --> K
-  K["12. ยื่น ภงด.51\nส.ค. / ออนไลน์ถึง 8 ก.ย."] --> Z
-  Z([เสร็จสิ้น])
-  classDef ohh fill:#f3e8ff,stroke:#7c3aed,color:#4c1d95
-  classDef porch fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
-  classDef term fill:#dcfce7,stroke:#16a34a,color:#14532d
-  class A,C,D,E,G,I,K ohh
-  class B,F,H,J porch
-  class S,Z term`;
-
-    window.addEventListener('load', function () {
-      mermaid.render('annual-flow', ANNUAL_FLOW).then(function (result) {
-        document.getElementById('annual-flow-diagram').innerHTML = result.svg;
-      });
+    mermaid.initialize({ startOnLoad: false, theme: 'default', flowchart: { curve: 'basis' } });
+    document.addEventListener('DOMContentLoaded', function() {
+      mermaid.run({ querySelector: '.mermaid' });
     });
   </script>
 </body>
