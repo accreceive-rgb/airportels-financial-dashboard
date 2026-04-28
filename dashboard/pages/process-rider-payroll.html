@@ -180,11 +180,45 @@
       </div>
     </div>
 
+    <!-- Process Flowchart -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Process Flowchart</h2>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph TD
+  A([เริ่ม]) --> B{ประเภท Rider}
+  B -->|Full-time| C[คำนวณยอด AI\nจาก Shipment Report]
+  B -->|Part-time| D[ดู Statement\nตรวจรายการโอน]
+  C --> E[JVFN พักที่\nเงินสด-อนวัช]
+  D --> F[JVFN พักที่\nอนวัช-Riders PT]
+  E --> G[EXP ใน PEAK\nรหัส 510107 WHT 3%]
+  F --> H{มี WHT}
+  H -->|ไม่หัก| I[EXP ในนามอนวัช\nCSH009]
+  H -->|หัก 3%| J[EXP ชื่อ Rider\nออกใบ WHT]
+  G --> K[พิมพ์ EXP+PV+WHT\nส่งโอ๋ตรวจ]
+  I --> L[พิมพ์เอกสาร\nเก็บ Drive]
+  J --> L
+  K --> M([เสร็จ])
+  L --> M
+  style A fill:#d1fae5,stroke:#059669
+  style M fill:#d1fae5,stroke:#059669
+  style B fill:#dbeafe,stroke:#2563eb
+  style H fill:#fef3c7,stroke:#d97706
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
     Airportels Financial — MADGA v1.3 &bull; <a href="../index.html" class="hover:underline">Back to Dashboard</a>
   </footer>
 
+  <script>
+    mermaid.initialize({ startOnLoad: false, theme: 'default', flowchart: { curve: 'basis' } });
+    document.addEventListener('DOMContentLoaded', function() {
+      mermaid.run({ querySelector: '.mermaid' });
+    });
+  </script>
 </body>
 </html>
