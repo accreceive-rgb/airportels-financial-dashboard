@@ -37,7 +37,10 @@
     <!-- Steps -->
     <div class="bg-white rounded-lg shadow-sm p-5">
       <h2 class="text-base font-semibold text-gray-800 mb-3">Steps</h2>
-      <div class="overflow-x-auto">
+
+      <!-- Main Steps -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-2 mb-2">ขั้นตอนหลัก (ทุก Partner)</h3>
+      <div class="overflow-x-auto mb-6">
         <table class="w-full text-left">
           <thead>
             <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
@@ -50,13 +53,87 @@
             </tr>
           </thead>
           <tbody>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ตรวจสอบรายได้จาก Partner ก่อนออก Invoice</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Sheet Income</td><td class="py-2 px-3 text-sm">ยอดรายได้ที่ถูกต้อง</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">ออก Invoice เรียกเก็บ Partner</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">Invoice</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">จัดส่ง Invoice ให้ Partner</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Email</td><td class="py-2 px-3 text-sm">Invoice ส่งแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">ออกใบเสร็จให้ Partner</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ใบเสร็จ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">จัดส่งใบเสร็จให้ Partner</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Email</td><td class="py-2 px-3 text-sm">ใบเสร็จส่งแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">ติดตามเอกสารหัก ณ ที่จ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">เอกสาร ภงด.</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">จัดเก็บเอกสาร</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">เอกสารจัดเก็บ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ดึง/รับรายงาน Order จาก Partner (ตามช่องทางของแต่ละ Partner)</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">ตามระบบ Partner</td><td class="py-2 px-3 text-sm">ไฟล์ Order Report</td><td class="py-2 px-3 text-sm text-gray-500">ดูตารางด้านล่างสำหรับ Partner แต่ละราย</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">ตรวจสอบ Order กับ Sheet: AIRPORTELs partner's orders</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Google Sheets</td><td class="py-2 px-3 text-sm">Order ที่ตรวจแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">Vlookup Booking Reference — แจ้ง Guest Service ถ้าตกหล่น</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">สร้างใบแจ้งหนี้ใน PEAK</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → รายรับ → ใบแจ้งหนี้</td><td class="py-2 px-3 text-sm">Invoice (INV-xxxxx)</td><td class="py-2 px-3 text-sm text-gray-500">แบ่งตามประเภทบริการ: ฝาก/ส่ง/ล้อยาง</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">ส่ง Email วางบิล + ใบแจ้งหนี้ให้ Partner</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Email</td><td class="py-2 px-3 text-sm">Invoice ที่ส่งแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">ดู Email / CC ของแต่ละ Partner ด้านล่าง</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">รอการชำระเงินตาม Credit Term</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">—</td><td class="py-2 px-3 text-sm text-gray-500">ดู Credit Term แต่ละ Partner</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">รับชำระ → กดรับชำระจากใบแจ้งหนี้ใน PEAK</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ใบเสร็จรับเงิน RV</td><td class="py-2 px-3 text-sm text-gray-500">ตรวจเช็คค่าธรรมเนียม / หัก ณ ที่จ่าย</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">พิมพ์ RV + RE/RT + Credit Advice → เรียงชุด → เก็บแฟ้ม "ใบสำคัญรับ"</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">เอกสารชุดรับ</td><td class="py-2 px-3 text-sm text-gray-500">RV + RT/RE + Credit Advice (ถ้ามี)</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">8</td><td class="py-2 px-3 text-sm">ติดตามเอกสารหัก ณ ที่จ่ายจาก Partner</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → การเงิน → ภาษีถูกหัก ณ ที่จ่าย</td><td class="py-2 px-3 text-sm">เอกสาร WHT ที่บันทึกแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">แสกนแนบเข้าระบบ + เก็บแฟ้ม</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 15-day billing partners -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">รอบวางบิลทุก 15 วัน (ชำระทุกศุกร์ที่ 2 และ 4)</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">Partner</th>
+              <th class="py-2 px-3">Credit Term</th>
+              <th class="py-2 px-3">ช่องทางดึง Order</th>
+              <th class="py-2 px-3">Email วางบิล</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Samurai wifi</td><td class="py-2 px-3 text-sm text-gray-600">7 วันหลังวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">Drive / Sheet Airportel Samuri wifi record</td><td class="py-2 px-3 text-sm text-gray-600">bsmobileacc@bangkoksamurai.com; cc: vsu_cm@bangkoksamurai.com</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Klook</td><td class="py-2 px-3 text-sm text-gray-600">7 วันหลังวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">Email: Klook Booking Report (PDF+Excel)</td><td class="py-2 px-3 text-sm text-gray-600">settlement@klook.com; cc: minnie.siripasid@klook.com</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">KKDay SCM</td><td class="py-2 px-3 text-sm text-gray-600">10 วันหลังวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">Email / SCM System</td><td class="py-2 px-3 text-sm text-gray-600">op-ap-eng@kkday.com; cc: bd-th@kkday.com</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">DreamCT</td><td class="py-2 px-3 text-sm text-gray-600">5 วันหลังวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">Sheet: AIRPORTELs partner's orders (filter DreamCT)</td><td class="py-2 px-3 text-sm text-gray-600">ติดต่อคุณเอมผ่าน Line Group "DreamCT" ก่อนส่ง</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Globaltix</td><td class="py-2 px-3 text-sm text-gray-600">7–14 วันหลังวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">merchant.globaltix.com (status: Redeemed เท่านั้น)</td><td class="py-2 px-3 text-sm text-gray-600">suchunya@globaltix.com; cc: globaltix-th@globaltix.com</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Patois (พาทัวร์)</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm text-gray-600">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 30-day billing partners -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">รอบวางบิลทุก 30 วัน / รายเดือน</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">Partner</th>
+              <th class="py-2 px-3">Credit Term</th>
+              <th class="py-2 px-3">ช่องทางดึง Order</th>
+              <th class="py-2 px-3">Email / ช่องทาง</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Yoowifi</td><td class="py-2 px-3 text-sm text-gray-600">10 วันหลังวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">Email ขอรายงานจาก TSWorld Info</td><td class="py-2 px-3 text-sm text-gray-600">info@ts-world.co</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Thailand Elite</td><td class="py-2 px-3 text-sm text-gray-600">15 วันหลังวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">ใบ Job Assignment จากสาขา → แสกน → Drive</td><td class="py-2 px-3 text-sm text-gray-600">rsvn@thailandelite.com; ส่งเอกสารจริงตามที่อยู่</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">KKDay POS</td><td class="py-2 px-3 text-sm text-gray-600">วันที่ 25 ของเดือน</td><td class="py-2 px-3 text-sm text-gray-600">pos.kkday.com → CSV → รายงานค่าธรรมเนียม (3 สาขา)</td><td class="py-2 px-3 text-sm text-gray-600">megan.chang@kkday.com</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Golfdigg</td><td class="py-2 px-3 text-sm text-gray-600">วันที่ 15 ของเดือน</td><td class="py-2 px-3 text-sm text-gray-600">Sheet: Golf Bag Delivery x AIRPORTELs (Responses)</td><td class="py-2 px-3 text-sm text-gray-600">business@golfdigg.com</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Veltra</td><td class="py-2 px-3 text-sm text-gray-600">วันที่ 25 ของเดือนถัดไป</td><td class="py-2 px-3 text-sm text-gray-600">veltra.com/ptr → menu Billing → confirm all</td><td class="py-2 px-3 text-sm text-gray-600">agnes.niehof@veltra.com; cc: info-asia@veltra.com</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Avagard Capsule</td><td class="py-2 px-3 text-sm text-gray-600">วันที่ 8 ของเดือนถัดไป</td><td class="py-2 px-3 text-sm text-gray-600">Sheet: BKK Sale Report tab AirportelsxAvargard</td><td class="py-2 px-3 text-sm text-gray-600">ส่งทาง Line คุณ Tatchaya</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">BnBCondo</td><td class="py-2 px-3 text-sm text-gray-600">รายเดือน, 5 วันหลังวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">Sheet: BnBCondo key pick-up orders.xlsx</td><td class="py-2 px-3 text-sm text-gray-600">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Toto Booking</td><td class="py-2 px-3 text-sm text-gray-600">วันที่ 15 เดือนถัดไป</td><td class="py-2 px-3 text-sm text-gray-600">Email ขอ Order ภายในวันที่ 5</td><td class="py-2 px-3 text-sm text-gray-600">account@totobooking.com</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Hippo Tech</td><td class="py-2 px-3 text-sm text-gray-600">5 วันหลังวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">Email ขอ Order ภายในวันที่ 5</td><td class="py-2 px-3 text-sm text-gray-600">รอรายงานในเมล</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- No-billing partners -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">ไม่ต้องวางบิล (รับเงินอัตโนมัติ / ตามระบบ)</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">Partner</th>
+              <th class="py-2 px-3">วิธีรับเงิน</th>
+              <th class="py-2 px-3">หมายเหตุ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Stasher</td><td class="py-2 px-3 text-sm text-gray-600">โอนเข้าบัญชีอัตโนมัติ</td><td class="py-2 px-3 text-sm text-gray-500">ไม่มี contract</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Vertoe</td><td class="py-2 px-3 text-sm text-gray-600">โอนเข้าบัญชีอัตโนมัติ</td><td class="py-2 px-3 text-sm text-gray-500">ไม่มี contract</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Viator</td><td class="py-2 px-3 text-sm text-gray-600">โอนเข้าบัญชีอัตโนมัติ</td><td class="py-2 px-3 text-sm text-gray-500">ไม่มี contract</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Traveloka</td><td class="py-2 px-3 text-sm text-gray-600">โอนเข้าบัญชีอัตโนมัติ</td><td class="py-2 px-3 text-sm text-gray-500">ไม่มี contract</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Qeepl</td><td class="py-2 px-3 text-sm text-gray-600">โอนเข้าบัญชีอัตโนมัติ</td><td class="py-2 px-3 text-sm text-gray-500">ไม่มี contract</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Lean Team / Siri (Radical)</td><td class="py-2 px-3 text-sm text-gray-600">วันที่ 1 ของเดือนถัดไป</td><td class="py-2 px-3 text-sm text-gray-500">radicalstorage.com/angel/ → Payment → Invoice</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Encounter (Pelago)</td><td class="py-2 px-3 text-sm text-gray-600">15 วันหลังชำระ</td><td class="py-2 px-3 text-sm text-gray-500">provider.pelago.co → analytics / sale report</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">Trazy</td><td class="py-2 px-3 text-sm text-gray-600">ภายใน 3 วันทำการเดือนถัดไป</td><td class="py-2 px-3 text-sm text-gray-500">ชำระผ่าน Paypal</td></tr>
           </tbody>
         </table>
       </div>
