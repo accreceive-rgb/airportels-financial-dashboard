@@ -22,3 +22,4 @@ updated: 2026-04-28
 | 10 | [Tax Filing & Reporting](../processes/tax-filing-reporting/overview.md) | Accounting Manager / AP | Compliance | Active | Partial |
 | 11 | [Fixed Assets Management](../processes/fixed-assets/overview.md) | AP Officer / Accounting Manager | Assets | Active | Stub |
 | 12 | [Monthly Financial Close](../processes/monthly-financial-close/overview.md) | Accounting Manager | Reporting | Active | Partial |
+| 13 | [Annual Financial Close & Compliance](../processes/annual-financial-close/overview.md) | Accounting Manager (โอ๋) | Compliance / Reporting | Active | Partial |
