@@ -156,6 +156,33 @@
       </div>
     </div>
 
+    <!-- Process Flowchart -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Process Flowchart</h2>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph TD
+  A([เริ่ม]) --> B{ช่องทางชำระเงิน}
+  B -->|PayPal| PP1[Login PayPal สร้างรายงาน]
+  B -->|Omise| OM1[Login Omise ดู Transfer เข้า Kbank]
+  PP1 --> PP2[Copy ข้อมูล ลง Sheet Statement Paypal.xlsx]
+  PP2 --> PP3[SUM คอล F+G+H คำนวณรายได้สุทธิ]
+  PP3 --> PP4[ออกใบเสร็จ RE+RV ใน PEAK]
+  PP4 --> PP5[JVFN โอนออก กระเป๋า PayPal ไป Kbank]
+  PP5 --> PP6[บันทึก JVFN ใน AI Statement Kbank]
+  PP6 --> PP7[แคปกระเป๋า ยืนยันยอด SUM คอล J]
+  PP7 --> END([เสร็จ])
+  OM1 --> OM2[JV บันทึกยอดโอน หักค่าธรรมเนียม ใน PEAK]
+  OM2 --> OM3[Download ไฟล์ Omise Export เดือน]
+  OM3 --> OM4[JV บันทึก Omise ไป Kbank แนบไฟล์]
+  OM4 --> END
+  style A fill:#d1fae5,stroke:#059669
+  style END fill:#d1fae5,stroke:#059669
+  style B fill:#dbeafe,stroke:#2563eb
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
