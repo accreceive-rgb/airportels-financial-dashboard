@@ -29,7 +29,7 @@
 - `dashboard/index.html` — diagrams arrays + activity log อัพเดทครบทุก process
 
 ### Still TBD
-- Fixed Assets: stub — ยังไม่มีข้อมูล SOP
+- Fixed Assets: รอมอสมาเติม Process — จะอัพเดท steps.md + flowchart ทีหลัง
 
 ---
 
