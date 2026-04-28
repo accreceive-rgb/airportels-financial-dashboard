@@ -37,7 +37,10 @@
     <!-- Steps -->
     <div class="bg-white rounded-lg shadow-sm p-5">
       <h2 class="text-base font-semibold text-gray-800 mb-3">Steps</h2>
-      <div class="overflow-x-auto">
+
+      <!-- Fulltime Riders -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">Fulltime Riders (2 รอบต่อเดือน)</h3>
+      <div class="overflow-x-auto mb-6">
         <table class="w-full text-left">
           <thead>
             <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
@@ -50,10 +53,82 @@
             </tr>
           </thead>
           <tbody>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">รับเอกสารเบิกค่าจ้าง Rider</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">เอกสารค่าจ้าง</td><td class="py-2 px-3 text-sm text-gray-500">Full-time และ Part-time</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">ตรวจเช็คความถูกต้อง</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">เอกสารผ่านตรวจ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">บันทึกบัญชีค่าจ้างเข้าระบบ</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">รายการบัญชี</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">จ่ายค่าจ้าง Rider</td><td class="py-2 px-3 text-sm text-blue-700">TBD</td><td class="py-2 px-3 text-sm text-gray-600">TBD</td><td class="py-2 px-3 text-sm">—</td><td class="py-2 px-3 text-sm text-gray-500">TBD — ช่องทาง</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">รับใบเบิกค่าจ้าง Riders รอบ 1–15 จาก Fleet</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">Line Group: Acc&amp;Fleet Document</td><td class="py-2 px-3 text-sm">ใบเบิกรอบ 1–15</td><td class="py-2 px-3 text-sm text-gray-500">MS จ่ายเต็มจำนวน 100%</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">คำนวณยอด AI สำหรับรอบ 16–30/31 จาก Shipment Report</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">Drive: MAKESEND Accounting → _Client by INVOICES → 7974_Airportels</td><td class="py-2 px-3 text-sm">ยอด Grand Total AI</td><td class="py-2 px-3 text-sm text-gray-500">ยอดต่างได้ไม่เกิน ±200–400 บาท</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">คัดเลือก Riders ที่ AI จ่าย (ไม่รวมค่าประกันและ Advance)</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">Sheet "เบิกเงิน"</td><td class="py-2 px-3 text-sm">รายชื่อ Riders ฝั่ง AI / ฝั่ง MS</td><td class="py-2 px-3 text-sm text-gray-500">ใช้ชื่อ "AI 16–30/เดือน/ปี" และ "MS 16–30/เดือน/ปี"</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">แจ้งยอดให้คุณโฮ่อนุมัติ</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">Line Group: Operation Executive</td><td class="py-2 px-3 text-sm">การอนุมัติ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">บันทึก JVFN โอนเงินไปพักที่ "เงินสด-อนวัช" ใน PEAK</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → การเงิน → โอนเงิน</td><td class="py-2 px-3 text-sm">รายการ JVFN</td><td class="py-2 px-3 text-sm text-gray-500">แนบสลิปโอน + ใบเบิกในเอกสาร</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">ตรวจเช็คใบเบิก vs ยอดโอน (ทางด่วน, น้ำมัน, EasyPass มีใบเสร็จครบ?)</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">เอกสารผ่านการตรวจ</td><td class="py-2 px-3 text-sm text-gray-500">ติดตามจาก Fleet ถ้าไม่ครบ</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">บันทึกค่าใช้จ่าย Riders ใน PEAK (คัดลอก EXP เดิม)</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → รายจ่าย → บันทึกค่าใช้จ่าย</td><td class="py-2 px-3 text-sm">EXP รายการใหม่</td><td class="py-2 px-3 text-sm text-gray-500">รหัส 510107, หัก ณ ที่จ่าย 3%, จ่ายโดย "เงินสด-อนวัช"</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">8</td><td class="py-2 px-3 text-sm">อนุมัติค่าใช้จ่าย → พิมพ์ EXP + PV + ใบหัก ณ ที่จ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">EXP, PV, ใบ WHT</td><td class="py-2 px-3 text-sm text-gray-500">แนบสำเนาบัตร ปชช. + สลิปโอน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">9</td><td class="py-2 px-3 text-sm">ส่งโอ๋ตรวจสอบและอนุมัติ</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">ความถูกต้องที่ยืนยันแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">10</td><td class="py-2 px-3 text-sm">Save ใบหัก ณ ที่จ่าย เป็น PDF → จัดเก็บใน Drive</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">Drive: MAKESEND Accounting</td><td class="py-2 px-3 text-sm">ไฟล์ PDF WHT</td><td class="py-2 px-3 text-sm text-gray-500">แยก FT/PT ตามชื่อ Rider + เก็บใน 50ทวิ ตามเดือน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Parttime Riders -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">Parttime Riders (เกือบทุกวัน)</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ดู Statement → เจอโอนให้ "อนวัช ธนะตัน"</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK / Statement</td><td class="py-2 px-3 text-sm">รายการที่ต้องบันทึก</td><td class="py-2 px-3 text-sm text-gray-500">Fleet เบิกกับคุณโฮ่โดยตรง ไม่ผ่านบัญชี</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">ติดตามเอกสารการจ่ายจาก Fleet</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">Line Group: Acc&amp;Fleet Document</td><td class="py-2 px-3 text-sm">ใบเบิก + สลิปโอน</td><td class="py-2 px-3 text-sm text-gray-500">บันทึกภายในเดือนที่มีการจ่าย</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">บันทึก JVFN โอนเงินไปที่ "อนวัช-Riders Part-time" ใน PEAK</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → การเงิน → โอนเงิน</td><td class="py-2 px-3 text-sm">รายการ JVFN</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4A</td><td class="py-2 px-3 text-sm">บันทึก EXP (ไม่มีหัก ณ ที่จ่าย) ในนาม "อนวัช ธนะตัน"</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">EXP</td><td class="py-2 px-3 text-sm text-gray-500">จ่ายโดย "อนวัช-Riders Part-time (CSH009)"</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4B</td><td class="py-2 px-3 text-sm">บันทึก EXP (มีหัก ณ ที่จ่าย 3%) ในชื่อ Rider จริง</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">EXP + WHT</td><td class="py-2 px-3 text-sm text-gray-500">รหัส 510107, หัก 3%, CSH009</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">อนุมัติ → พิมพ์ EXP + PV (+ใบหัก ณ ที่จ่าย ถ้ามี)</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ชุดเอกสาร</td><td class="py-2 px-3 text-sm text-gray-500">แนบสลิป + สำเนาบัตร ปชช.</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">Save ใบหัก ณ ที่จ่าย → จัดเก็บใน Drive</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer / Intern</td><td class="py-2 px-3 text-sm text-gray-600">Drive: MAKESEND Accounting</td><td class="py-2 px-3 text-sm">ไฟล์ PDF WHT</td><td class="py-2 px-3 text-sm text-gray-500">โฟลเดอร์ WHT_Rider Part-time 2024 ตามรายชื่อ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Account Codes -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">รหัสบัญชีค่าใช้จ่ายเพิ่มเติม</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">รหัสบัญชี</th>
+              <th class="py-2 px-3">ประเภทค่าใช้จ่าย</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-mono">510107</td><td class="py-2 px-3 text-sm">ค่าขนส่งสินค้า, EasyPass</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-mono">510118</td><td class="py-2 px-3 text-sm">ค่าน้ำมัน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-mono">113203</td><td class="py-2 px-3 text-sm">Advance, เบิกเงินล่วงหน้า</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-mono">212309</td><td class="py-2 px-3 text-sm">ค่าประกัน, ค่าประกัน DV</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-mono">420109</td><td class="py-2 px-3 text-sm">ค่าเคลม, ค่าปรับ</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-mono">530303</td><td class="py-2 px-3 text-sm">ค่าโทรศัพท์</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-mono">520218</td><td class="py-2 px-3 text-sm">ค่าติดตั้งสติ๊กเกอร์</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Deadline Summary -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">Deadline Summary</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">รอบ</th>
+              <th class="py-2 px-3">กำหนด</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm">Fulltime รอบ 1–15</td><td class="py-2 px-3 text-sm text-gray-600">บันทึกเมื่อครบ 2 รอบ (หลังวันที่ 16)</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm">Fulltime รอบ 16–30/31</td><td class="py-2 px-3 text-sm text-gray-600">บันทึกเมื่อได้เอกสารครบ</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm">Parttime</td><td class="py-2 px-3 text-sm text-gray-600">บันทึกภายในเดือนที่มีการจ่าย</td></tr>
           </tbody>
         </table>
       </div>
