@@ -27,18 +27,22 @@
 - `dashboard/pages/process-expense-reimbursement.html` — แทน 8 generic rows ด้วย 3 sub-sections + reference table เอกสารแนบ
 - `dashboard/pages/process-petty-cash-advance.html` — แทน 7 generic rows ด้วย 3 sub-sections + reference table ตามประเภท
 
+### Also updated in same session (batch 2)
+- **Online Payment Recording**: PayPal 10 ขั้น + Omise 4 ขั้น + ตาราง VAT — steps.md + HTML
+- **Commission Payment (MS Go)**: 13 ขั้น ครบ (CALCULATE tab → PV → branches → JVFN → EXP → Drive) — steps.md + HTML
+- **Landlord Revenue Reporting**: daily 5 ขั้น + monthly 3 ขั้น + ตาราง Landlord contacts + CNX postal — steps.md + HTML
+- **Bank Statement Reconciliation**: AR daily 4 ขั้น + AP monthly 4 ขั้น + ตารางบัญชี + reconcile summary — steps.md + HTML
+
 ### Still TBD
-- Landlord Revenue Reporting: ยังไม่ได้อัพเดท monthly report flow
-- Online Payment Recording: รายละเอียด Paypal / Omise flow จาก AR SOP
-- Commission Payment: รายละเอียด MS Go Payment Voucher จาก AP SOP
-- Bank Statement Reconciliation: รายละเอียด AI Statement reconcile flow
 - Fixed Assets: stub — ยังไม่มีข้อมูลจาก SOP
+- Monthly Financial Close: ยังเป็น partial — ยังไม่มีข้อมูล step-by-step จาก SOP
+- Mermaid flowcharts: ยังไม่ได้สร้างสำหรับ Partner Billing & AR และ process อื่นๆ
+- Overview.md: Bank Statement Reconciliation + Landlord Revenue Reporting ยังไม่ได้อัพเดท owner/tools/pain points
 
 ### Suggested next steps
-- อัพเดท Online Payment Recording (Omise/PayPal) จาก AR SOP
-- อัพเดท Commission Payment (MS Go) จาก AP SOP
-- อัพเดท Landlord Revenue Reporting (monthly + branch contacts)
-- สร้าง Mermaid flowchart สำหรับ Partner Billing & AR
+- สร้าง Mermaid flowchart สำหรับ Partner Billing & AR (process ที่ซับซ้อนที่สุด)
+- อัพเดท overview.md ของ Bank Statement Reconciliation + Landlord Revenue Reporting
+- หาข้อมูล Fixed Assets + Monthly Financial Close จากทีม
 - ตรวจสอบกับมุกและมอสว่ากระบวนการที่จดไว้ตรงกับที่ทำจริงไหม
 
 ---
