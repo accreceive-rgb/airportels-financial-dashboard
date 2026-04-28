@@ -423,10 +423,61 @@
         { "num": 8, "name": "นำส่งงบการเงินให้คุณโฮ่", "actor": "Accounting Manager", "tool": "—", "output": "รายงานงบการเงิน", "notes": "ตามกำหนด" }
       ],
       "subPage": "pages/process-monthly-financial-close.html"
+    },
+    {
+      "id": "annual-financial-close",
+      "name": "Annual Financial Close & Compliance",
+      "owner": "Accounting Manager (โอ๋)",
+      "category": "Compliance / Reporting",
+      "status": "active",
+      "completeness": "partial",
+      "purpose": "ดำเนินการปิดงบการเงินประจำปี ตั้งแต่กระทบยอด Audit Request จัดเตรียมเอกสาร จัดประชุมผู้ถือหุ้น และนำส่งงบ/ภาษีต่อหน่วยงานที่เกี่ยวข้องภายในกำหนดเวลาตามกฎหมาย",
+      "timing": "Annual — หลังสิ้นรอบบัญชี 31 ธ.ค.",
+      "stakeholders": [
+        { "name": "โอ๋ (Accounting Manager)", "involvement": "ดำเนินการหลักทุกขั้นตอน", "type": "internal" },
+        { "name": "คุณโฮ่ (CEO)", "involvement": "อนุมัติงบ, เข้าร่วมประชุมผู้ถือหุ้น", "type": "internal" },
+        { "name": "คุณพอร์ช (ที่ปรึกษาบัญชี)", "involvement": "ให้คำปรึกษา / ตรวจสอบงบ", "type": "internal" },
+        { "name": "ผู้สอบบัญชี (Auditor)", "involvement": "ออก Audit Request, ตรวจสอบงบ", "type": "external" },
+        { "name": "กรมพัฒนาธุรกิจการค้า (DBD)", "involvement": "รับงบการเงิน, บอจ.5", "type": "external" },
+        { "name": "กรมสรรพากร (RD)", "involvement": "รับ ภงด.50 / ภงด.51", "type": "external" }
+      ],
+      "tools": [
+        { "name": "PEAK", "purpose": "ดึง GL กระทบยอด Audit Request" },
+        { "name": "ระบบ RD (e-Filing)", "purpose": "ยื่น ภงด.50 / ภงด.51 ออนไลน์" },
+        { "name": "DBD e-Filing", "purpose": "นำส่งงบการเงิน, บอจ.5" },
+        { "name": "หนังสือพิมพ์", "purpose": "ลงประกาศเชิญประชุมผู้ถือหุ้น" }
+      ],
+      "inputs": ["GL ใน PEAK (ปิดงบรายเดือนครบแล้ว)", "Audit Request จากผู้สอบบัญชี", "งบการเงินที่ผ่านการตรวจสอบแล้ว"],
+      "outputs": ["งบการเงินประจำปี", "บอจ.5 (DBD)", "งบการเงิน → กรมพัฒนาธุรกิจ", "ภงด.50 / ภงด.51"],
+      "crossLinks": {
+        "from": [{ "process": "Monthly Financial Close", "department": "airportels-financial", "detail": "งบรายเดือนครบ 12 เดือน" }],
+        "to": [{ "process": "DBD / กรมสรรพากร", "department": "external", "detail": "งบและภาษีประจำปี" }]
+      },
+      "painPoints": [],
+      "steps": [
+        { "num": 1, "name": "กระทบยอด Audit Request กับ GL", "actor": "โอ๋", "tool": "PEAK", "output": "GL กระทบยอดแล้ว", "notes": "ตามที่ Auditor ขอ" },
+        { "num": 2, "name": "จัดเตรียมเอกสารตาม Audit Request", "actor": "โอ๋", "tool": "PEAK / เอกสาร", "output": "เอกสารชุด Audit", "notes": "ส่งให้ผู้สอบบัญชี" },
+        { "num": 3, "name": "ลงประกาศหนังสือพิมพ์เชิญประชุมผู้ถือหุ้น", "actor": "โอ๋", "tool": "หนังสือพิมพ์", "output": "หลักฐานลงประกาศ", "notes": "ก่อนประชุมไม่น้อยกว่า 7 วัน" },
+        { "num": 4, "name": "ประชุมสามัญผู้ถือหุ้นประจำปี", "actor": "โอ๋ / คุณโฮ่", "tool": "—", "output": "รายงานการประชุม", "notes": "ภายใน 120 วัน หลัง 31 ธ.ค." },
+        { "num": 5, "name": "นำส่ง บอจ.5", "actor": "โอ๋", "tool": "DBD e-Filing", "output": "บอจ.5 ยื่นแล้ว", "notes": "ภายใน 14 วัน หลังประชุมสามัญ" },
+        { "num": 6, "name": "นำส่งงบการเงิน → กรมพัฒนาธุรกิจการค้า", "actor": "โอ๋", "tool": "DBD e-Filing", "output": "งบนำส่งแล้ว", "notes": "ไม่เกิน 1 เดือน หลังประชุมผู้ถือหุ้น" },
+        { "num": 7, "name": "ยื่น ภงด.50 → กรมสรรพากร", "actor": "โอ๋", "tool": "ระบบ RD", "output": "ภงด.50 ยื่นแล้ว", "notes": "ภายใน 150 วัน หลัง 31 ธ.ค." },
+        { "num": 8, "name": "ยื่น ภงด.51 → กรมสรรพากร", "actor": "โอ๋", "tool": "ระบบ RD", "output": "ภงด.51 ยื่นแล้ว", "notes": "ภายใน ส.ค. (ออนไลน์ถึง 8 ก.ย.)" }
+      ],
+      "subPage": "pages/process-annual-financial-close.html"
     }
   ],
   "plans": [],
   "activity": [
+    {
+      "date": "2026-04-28",
+      "time": "10:00",
+      "user": "Oh",
+      "action": "created",
+      "target": "Annual Financial Close & Compliance",
+      "detail": "เพิ่ม process ปิดงบประจำปี — Audit Request, ประชุมผู้ถือหุ้น, บอจ.5, DBD, ภงด.50/51",
+      "type": "process"
+    },
     {
       "date": "2026-04-27",
       "time": "19:30",
