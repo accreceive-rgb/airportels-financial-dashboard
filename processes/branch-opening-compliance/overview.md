@@ -1,0 +1,53 @@
+---
+title: Branch Opening — Compliance Registration (DBD / สรรพากร / ภพ.06)
+process_id: branch-opening-compliance
+owner: Accounting Manager (โอ๋)
+category: Compliance
+status: active
+completeness: stub
+updated: 2026-04-28
+---
+
+# Branch Opening — Compliance Registration
+
+## Purpose
+ดำเนินการจดทะเบียนและขออนุมัติด้านกฎหมายทุกอย่างเมื่อเปิดสาขาใหม่ ครอบคลุม 3 ส่วนหลัก: จดทะเบียนสาขากับกรมพัฒนาธุรกิจการค้า (DBD), แจ้งเพิ่มสถานประกอบการกับกรมสรรพากร, และยื่นคำขออนุมัติใช้เครื่องบันทึกการเก็บเงินเพื่อออกใบกำกับภาษี (ภพ.06)
+
+## Stakeholders
+
+| Name / Role | Involvement | Internal/External |
+|---|---|---|
+| โอ๋ (Accounting Manager) | ดำเนินการยื่นเอกสารทุกขั้นตอน | Internal |
+| คุณโฮ่ (CEO) | ลงนามเอกสารยื่นราชการ | Internal |
+| กรมพัฒนาธุรกิจการค้า (DBD) | รับจดทะเบียนสาขา | External |
+| กรมสรรพากร (สรรพากรพื้นที่) | รับแจ้งสถานประกอบการ / อนุมัติ ภพ.06 | External |
+
+## Tools & Systems
+
+| Tool | Purpose in this process | Notes |
+|---|---|---|
+| DBD e-Filing | จดทะเบียนสาขากับกรมพัฒน์ | TBD — URL |
+| ระบบ e-Registration (RD) | ยื่นแบบแจ้งเพิ่มสถานประกอบการ | กรมสรรพากร |
+| เอกสารกระดาษ / ตัวจริง | ภพ.06 + เอกสารประกอบ | ยื่นที่สรรพากรพื้นที่สาขา |
+
+## Timing
+เมื่อเปิดสาขาใหม่ทุกครั้ง — ไม่มีรอบประจำ (Event-based)
+
+## Inputs
+- สัญญาเช่าสถานที่สาขาใหม่
+- ที่อยู่ / แผนที่สาขา
+- ข้อมูลบริษัท (เลขนิติบุคคล, ที่ตั้งสำนักงานใหญ่)
+- รูปถ่ายสถานที่ (สำหรับ ภพ.06)
+- ข้อมูลเครื่องบันทึกการเก็บเงิน (รุ่น, Serial No.)
+
+## Outputs
+- ทะเบียนสาขา DBD อนุมัติแล้ว
+- ใบทะเบียนภาษีมูลค่าเพิ่ม (ภ.พ.20) สาขาใหม่
+- หนังสืออนุมัติ ภพ.06 (ใช้เครื่อง ECR/POS ออกใบกำกับภาษีได้)
+
+## Cross-Department Links
+- Receives from: CEO / Operations (แจ้งแผนเปิดสาขา)
+- Hands off to: Tax Filing & Reporting (เพิ่มสาขาในระบบภาษีรายเดือน), Branch Income Recording (เริ่มบันทึกรายได้สาขาใหม่)
+
+## Pain Points
+- TBD — รอมอส/โอ๋เติมรายละเอียด
