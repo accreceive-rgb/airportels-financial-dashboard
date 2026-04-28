@@ -1,3 +1,17 @@
+## 2026-04-28 — แก้ไข Owner เงินสดย่อย: มอส (AP Officer) ดูแลแทน AR Officer
+
+### What was done
+- อัพเดท owner ของ Petty Cash & Advance จาก "AR Officer / AP Officer" เป็น "AP Officer (มอส)"
+- มอสดูแลทั้ง Custodian (ถือเงินสด) และบันทึกบัญชีใน PEAK เอง
+
+### Files changed
+- `processes/petty-cash-advance/overview.md` — owner + stakeholder table
+- `processes/petty-cash-advance/steps.md` — Actor ทุก step + แก้คำอธิบาย step 6
+- `dashboard/pages/process-petty-cash-advance.html` — header, section title, Actor ทุก row, stakeholders
+- `dashboard/index.html` — owner field ใน DASHBOARD_DATA
+
+---
+
 ## 2026-04-28 — สร้าง Mermaid Flowcharts 5 กระบวนการหลัก
 
 ### What was done
