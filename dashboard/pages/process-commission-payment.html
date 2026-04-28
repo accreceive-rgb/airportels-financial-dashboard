@@ -135,6 +135,30 @@
       </div>
     </div>
 
+    <!-- Process Flowchart -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Process Flowchart — Commission MS Go</h2>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph TD
+  A([รับ 2 ไฟล์จากโอ๋]) --> B[CALCULATE tab\nคำนวณ Commission ต่อสาขา]
+  B --> C[Copy ไป PV\nตั้งวันที่ครบกำหนด]
+  C --> D[Filter Dropoff ต่อสาขา\nfalse = Ambient / true = Chilled]
+  D --> E[หักยอดยกเลิก\nจาก Sheet MSGO_ID]
+  E --> F[ส่ง PV ให้สาขายืนยันยอด\nภายในวันที่ 5 ของเดือน]
+  F --> G{สาขายืนยันแล้ว}
+  G -->|รอยืนยัน| F
+  G -->|ยืนยันแล้ว| H[JVFN โอนเงิน\nเงินสด-ธีรศักดิ์\nภายในวันที่ 15]
+  H --> I[EXP ใน PEAK\nแนบเอกสารครบชุด]
+  I --> J[เก็บ Drive\nCommissionMSgo2024 / Pay-in / 50ทวิ]
+  J --> K([เสร็จ])
+  style A fill:#d1fae5,stroke:#059669
+  style K fill:#d1fae5,stroke:#059669
+  style G fill:#fef3c7,stroke:#d97706
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
