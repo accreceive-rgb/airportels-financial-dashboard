@@ -36,8 +36,11 @@
 
     <!-- Steps -->
     <div class="bg-white rounded-lg shadow-sm p-5">
-      <h2 class="text-base font-semibold text-gray-800 mb-3">Steps</h2>
-      <div class="overflow-x-auto">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Steps</h2>
+
+      <!-- Sub-section 1: บันทึกค่าใช้จ่าย / ตั้งหนี้ -->
+      <h3 class="text-sm font-semibold text-indigo-700 uppercase tracking-wide mb-2 mt-2">บันทึกค่าใช้จ่าย / ตั้งหนี้ (AP Invoice)</h3>
+      <div class="overflow-x-auto mb-5">
         <table class="w-full text-left">
           <thead>
             <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
@@ -50,16 +53,80 @@
             </tr>
           </thead>
           <tbody>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">รับเอกสารเบิกค่าใช้จ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">ใบเบิก</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">ตรวจสอบความถูกต้องเอกสาร</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">เอกสารผ่านตรวจ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">จัดทำ Payment Voucher</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer (มอส)</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">Payment Voucher</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">ตรวจเช็คเอกสารก่อนส่ง</td><td class="py-2 px-3 text-sm text-blue-700">Accounting Manager</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">ผลตรวจสอบ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">นำส่งให้คุณโฮ่อนุมัติ</td><td class="py-2 px-3 text-sm text-blue-700">Accounting Manager</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">การอนุมัติ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">บันทึกบัญชีค่าใช้จ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">รายการบัญชี</td><td class="py-2 px-3 text-sm text-gray-500">บันทึกตรงเดือน</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">จัดเก็บเอกสาร</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">เอกสารจัดเก็บ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">รับใบแจ้งหนี้ / ใบวางบิลจาก Suppliers</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">ใบแจ้งหนี้</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">ตรวจเช็ค: ชื่อบริษัท, เลขผู้เสียภาษี, รายละเอียด, เงื่อนไขชำระ, มีหัก ณ ที่จ่ายไหม/เท่าไหร่</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">เอกสาร</td><td class="py-2 px-3 text-sm">เอกสารผ่านการตรวจ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">บันทึกค่าใช้จ่ายใน PEAK → รายจ่าย → บันทึกค่าใช้จ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">EXP (ร่าง)</td><td class="py-2 px-3 text-sm text-gray-500">ถ้าเคยบันทึก Supplier นี้แล้ว: ค้นชื่อ → คลิก EXP → ตัวเลือก → คัดลอก</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">ใส่รายละเอียด: วันที่ออก, วันที่ครบกำหนด, หมวดหมู่, รายละเอียด, จำนวน, ราคา, VAT7%, หัก ณ ที่จ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">EXP ครบถ้วน</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">ถ้ายังไม่ชำระ → คลิก "ยังไม่ชำระตั้งหนี้ไว้ก่อน" → กด "อนุมัติค่าใช้จ่าย"</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">EXP ตั้งหนี้แล้ว</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm"><strong>แนบไฟล์</strong> ใบแจ้งหนี้ / ใบเสนอราคา / ใบส่งของ / ใบกำกับภาษี / ใบเสร็จ / สลิปโอนเงิน ใน EXP</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">EXP มีเอกสารแนบ</td><td class="py-2 px-3 text-sm text-gray-500">ทำทุกครั้งที่บันทึก</td></tr>
           </tbody>
         </table>
       </div>
+
+      <!-- Sub-section 2: การจ่ายชำระหนี้ -->
+      <h3 class="text-sm font-semibold text-indigo-700 uppercase tracking-wide mb-2 mt-2">การจ่ายชำระหนี้</h3>
+      <div class="overflow-x-auto mb-5">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">ระบุรายละเอียดชำระ: วันที่, บัญชีที่จ่าย, จำนวน, อัตราภาษี, แบบ ภงด., มูลค่าหัก ณ ที่จ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ข้อมูลชำระครบ</td><td class="py-2 px-3 text-sm text-gray-500">บัญชีบริษัท หรือ เงินสดย่อยตามเคส</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">8</td><td class="py-2 px-3 text-sm">กด "อนุมัติค่าใช้จ่าย" → ตรวจสอบ "ข้อมูลการชำระ" (ยอดชำระ + ยอดหัก ณ ที่จ่าย ถูกต้อง?)</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">EXP อนุมัติแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">9</td><td class="py-2 px-3 text-sm">พิมพ์ EXP + PV + ใบหัก ณ ที่จ่าย (ถ้ามี) → แนบชุดจ่าย</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ชุดเอกสารจ่าย</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Sub-section 3: ออกหนังสือรับรองหัก ณ ที่จ่าย -->
+      <h3 class="text-sm font-semibold text-indigo-700 uppercase tracking-wide mb-2 mt-2">ออกหนังสือรับรองการหัก ณ ที่จ่าย (กรณีมี WHT)</h3>
+      <div class="overflow-x-auto mb-5">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">10</td><td class="py-2 px-3 text-sm">คลิก "พิมพ์ใบหัก ณ ที่จ่าย" → Save PDF</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ไฟล์ PDF ใบ WHT</td><td class="py-2 px-3 text-sm text-gray-500">แนบชุดจ่าย + นำส่ง Suppliers</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">11</td><td class="py-2 px-3 text-sm">จัดเก็บไฟล์ใบหัก ณ ที่จ่าย ลง Drive ตามบริษัทและเดือน</td><td class="py-2 px-3 text-sm text-blue-700">AP Officer</td><td class="py-2 px-3 text-sm text-gray-600">Drive</td><td class="py-2 px-3 text-sm">ไฟล์ PDF จัดเก็บ</td><td class="py-2 px-3 text-sm text-gray-500">AI → AI Accounting → AI Taxation → 50ทวิ → เดือน; MS → MAKESEND Accounting → MAKESEND Taxation → 50ทวิ → 50ทวิ2024 → เดือน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Reference table: เอกสารที่ต้องแนบใน EXP -->
+      <h3 class="text-sm font-semibold text-amber-700 uppercase tracking-wide mb-2 mt-2">เอกสารที่ต้องแนบใน EXP (ทุกครั้ง)</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border border-amber-200 rounded">
+          <thead>
+            <tr class="bg-amber-50 text-xs text-amber-800 uppercase tracking-wide">
+              <th class="py-2 px-3">เอกสาร</th>
+              <th class="py-2 px-3">กรณีที่ใช้</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-amber-100 hover:bg-amber-50"><td class="py-2 px-3 text-sm font-medium">ใบแจ้งหนี้ / ใบวางบิล</td><td class="py-2 px-3 text-sm text-gray-600">ทุกกรณี</td></tr>
+            <tr class="border-t border-amber-100 hover:bg-amber-50"><td class="py-2 px-3 text-sm font-medium">ใบเสนอราคา</td><td class="py-2 px-3 text-sm text-gray-600">กรณีมี</td></tr>
+            <tr class="border-t border-amber-100 hover:bg-amber-50"><td class="py-2 px-3 text-sm font-medium">ใบส่งของ</td><td class="py-2 px-3 text-sm text-gray-600">กรณีมี</td></tr>
+            <tr class="border-t border-amber-100 hover:bg-amber-50"><td class="py-2 px-3 text-sm font-medium">ใบกำกับภาษี</td><td class="py-2 px-3 text-sm text-gray-600">กรณีมี VAT</td></tr>
+            <tr class="border-t border-amber-100 hover:bg-amber-50"><td class="py-2 px-3 text-sm font-medium">ใบเสร็จรับเงิน</td><td class="py-2 px-3 text-sm text-gray-600">กรณีชำระแล้ว</td></tr>
+            <tr class="border-t border-amber-100 hover:bg-amber-50"><td class="py-2 px-3 text-sm font-medium">สลิปโอนเงิน</td><td class="py-2 px-3 text-sm text-gray-600">กรณีโอนชำระ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
 
     <!-- Stakeholders -->
