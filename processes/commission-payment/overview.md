@@ -33,17 +33,27 @@ updated: 2026-04-28
 Monthly — ทุกเดือน
 
 ## Inputs
-- ข้อมูล Commission ของแต่ละ Partner / MS Go (TBD — ดึงจากไหน)
-- อัตรา Commission ตามสัญญา
+- ไฟล์ 2 ไฟล์จากโอ๋: partners Accounting Report_MSGO_ตาราง + ตาราง_Dropoff
+- ยอด Order จาก Sheet MSGO_ID (รายการยกเลิก)
+- ยอดยืนยันจากสาขา (ผ่าน Line Official)
 
 ## Outputs
-- Payment Voucher Commission
-- เอกสารหัก ณ ที่จ่าย
-- Commission ที่จ่ายออก
+- Payment Voucher Commission MS Go (แยกตามสาขา)
+- ใบเบิกค่าคอมมิชชั่น
+- EXP + PV + ใบหัก ณ ที่จ่าย (ชุดจ่ายแต่ละสาขา)
+- ไฟล์จัดเก็บใน Drive: MAKESEND Accounting
+
+## Timing
+
+| กำหนด | รายการ |
+|---|---|
+| ภายในวันที่ 5 ของเดือน | ส่ง Payment Voucher ให้สาขา confirm ยอด |
+| ภายในวันที่ 15 ของเดือน | เบิกจ่าย Commission ให้สาขา |
 
 ## Cross-Department Links
-- Receives from: TBD (ข้อมูล Commission จากระบบใด)
-- Hands off to: Tax Filing (ภงด.3/53, รายงานภาษีซื้อ)
+- Receives from: โอ๋ (ไฟล์ Accounting Report MSGO)
+- Hands off to: Tax Filing (WHT ใน 50ทวิ), Bank Statement (JVFN)
 
 ## Pain Points
-- TBD
+- ต้องรอสาขา confirm ยอดผ่าน Line ก่อนจ่าย — บางสาขาช้า
+- ต้องนำข้อมูล Dropoff มาใส่แยกสาขา (false=Ambient, true=Chilled) ด้วยมือ
