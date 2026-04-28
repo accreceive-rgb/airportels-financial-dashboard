@@ -9,10 +9,10 @@
     "updatedAt": "2026-04-27"
   },
   "members": [
-    { "name": "คุณโฮ่", "role": "Director / CFO (TBD)", "responsibility": "อนุมัติขั้นสุดท้าย รับรายงานงบการเงิน" },
-    { "name": "Accounting Manager", "role": "Accounting Manager", "responsibility": "ตรวจสอบเอกสาร ภาษีขาย Omise Statement งบการเงิน บริหารทีม" },
-    { "name": "มอส", "role": "AP Officer (TBD)", "responsibility": "จัดทำใบเบิก Payment Voucher ภาษีซื้อ ภงด.3/53 Rider Payroll" },
-    { "name": "AR Officer", "role": "AR Officer", "responsibility": "รายได้สาขา Landlord Report Partner Invoice Petty Cash" },
+    { "name": "คุณโฮ่", "role": "CEO", "responsibility": "อนุมัติขั้นสุดท้าย รับรายงานงบการเงิน" },
+    { "name": "โอ๋", "role": "Accounting Manager", "responsibility": "ตรวจสอบเอกสาร ภาษีขาย Omise Statement งบการเงิน บริหารทีม" },
+    { "name": "มอส", "role": "AP Officer", "responsibility": "จัดทำใบเบิก Payment Voucher ภาษีซื้อ ภงด.3/53 Rider Payroll" },
+    { "name": "มุก", "role": "AR Officer", "responsibility": "รายได้สาขา Landlord Report Partner Invoice Petty Cash" },
     { "name": "Intern", "role": "Intern Accounting", "responsibility": "AI Income ฝากเงินสด RV/RE สรุปรายได้รายวัน" }
   ],
   "processes": [
