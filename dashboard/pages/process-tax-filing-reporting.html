@@ -186,6 +186,38 @@
       </div>
     </div>
 
+    <!-- Process Flowchart -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Process Flowchart</h2>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph TD
+  A([เริ่มต้นรายเดือน]) --> B{ประเภทภาษี}
+  B --> C[ภงด.3 / ภงด.53\nWHT Monthly Filing]
+  B --> D[ภาษีซื้อ\nInput VAT]
+  B --> E[ภาษีขาย\nOutput VAT]
+  C --> C1[GL Report + PEAK Tax\nตรวจยอดให้ตรงกัน]
+  C1 --> C2[Export .txt ผ่าน RD Prep\nสร้างไฟล์ .rdx]
+  C2 --> C3[e-Filing กรมสรรพากร]
+  C3 --> C4[ชำระภาษีออนไลน์]
+  C4 --> C5([WHT เสร็จ])
+  D --> D1[GL + PEAK Tax\nInput VAT]
+  D1 --> D2[กรอก Sheet ภาษีซื้อ]
+  D2 --> D3[คำนวณ x 0.65\nNon-deductible VAT]
+  D3 --> D4([Input VAT เสร็จ])
+  E --> E1[PEAK Tax Output VAT]
+  E1 --> E2[เพิ่ม JV Omise\n+ GL ภาษีขาย]
+  E2 --> E3[Reconcile vs AI Income]
+  E3 --> E4([Output VAT เสร็จ])
+  style A fill:#d1fae5,stroke:#059669
+  style B fill:#dbeafe,stroke:#2563eb
+  style C5 fill:#d1fae5,stroke:#059669
+  style D4 fill:#d1fae5,stroke:#059669
+  style E4 fill:#d1fae5,stroke:#059669
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
