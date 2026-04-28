@@ -12,6 +12,28 @@
 
 ---
 
+## 2026-04-28 — เพิ่ม Process ใหม่: Branch Opening Compliance (DBD / สรรพากร / ภพ.06)
+
+### What was done
+- สร้าง Process #14 สำหรับโอ๋ (Accounting Manager): งานจดทะเบียนและขออนุมัติด้านกฎหมายเมื่อเปิดสาขาใหม่
+- 3 ส่วนหลัก: DBD จดทะเบียนสาขา → กรมสรรพากร ภพ.09 → ภพ.06 คำขออนุมัติเครื่องบันทึกการเก็บเงิน
+- Trigger: เปิดสาขาใหม่ทุกครั้ง (Event-based)
+- สร้าง flowchart แสดง 3 ส่วน พร้อมสีแยก (น้ำเงิน/ม่วง/ส้ม)
+
+### Files changed
+- `processes/branch-opening-compliance/overview.md` — สร้างใหม่
+- `processes/branch-opening-compliance/steps.md` — สร้างใหม่ (9 steps TBD รอโอ๋เติม)
+- `dashboard/pages/process-branch-opening-compliance.html` — สร้างใหม่ พร้อม flowchart
+- `department/process-map.md` — เพิ่ม #14
+- `dashboard/index.html` — เพิ่ม DASHBOARD_DATA entry + activity log
+
+### Still TBD
+- รายละเอียดขั้นตอนทั้งหมด — รอโอ๋เติมว่าแต่ละ step ทำอะไรบ้าง
+- รายการเอกสารที่ต้องเตรียม
+- ระยะเวลาการรอการอนุมัติแต่ละขั้นตอน
+
+---
+
 ## 2026-04-28 — สร้าง Mermaid Flowcharts ครบทุกกระบวนการที่มีข้อมูล SOP
 
 ### What was done
