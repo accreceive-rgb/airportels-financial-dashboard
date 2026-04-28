@@ -1,11 +1,11 @@
 ---
 title: Petty Cash & Advance Management
 process_id: petty-cash-advance
-owner: AR Officer / AP Officer
+owner: AP Officer (มอส)
 category: Expense / AP
 status: active
 completeness: partial
-updated: 2026-04-27
+updated: 2026-04-28
 ---
 
 # Petty Cash & Advance — เงินสดย่อยและเงินทดรอง
