@@ -181,11 +181,66 @@
       </div>
     </div>
 
+    <!-- Process Flowchart: Daily -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-1">Process Flowchart — รายวัน</h2>
+      <p class="text-xs text-gray-400 mb-4">ทำทุกวัน สำหรับ TPY / ICS / MBK</p>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph TD
+  A([เริ่มทุกวัน]) --> B[ดึงยอดขาย จาก Sale Report Sheet แต่ละสาขา]
+  B --> C[บันทึกลง Sheet Commission branch No.Order/Quantity/Amount]
+  C --> D[Save PDF ตั้งชื่อ ปีเดือนวัน-สาขา]
+  D --> E{สาขา}
+  E -->|TPY| F[ส่ง Email cashier.pattaya@terminal21.co.th]
+  E -->|ICS| G[แปลงเป็น JPEG Upload บน website ICS]
+  E -->|MBK| H[กรอก Dashboard Postels แล้ว Submit website MBK]
+  F --> Z([รายวัน เสร็จ])
+  G --> Z
+  H --> Z
+  style A fill:#d1fae5,stroke:#059669
+  style Z fill:#d1fae5,stroke:#059669
+  style E fill:#fef3c7,stroke:#d97706
+        </div>
+      </div>
+    </div>
+
+    <!-- Process Flowchart: Monthly -->
+    <div class="bg-white rounded-lg shadow-sm p-5">
+      <h2 class="text-base font-semibold text-gray-800 mb-1">Process Flowchart — รายเดือน</h2>
+      <p class="text-xs text-gray-400 mb-4">ทำรายเดือน ทุก Landlord รวมถึง CNX special</p>
+      <div class="overflow-x-auto">
+        <div class="mermaid">
+graph TD
+  A([เริ่มรายเดือน]) --> B[ตรวจสอบ Sheet Income vs Business Performance]
+  B --> C[Copy ยอด Total ลง Form แต่ละสาขา T21/CTW/CSM/ICS/TPY/CPY]
+  C --> D[ส่ง Email รายเดือน ตาม Landlord Contact List]
+  D --> E{สาขา CNX}
+  E -->|ไม่มี CNX| Z([เสร็จ])
+  E -->|มี CNX| F[กรอก Form CNX Column T Row 20]
+  F --> G[Print Form ผู้บริหารเซ็น แล้ว Scan]
+  G --> H[ส่ง Email พร้อมไฟล์ Scan]
+  H --> I[ส่งเอกสารจริง ทางไปรษณีย์ ทชม.เชียงใหม่]
+  I --> Z
+  style A fill:#d1fae5,stroke:#059669
+  style Z fill:#d1fae5,stroke:#059669
+  style E fill:#fef3c7,stroke:#d97706
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <footer class="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-400 text-right">
     Airportels Financial — MADGA v1.3 &bull; <a href="../index.html" class="hover:underline">Back to Dashboard</a>
   </footer>
+
+  <script>
+    mermaid.initialize({ startOnLoad: false, theme: 'default', flowchart: { curve: 'basis' } });
+    document.addEventListener('DOMContentLoaded', function() {
+      mermaid.run({ querySelector: '.mermaid' });
+    });
+  </script>
 
 </body>
 </html>
