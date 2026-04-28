@@ -37,6 +37,80 @@
     <!-- Steps -->
     <div class="bg-white rounded-lg shadow-sm p-5">
       <h2 class="text-base font-semibold text-gray-800 mb-3">Steps</h2>
+
+      <!-- Daily AI Income -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-2 mb-2">ขั้นตอนบันทึก AI Income รายวัน</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">รับ Dairy Sale Report จาก Lark (Notification Sales Report - External)</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Lark → Notification Sales Report (External) → Dairy Sale Report</td><td class="py-2 px-3 text-sm">ข้อมูลยอดขายแต่ละสาขา</td><td class="py-2 px-3 text-sm text-gray-500">หลังปิดร้านทุกวัน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">บันทึก AI Income ลง Sheet Income แยกตามสาขา</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Google Sheet: AI Income (Tab เดือนปัจจุบัน)</td><td class="py-2 px-3 text-sm">Sheet Income อัปเดต</td><td class="py-2 px-3 text-sm text-gray-500">แยก Storage / Delivery / Silicone Wheel; แยก Cash / QR / Credit / Alipay / WeChat</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">สร้างโฟลเดอร์ payin วันที่ใน Drive → บันทึกสลิปจาก Line "AI Gang"</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Drive → New Folder ชื่อ "payin DD.MM.YY"</td><td class="py-2 px-3 text-sm">สลิปตามสาขา</td><td class="py-2 px-3 text-sm text-gray-500">ตั้งชื่อรูปตามชื่อสาขา เช่น CTW H 20.08.24</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">ตรวจสอบยอดเงินสด: สลิปฝากใน Lark vs AI Income Excel</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Lark / Excel</td><td class="py-2 px-3 text-sm">เครื่องหมายยืนยันสาขา</td><td class="py-2 px-3 text-sm text-gray-500">ถ้าสาขาไหนยังไม่มีรูปสลิป แจ้งฟีงได้เลย</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">สร้างใบเสร็จรับเงิน (RT/RE) ใน PEAK สำหรับแต่ละสาขา</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → รายรับ → ใบเสร็จ → สร้างหรือคัดลอกจากฉบับเก่า</td><td class="py-2 px-3 text-sm">RT/RE ในระบบ</td><td class="py-2 px-3 text-sm text-gray-500">เลือก: P00001 ฝากกระเป๋า / P00002 รับ-ส่งกระเป๋า / P00010 ล้อยางซิลิโคน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">ใส่ยอดเงินแยกตามประเภท → กดรับชำระ → เลือกช่องทางชำระ</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ใบเสร็จ (RT) อนุมัติแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">กดรับชำระ → ขั้นสูง ถ้าชำระหลายช่องทาง; ใส่ค่าธรรมเนียมธนาคาร (รหัส 530501) ถ้ามี</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">แนบ Payslip ใน PEAK → อนุมัติใบเสร็จ</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ใบเสร็จอนุมัติแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">แนบ Payslip จาก Line Group ทุกครั้ง</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">8</td><td class="py-2 px-3 text-sm">Print RT/RE → RV → Credit Advice (ถ้ามี)</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ชุดเอกสาร 1 ชุด</td><td class="py-2 px-3 text-sm text-gray-500">RV ต้อง Print แนบ Payslip (cash) ด้วย</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">9</td><td class="py-2 px-3 text-sm">บันทึกเลข RV ใน AI Statement (Column J = RV, Column K = สาขา+วันที่)</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Google Sheet: AI Statement</td><td class="py-2 px-3 text-sm">Statement อัปเดต</td><td class="py-2 px-3 text-sm text-gray-500">ดูวันที่จาก Column A, รายการจาก Column C</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">10</td><td class="py-2 px-3 text-sm">เรียงเอกสาร: RV + RT/RE + Credit Advice → เก็บแฟ้ม "ใบสำคัญรับ"</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">แฟ้มเอกสาร</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Walk-in -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">ใบเสร็จให้ลูกค้าทั่วไป (Walk-in ต้องการใบเสร็จเบิกบริษัท)</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">สร้างใบเสร็จ → เลือกชื่อลูกค้าทั่วไป</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK → รายรับ → ใบเสร็จ</td><td class="py-2 px-3 text-sm">RT</td><td class="py-2 px-3 text-sm text-gray-500">ขั้นตอนเดียวกับข้อ 5–10 ด้านบน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Partner Receipt -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">รับชำระจาก Partner (กรณีมีใบแจ้งหนี้เดิม)</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ไปที่ PEAK → รายรับ → ใบแจ้งหนี้ → กดรับชำระ</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ใบเสร็จ RV</td><td class="py-2 px-3 text-sm text-gray-500">ตรวจค่าธรรมเนียม / หัก ณ ที่จ่ายก่อนยืนยัน</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">แนบ Payslip → กดยืนยันใบเสร็จรับเงิน</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">ใบเสร็จอนุมัติแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">Print และเรียงเอกสาร → เก็บแฟ้ม</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">แฟ้มเอกสาร</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- E-TAX -->
+      <h3 class="text-sm font-semibold text-gray-700 mt-4 mb-2">Print E-TAX INVOICE FOR EWALLET</h3>
       <div class="overflow-x-auto">
         <table class="w-full text-left">
           <thead>
@@ -50,15 +124,8 @@
             </tr>
           </thead>
           <tbody>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">รับ Email รายงาน AI Income จากสาขา</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">Email</td><td class="py-2 px-3 text-sm">รายงาน AI Income</td><td class="py-2 px-3 text-sm text-gray-500">หลังปิดร้านทุกวัน</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">บันทึก AI Income เข้าระบบ</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">RV/RE</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">ตรวจสอบยอดฝากเงินสด vs Income</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">Sheet / PEAK</td><td class="py-2 px-3 text-sm">ผลตรวจสอบ</td><td class="py-2 px-3 text-sm text-gray-500">ต้องตรงกัน</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">แนบสลิปฝากเงินสดใน PEAK</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">สลิปแนบในระบบ</td><td class="py-2 px-3 text-sm text-gray-500">ทุกสาขา</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">Print Credit Advice บันทึกรายได้</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">Credit Advice</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">6</td><td class="py-2 px-3 text-sm">Print RE/RV</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">PEAK</td><td class="py-2 px-3 text-sm">เอกสาร RE/RV</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">7</td><td class="py-2 px-3 text-sm">บันทึก RV ใน Statement</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">Statement sheet</td><td class="py-2 px-3 text-sm">Statement อัปเดต</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">8</td><td class="py-2 px-3 text-sm">บันทึกรายได้แต่ละสาขาลง Sheet Income</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Sheet Income</td><td class="py-2 px-3 text-sm">Sheet อัปเดต</td><td class="py-2 px-3 text-sm text-gray-500">แยกตามสาขา</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">9</td><td class="py-2 px-3 text-sm">จัดเก็บเอกสาร</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">เอกสารจัดเก็บ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">เปิด Email → Click mail ขึ้นต้นด้วย "Fwd: E-TAX INVOICE FOR EWALLET"</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">Gmail: acc.intern2024@gmail.com</td><td class="py-2 px-3 text-sm">ไฟล์ PDF</td><td class="py-2 px-3 text-sm text-gray-500">รหัสเปิดไฟล์: 98687</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">Print ไฟล์ PDF</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">Printer</td><td class="py-2 px-3 text-sm">ใบ E-TAX</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
           </tbody>
         </table>
       </div>
