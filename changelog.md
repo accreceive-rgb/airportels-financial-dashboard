@@ -22,6 +22,10 @@
 - `dashboard/pages/process-tax-filing-reporting.html` — updated + 3 sections
 - `dashboard/pages/process-branch-income-recording.html` — updated + 4 sections
 - `dashboard/index.html` — updatedAt + activity log
+- `processes/expense-reimbursement/steps.md` — เพิ่ม 3 sub-sections (ตั้งหนี้ 6 ขั้น, ชำระหนี้ 3 ขั้น, WHT 2 ขั้น) + ตารางอ้างอิงเอกสารแนบ
+- `processes/petty-cash-advance/steps.md` — เพิ่ม 3 sub-sections (ใช้เงินสดย่อย, เคลีย 7 วัน 5 ขั้น, จัดซื้อ) + ตารางเอกสารตามประเภท
+- `dashboard/pages/process-expense-reimbursement.html` — แทน 8 generic rows ด้วย 3 sub-sections + reference table เอกสารแนบ
+- `dashboard/pages/process-petty-cash-advance.html` — แทน 7 generic rows ด้วย 3 sub-sections + reference table ตามประเภท
 
 ### Still TBD
 - Landlord Revenue Reporting: ยังไม่ได้อัพเดท monthly report flow
