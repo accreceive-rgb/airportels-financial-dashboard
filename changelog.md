@@ -1,3 +1,44 @@
+## 2026-04-28 — อัพเดทกระบวนการจาก SOP จริง (AP / AR / Internship)
+
+### What was done
+- อ่านและวิเคราะห์ 3 ไฟล์ SOP: Accounting Officer AP SOP (มอส), Accounts Receivable SOP (มุก), Internship SOP
+- อัพเดท 4 กระบวนการหลักด้วยข้อมูลจาก SOP จริง:
+  - **Rider Payroll**: เพิ่ม FT (คำนวณยอด AI จาก Shipment Report, JVFN, รหัสบัญชี) + PT (CSH009, หัก/ไม่หัก WHT 3%)
+  - **Partner Billing & AR**: เพิ่ม Partner list 15+ ราย พร้อมรอบวางบิล, credit term, email, ช่องทางดึง Order
+  - **Tax Filing**: เพิ่มขั้นตอน ภงด.3/53, ภาษีซื้อ, ภาษีขาย, RD Prep, e-Filing แบบ step-by-step
+  - **Branch Income Recording**: เพิ่ม Lark → Sheet Income → PEAK (RT/RV/RE) → AI Statement flow จริง
+- อัพเดท dashboard sub-pages ทั้ง 4 หน้า
+- อัพเดท dashboard/index.html activity log
+
+### Files changed
+- `processes/rider-payroll/steps.md` — ขยายจาก 5 rows เป็น 20+ rows จริง
+- `processes/rider-payroll/overview.md` — เพิ่ม tools, timing, pain points จาก SOP
+- `processes/partner-billing-ar/steps.md` — เพิ่ม Partner list + billing schedule
+- `processes/partner-billing-ar/overview.md` — เพิ่ม timing table ตาม billing cycle
+- `processes/tax-filing-reporting/steps.md` — เพิ่ม 3 sub-process (ภงด.3/53, ซื้อ, ขาย)
+- `processes/branch-income-recording/steps.md` — เพิ่ม Lark flow + 4 sub-sections
+- `dashboard/pages/process-rider-payroll.html` — updated step tables
+- `dashboard/pages/process-partner-billing-ar.html` — updated + partner tables
+- `dashboard/pages/process-tax-filing-reporting.html` — updated + 3 sections
+- `dashboard/pages/process-branch-income-recording.html` — updated + 4 sections
+- `dashboard/index.html` — updatedAt + activity log
+
+### Still TBD
+- Landlord Revenue Reporting: ยังไม่ได้อัพเดท monthly report flow
+- Online Payment Recording: รายละเอียด Paypal / Omise flow จาก AR SOP
+- Commission Payment: รายละเอียด MS Go Payment Voucher จาก AP SOP
+- Bank Statement Reconciliation: รายละเอียด AI Statement reconcile flow
+- Fixed Assets: stub — ยังไม่มีข้อมูลจาก SOP
+
+### Suggested next steps
+- อัพเดท Online Payment Recording (Omise/PayPal) จาก AR SOP
+- อัพเดท Commission Payment (MS Go) จาก AP SOP
+- อัพเดท Landlord Revenue Reporting (monthly + branch contacts)
+- สร้าง Mermaid flowchart สำหรับ Partner Billing & AR
+- ตรวจสอบกับมุกและมอสว่ากระบวนการที่จดไว้ตรงกับที่ทำจริงไหม
+
+---
+
 ## 2026-04-27 — Process mapping complete
 
 ### What was done
