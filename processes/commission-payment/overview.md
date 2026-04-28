@@ -1,11 +1,11 @@
 ---
 title: Commission Payment (MS Go / Partner)
 process_id: commission-payment
-owner: AP Officer
+owner: AP Officer (มอส)
 category: Expense / AP
 status: active
 completeness: partial
-updated: 2026-04-27
+updated: 2026-04-28
 ---
 
 # Commission Payment — จ่าย Commission MS Go / Partner
