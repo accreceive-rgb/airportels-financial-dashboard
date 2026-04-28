@@ -37,6 +37,80 @@
     <!-- Steps -->
     <div class="bg-white rounded-lg shadow-sm p-5">
       <h2 class="text-base font-semibold text-gray-800 mb-3">Steps</h2>
+
+      <!-- Daily Reports -->
+      <h3 class="text-sm font-semibold text-gray-700 mb-2 mt-1 px-1 border-l-4 border-blue-400 pl-3">รายงานรายวัน (สาขา TPY, ICS, MBK, PNX)</h3>
+      <div class="overflow-x-auto mb-5">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ดึงข้อมูลยอดขายจาก Sale Report Sheet ของแต่ละสาขา (TPY/ICS/PNX)</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Google Sheets: TPY / ICS Sale Report</td><td class="py-2 px-3 text-sm">ข้อมูลยอดขายรายวัน</td><td class="py-2 px-3 text-sm text-gray-500">Col B: Order, F: Normal luggage, G: Special, N: Storage, O: Delivery</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">บันทึกข้อมูลลงใน Sheet Commission branch (ช่อง No.Order, Quantity, Amount)</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Sheet: Commission branch</td><td class="py-2 px-3 text-sm">ตาราง Summary</td><td class="py-2 px-3 text-sm text-gray-500">แยก DPS / Luggage ให้ถูกต้อง</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">Save PDF ตั้งชื่อ: ปีเดือนวัน-ชื่อสาขา เช่น 2024-08-12-TPY</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">—</td><td class="py-2 px-3 text-sm">ไฟล์ PDF</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4A</td><td class="py-2 px-3 text-sm"><strong>TPY</strong> — ส่ง Email Report</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Gmail: Sudarat@airportels.co</td><td class="py-2 px-3 text-sm">Email ส่งแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">To: cashier.pattaya@terminal21.co.th; CC: accountingpayment@airportels.asia</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4B</td><td class="py-2 px-3 text-sm"><strong>ICS</strong> — Upload Report + แนบไฟล์ JPEG ใน website</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">siamsmartcollection.com</td><td class="py-2 px-3 text-sm">ส่งรายงานแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">แปลงเป็น JPEG ก่อนแนบ</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4C</td><td class="py-2 px-3 text-sm"><strong>MBK</strong> — เปิด Dashboard Postels → Land Lord Daily Report → เลือกวันที่/MBK/View</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">postels.airportels.asia/admin/login</td><td class="py-2 px-3 text-sm">ข้อมูล MBK</td><td class="py-2 px-3 text-sm text-gray-500">กด F12 ถ้าต้องแก้ไข</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm"><strong>MBK</strong> — บันทึก PDF → Submit ยอดขายใน website MBK</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">gpcollection.mbkgroup.co.th/DailyData/InputDailySale.php</td><td class="py-2 px-3 text-sm">ส่งรายงานแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">รายงานได้แค่ 3 วันย้อนหลัง; เกินกำหนดส่ง Email: chalermpoon@mbkgroup.co.th</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Monthly Reports -->
+      <h3 class="text-sm font-semibold text-gray-700 mb-2 mt-1 px-1 border-l-4 border-green-400 pl-3">รายงานรายเดือน (สาขาทั้งหมด)</h3>
+      <div class="overflow-x-auto mb-5">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">#</th>
+              <th class="py-2 px-3">Step</th>
+              <th class="py-2 px-3">Actor</th>
+              <th class="py-2 px-3">Tool</th>
+              <th class="py-2 px-3">Output</th>
+              <th class="py-2 px-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">ตรวจสอบรายได้ใน Sheet Income ตรงกับ Sheet Business Performance</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Google Sheets</td><td class="py-2 px-3 text-sm">ยอดตรงกัน 2 Sheet</td><td class="py-2 px-3 text-sm text-gray-500">ทำก่อนส่ง Landlord ทุกครั้ง</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">Copy ยอด Total (ยอดขายรวมแต่ละวัน) ใส่ใน Form Sheet ตามสาขา</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Sheet: Commission branch → Form</td><td class="py-2 px-3 text-sm">Form ครบทุกสาขา</td><td class="py-2 px-3 text-sm text-gray-500">มี Form เฉพาะ T21, CTWHug, CTWGroove, CSM, ICS, TPY, CPY</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">ส่ง Email รายงานรายเดือนตาม Landlord Contact List ด้านล่าง</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Gmail</td><td class="py-2 px-3 text-sm">Email ส่งแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">CC: accountingpayment@airportels.asia ทุกราย</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Landlord Contact List -->
+      <h3 class="text-sm font-semibold text-gray-700 mb-2 mt-1 px-1 border-l-4 border-yellow-400 pl-3">Landlord Contact List (รายเดือน)</h3>
+      <div class="overflow-x-auto mb-5">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-2 px-3">สาขา</th>
+              <th class="py-2 px-3">To (Email)</th>
+              <th class="py-2 px-3">CC</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">T21</td><td class="py-2 px-3 text-sm text-gray-600">kanokphorn@terminal21.co.th</td><td class="py-2 px-3 text-sm text-gray-500">acc_receive@airportels.co, accountingpayment@airportels.asia, jinaron@terminal21.co.th</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">CTWHug / CTWGroove</td><td class="py-2 px-3 text-sm text-gray-600">SoPatcharee@centralpattana.co.th, KhaKanjana@centralpattana.co.th, thrasamee@centralpattana.co.th, FinanceCenter4.Consign@centralpattana.co.th</td><td class="py-2 px-3 text-sm text-gray-500">acc_receive@airportels.co, accountingpayment@airportels.asia, anan@airportels.asia</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">CSM</td><td class="py-2 px-3 text-sm text-gray-600">FinanceCenter4.Consign@centralpattana.co.th</td><td class="py-2 px-3 text-sm text-gray-500">tameena@centralpattana.co.th, accountingpayment@airportels.asia, acc_receive@airportels.co</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">ICS</td><td class="py-2 px-3 text-sm text-gray-600">tarnwimon.b@siampiwat.com</td><td class="py-2 px-3 text-sm text-gray-500">arunrat.t@siampiwat.com, acc_receive@airportels.co</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">TPY</td><td class="py-2 px-3 text-sm text-gray-600">cashier.pattaya@terminal21.co.th</td><td class="py-2 px-3 text-sm text-gray-500">accountingpayment@airportels.asia</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">CPY</td><td class="py-2 px-3 text-sm text-gray-600">FinanceCenter4.Consign@centralpattana.co.th</td><td class="py-2 px-3 text-sm text-gray-500">tameena@centralpattana.co.th, accountingpayment@airportels.asia, acc_receive@airportels.co</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-sm font-medium">CNX</td><td class="py-2 px-3 text-sm text-gray-600">supreeya.k@airportthai.co.th</td><td class="py-2 px-3 text-sm text-gray-500">accountingpayment@airportels.asia, anan@airportels.asia, acc_receive@airportels.co, pimnara.j@airportthai.co.th</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- CNX Special Process -->
+      <h3 class="text-sm font-semibold text-gray-700 mb-2 mt-1 px-1 border-l-4 border-red-400 pl-3">CNX — ขั้นตอนพิเศษ (ส่งเอกสารทางไปรษณีย์)</h3>
       <div class="overflow-x-auto">
         <table class="w-full text-left">
           <thead>
@@ -50,11 +124,10 @@
             </tr>
           </thead>
           <tbody>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">รวบรวมข้อมูลรายได้รายวัน</td><td class="py-2 px-3 text-sm text-blue-700">Intern / AR</td><td class="py-2 px-3 text-sm text-gray-600">Sheet Income</td><td class="py-2 px-3 text-sm">สรุปรายได้รายวัน</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">จัดทำสรุปรายได้รายวัน</td><td class="py-2 px-3 text-sm text-blue-700">Intern</td><td class="py-2 px-3 text-sm text-gray-600">TBD</td><td class="py-2 px-3 text-sm">Report รายวัน</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">ส่ง Email รายงานรายวันให้ Landlord</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Email</td><td class="py-2 px-3 text-sm">Email ส่งแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">จัดทำรายงานรายเดือน</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Sheet Income</td><td class="py-2 px-3 text-sm">Report รายเดือน</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
-              <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">5</td><td class="py-2 px-3 text-sm">ส่ง Email รายงานรายเดือนให้ Landlord</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Email</td><td class="py-2 px-3 text-sm">Email ส่งแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">1</td><td class="py-2 px-3 text-sm">นำรายได้ Total ทั้งเดือนวางใน Column T Row 20 ของ Form CNX</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Google Sheets</td><td class="py-2 px-3 text-sm">Form CNX ครบ</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">2</td><td class="py-2 px-3 text-sm">Print Form → ผู้บริหารเซ็น → Scan เก็บไฟล์ใน Drive</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Printer / Drive</td><td class="py-2 px-3 text-sm">ไฟล์ Scan</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">3</td><td class="py-2 px-3 text-sm">ส่ง Email พร้อมไฟล์ Scan</td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">Gmail</td><td class="py-2 px-3 text-sm">Email ส่งแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">—</td></tr>
+            <tr class="border-t hover:bg-gray-50"><td class="py-2 px-3 text-gray-500 text-sm">4</td><td class="py-2 px-3 text-sm">ส่งรายงานฉบับจริงที่ผู้บริหารเซ็น <strong>ทางไปรษณีย์</strong></td><td class="py-2 px-3 text-sm text-blue-700">AR Officer</td><td class="py-2 px-3 text-sm text-gray-600">ไปรษณีย์</td><td class="py-2 px-3 text-sm">เอกสารส่งแล้ว</td><td class="py-2 px-3 text-sm text-gray-500">ผู้รับ: คุณเนม สุปรียา — สวนพาณิชย์และแผนงาน ฝ่ายอำนวยการท่าอากาศยานเชียงใหม่ เลขที่ 60 ถนนมหิดล ต.สุเทพ อ.เมือง จ.เชียงใหม่ 50200 โทร 089-9999219</td></tr>
           </tbody>
         </table>
       </div>
