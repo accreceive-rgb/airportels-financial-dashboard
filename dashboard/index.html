@@ -219,7 +219,22 @@
             { num: 8, name: "บันทึกรายได้แต่ละสาขาลง Sheet Income", actor: "AR Officer", tool: "Sheet Income", output: "Sheet อัปเดต", notes: "แยกตามสาขา" },
             { num: 9, name: "จัดเก็บเอกสาร", actor: "Intern", tool: "—", output: "เอกสารจัดเก็บ", notes: "" }
           ],
-          diagrams: [{ type: "flowchart", title: "AI Income Daily Flow", description: "Lark → Sheet Income → PEAK (RT/RE/RV) → AI Statement → เก็บแฟ้ม" }],
+          diagrams: [{ type: "flowchart", title: "AI Income Daily Flow", description: "Lark → Sheet Income → PEAK (RT/RE/RV) → AI Statement → เก็บแฟ้ม", mermaid: `graph LR
+  A([Lark Notification]) --> B[กรอก Sheet Income\nStorage / Delivery / ซิลิโคน\nCash / QR / Credit]
+  B --> C[Save Payslip ใน Drive\nโฟลเดอร์ pay-in]
+  C --> D[ตรวจสอบยอด\nvs Lark]
+  D --> E{ประเภทรายได้}
+  E -->|Storage| F[RT ใน PEAK\nP00001]
+  E -->|Delivery| G[RE ใน PEAK\nP00002]
+  E -->|ซิลิโคน / อื่นๆ| H[RV ใน PEAK\nP00010]
+  F --> I[บันทึก AI Statement\nCol J = เลข RV\nCol K = สาขา + วันที่]
+  G --> I
+  H --> I
+  I --> J[พิมพ์ RT/RV\n+ Credit Advice]
+  J --> K([เก็บแฟ้มใบสำคัญรับ])
+  style A fill:#d1fae5,stroke:#059669
+  style K fill:#d1fae5,stroke:#059669
+  style E fill:#fef3c7,stroke:#d97706` }],
           subPage: "pages/process-branch-income-recording.html"
         },
         {
