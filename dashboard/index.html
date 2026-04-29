@@ -544,7 +544,25 @@
             { num: 3, name: "บันทึกบัญชีค่าจ้างเข้าระบบ", actor: "AP Officer / Intern", tool: "PEAK", output: "รายการบัญชี", notes: "" },
             { num: 4, name: "จ่ายค่าจ้าง Rider", actor: "TBD", tool: "TBD", output: "—", notes: "TBD — ช่องทาง" }
           ],
-          diagrams: [{ type: "flowchart", title: "Rider Payroll Flow (FT/PT)", description: "FT: Shipment Report → JVFN → EXP → WHT | PT: Statement → JVFN → EXP (หัก/ไม่หัก)" }],
+          diagrams: [{ type: "flowchart", title: "Rider Payroll Flow (FT/PT)", description: "FT: Shipment Report → JVFN → EXP → WHT | PT: Statement → JVFN → EXP (หัก/ไม่หัก)", mermaid: `graph TD
+  A([เริ่ม]) --> B{ประเภท Rider}
+  B -->|Full-time| C[คำนวณยอด AI\nจาก Shipment Report]
+  B -->|Part-time| D[ดู Statement\nตรวจรายการโอน]
+  C --> E[JVFN พักที่\nเงินสด-อนวัช]
+  D --> F[JVFN พักที่\nอนวัช-Riders PT]
+  E --> G[EXP ใน PEAK\nรหัส 510107 WHT 3%]
+  F --> H{มี WHT}
+  H -->|ไม่หัก| I[EXP ในนามอนวัช\nCSH009]
+  H -->|หัก 3%| J[EXP ชื่อ Rider\nออกใบ WHT]
+  G --> K[พิมพ์ EXP+PV+WHT\nส่งโอ๋ตรวจ]
+  I --> L[พิมพ์เอกสาร\nเก็บ Drive]
+  J --> L
+  K --> M([เสร็จ])
+  L --> M
+  style A fill:#d1fae5,stroke:#059669
+  style M fill:#d1fae5,stroke:#059669
+  style B fill:#dbeafe,stroke:#2563eb
+  style H fill:#fef3c7,stroke:#d97706` }],
           subPage: "pages/process-rider-payroll.html"
         },
         {
