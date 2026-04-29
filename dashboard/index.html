@@ -775,7 +775,26 @@
             { num: 11, name: "คุณพอร์ชตรวจเช็ค ภงด.51 ก่อนยื่น", actor: "คุณพอร์ช", tool: "เอกสาร", output: "ภงด.51 ผ่านตรวจแล้ว", notes: "ก่อนยื่น RD" },
             { num: 12, name: "ยื่น ภงด.51 → กรมสรรพากร", actor: "โอ๋", tool: "ระบบ RD", output: "ภงด.51 ยื่นแล้ว", notes: "ภายใน ส.ค. (ออนไลน์ถึง 8 ก.ย.)" }
           ],
-          diagrams: [{ type: "flowchart", title: "Annual Close Flow", subPage: "pages/process-annual-financial-close.html" }],
+          diagrams: [{ type: "flowchart", title: "Annual Close Flow", subPage: "pages/process-annual-financial-close.html", mermaid: `graph TD
+  A([สิ้นรอบบัญชี 31 ธ.ค.]) --> B[กระทบยอด Audit Request vs GL ใน PEAK]
+  B --> C[จัดเตรียมเอกสาร ตาม Audit Request]
+  C --> D[คุณพอร์ช ออก Audit Report]
+  D --> E[ลงหนังสือบิดเบิก เชิงประชุมผู้ถือหุ้น ล่วงหน้า 7 วัน]
+  E --> F[ประชุมสามัญผู้ถือหุ้น ภายใน 120 วัน]
+  F --> G[นำส่ง บอ.5 ภายใน 14 วัน หลังประชุม]
+  G --> H[คุณพอร์ชตรวจ ก่อนยื่น DBD]
+  H --> I[ยื่นงบการเงิน DBD ภายใน 1 เดือน หลังประชุม]
+  I --> J[คุณพอร์ชตรวจ ภงด.50]
+  J --> K[ยื่น ภงด.50 RD ภายใน 150 วัน]
+  K --> L[คุณพอร์ชตรวจ ภงด.51]
+  L --> M[ยื่น ภงด.51 RD ภายในสิงหาคม]
+  M --> N([เสร็จ])
+  style A fill:#d1fae5,stroke:#059669
+  style N fill:#d1fae5,stroke:#059669
+  style D fill:#e0e7ff,stroke:#4f46e5
+  style H fill:#e0e7ff,stroke:#4f46e5
+  style J fill:#e0e7ff,stroke:#4f46e5
+  style L fill:#e0e7ff,stroke:#4f46e5` }],
           subPage: "pages/process-annual-financial-close.html"
         },
         {
