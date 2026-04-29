@@ -1,3 +1,25 @@
+## 2026-04-29 — เพิ่ม Process ใหม่: Branch Closing Compliance (DBD / สรรพากร / ภพ.06)
+
+### What was done
+- สร้าง Process #15 สำหรับโอ๋ (Accounting Manager): งานถอนทะเบียนและแจ้งยกเลิกด้านกฎหมายเมื่อปิดสาขา
+- 3 ส่วนหลัก: DBD แจ้งปิดสาขา → กรมสรรพากร ยกเลิกสถานประกอบการ → ภพ.06 ยกเลิกเครื่องบันทึกการเก็บเงิน
+- Trigger: ปิดสาขาทุกครั้ง (Event-based)
+- สร้าง flowchart แสดง 3 ส่วน พร้อมสีแยก (น้ำเงิน/ม่วง/ส้ม) + start สีแดง / end สีเขียว
+
+### Files changed
+- `processes/branch-closing-compliance/overview.md` — สร้างใหม่
+- `processes/branch-closing-compliance/steps.md` — สร้างใหม่ (8 steps TBD รอโอ๋เติม)
+- `dashboard/pages/process-branch-closing-compliance.html` — สร้างใหม่ พร้อม flowchart
+- `department/process-map.md` — เพิ่ม #15 (total: 15)
+- `dashboard/index.html` — เพิ่ม DASHBOARD_DATA entry + activity log
+
+### Still TBD
+- รายละเอียดขั้นตอนทั้งหมด — รอโอ๋เติม
+- รายการเอกสารที่ต้องเตรียม
+- ระยะเวลาการรอการยืนยันแต่ละขั้นตอน
+
+---
+
 ## 2026-04-28 — แก้ไข Owner เงินสดย่อย: มอส (AP Officer) ดูแลแทน AR Officer
 
 ### What was done
