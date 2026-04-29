@@ -410,7 +410,22 @@
             { num: 4, name: "บันทึก RV ใน Statement", actor: "Intern", tool: "Statement", output: "Statement อัปเดต", notes: "" },
             { num: 5, name: "บันทึกบัญชีรายการที่พบ", actor: "Accounting Manager", tool: "PEAK", output: "รายการบัญชี", notes: "กรณียุ่งยาก" }
           ],
-          diagrams: [{ type: "flowchart", title: "Bank Statement Reconciliation (AR + AP)", description: "AR รายวัน: Download → Sheet → Reconcile RV | AP รายเดือน: Column E → แยกประเภท → EXP → กระทบยอด" }],
+          diagrams: [{ type: "flowchart", title: "Bank Statement Reconciliation (AR + AP)", description: "AR รายวัน: Download → Sheet → Reconcile RV | AP รายเดือน: Column E → แยกประเภท → EXP → กระทบยอด", mermaid: `graph TD
+  A([เริ่ม]) --> B{AR หรือ AP}
+  B -->|AR รายวัน| C[Download Statement Kbank Website]
+  B -->|AP รายเดือน| G[เปิด Statement ดู Column E ถอนเงิน]
+  C --> D[วางข้อมูลใน Sheet AI_Statement]
+  D --> E[Reconcile RV vs Statement Col J=RV Col K=สาขา+วันที่]
+  E --> F[ตรวจ Col C+F ครบถ้วน]
+  F --> ZAR([AR เสร็จ])
+  G --> H[แยกประเภท บัญชีแจ้งเบิก vs เบิกตรงคุณโฮ่]
+  H --> I[ติดตามเอกสาร บันทึก EXP ตรงเดือน]
+  I --> J[กระทบยอดถอน ทุกรายการครบ]
+  J --> ZAP([AP เสร็จ])
+  style A fill:#d1fae5,stroke:#059669
+  style ZAR fill:#d1fae5,stroke:#059669
+  style ZAP fill:#d1fae5,stroke:#059669
+  style B fill:#dbeafe,stroke:#2563eb` }],
           subPage: "pages/process-bank-statement-reconciliation.html"
         },
         {
