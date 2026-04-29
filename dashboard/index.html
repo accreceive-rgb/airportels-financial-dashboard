@@ -366,7 +366,21 @@
             { num: 6, name: "ติดตามเอกสารหัก ณ ที่จ่าย", actor: "AR Officer", tool: "—", output: "เอกสาร ภงด.", notes: "" },
             { num: 7, name: "จัดเก็บเอกสาร", actor: "AR Officer", tool: "—", output: "เอกสารจัดเก็บ", notes: "" }
           ],
-          diagrams: [{ type: "flowchart", title: "Partner Billing & AR Flow", description: "Order Report → ตรวจ Sheet → Invoice → Email → รอ Credit Term → RV → WHT" }],
+          diagrams: [{ type: "flowchart", title: "Partner Billing & AR Flow", description: "Order Report → ตรวจ Sheet → Invoice → Email → รอ Credit Term → RV → WHT", mermaid: `graph TD
+  A([รับ Order Report จาก Partner]) --> B[ตรวจสอบ Sheet Orders\nVlookup Booking Ref]
+  B --> C{ยอดตรงกัน}
+  C -->|ไม่ตรง| D[แจ้ง Guest Service\nให้ตรวจสอบ]
+  D --> B
+  C -->|ตรง| E[ออก Invoice ใน PEAK\nแบ่ง ฝาก / ส่ง / ล้อยาง]
+  E --> F[Email วางบิลให้ Partner]
+  F --> G[รอ Credit Term]
+  G --> H[รับชำระ → ออก RV ใน PEAK]
+  H --> I[พิมพ์ RV + RT/RE + Credit Advice\nเก็บแฟ้มใบสำคัญรับ]
+  I --> J[ติดตามเอกสาร WHT จาก Partner]
+  J --> K([เสร็จ])
+  style A fill:#d1fae5,stroke:#059669
+  style K fill:#d1fae5,stroke:#059669
+  style C fill:#fef3c7,stroke:#d97706` }],
           subPage: "pages/process-partner-billing-ar.html"
         },
         {
