@@ -25,3 +25,4 @@ total: 15
 | 12 | [Monthly Financial Close](../processes/monthly-financial-close/overview.md) | Accounting Manager | Reporting | Active | Partial |
 | 13 | [Annual Financial Close & Compliance](../processes/annual-financial-close/overview.md) | Accounting Manager (โอ๋) | Compliance / Reporting | Active | Partial |
 | 14 | [Branch Opening — Compliance Registration (DBD / สรรพากร / ภพ.06)](../processes/branch-opening-compliance/overview.md) | Accounting Manager (โอ๋) | Compliance | Active | Stub |
+| 15 | [Branch Closing — Compliance De-registration (DBD / สรรพากร / ภพ.06)](../processes/branch-closing-compliance/overview.md) | Accounting Manager (โอ๋) | Compliance | Active | Stub |
