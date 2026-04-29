@@ -454,7 +454,23 @@
             { num: 4, name: "ตรวจสอบเอกสารที่บันทึกแล้ว", actor: "Accounting Manager", tool: "PEAK", output: "ผลตรวจสอบ", notes: "" },
             { num: 5, name: "จ่ายเงินสดย่อย", actor: "AR Officer", tool: "เงินสด", output: "เงินสดจ่ายออก", notes: "" }
           ],
-          diagrams: [{ type: "flowchart", title: "Petty Cash Flow", description: "ตรวจวงเงิน ≤2,500 → จ่ายสด → เก็บเอกสาร 7 วัน → Sheet เคลีย → PEAK EXP → เติมเงิน 10,000" }],
+          diagrams: [{ type: "flowchart", title: "Petty Cash Flow", description: "ตรวจวงเงิน ≤2,500 → จ่ายสด → เก็บเอกสาร 7 วัน → Sheet เคลีย → PEAK EXP → เติมเงิน 10,000", mermaid: `graph TD
+  A([มีค่าใช้จ่าย]) --> B{วงเงิน}
+  B -->|เกิน 2,500 บาท| C[เบิกตรงกับผู้บริหาร]
+  B -->|ไม่เกิน 2,500 บาท| D[จ่ายเงินสดย่อย รับเอกสาร]
+  D --> E[รวบรวมเอกสาร ทุก 7 วัน]
+  E --> F[จัดเรียงตามประเภท พร้อมลายเซ็นผู้อนุมัติ]
+  F --> G[กรอก Sheet เคลียเงินสดย่อย]
+  G --> H[PEAK บันทึก EXP ตรงเดือนที่จ่าย]
+  H --> I{วงเงินสดย่อย ใกล้หมด}
+  I -->|ไม่| Z([เสร็จ])
+  I -->|ใช่| J[เติมเงินสดย่อย ให้ครบ 10,000 บาท]
+  J --> Z
+  C --> Z
+  style A fill:#d1fae5,stroke:#059669
+  style Z fill:#d1fae5,stroke:#059669
+  style B fill:#fef3c7,stroke:#d97706
+  style I fill:#fef3c7,stroke:#d97706` }],
           subPage: "pages/process-petty-cash-advance.html"
         },
         {
