@@ -838,7 +838,25 @@
             { num: 8, name: "TBD — รอเจ้าหน้าที่ตรวจสอบสถานที่", actor: "โอ๋", tool: "—", output: "ผลการตรวจ", notes: "TBD — ระยะเวลารอ" },
             { num: 9, name: "TBD — รับหนังสืออนุมัติ ภพ.06", actor: "โอ๋", tool: "—", output: "หนังสืออนุมัติ ภพ.06", notes: "เครื่องออกใบกำกับภาษีได้หลังอนุมัติ" }
           ],
-          diagrams: [{ type: "flowchart", title: "Branch Opening Compliance Flow (3 ส่วน)", description: "DBD จดทะเบียนสาขา → กรมสรรพากร ภพ.09 → ภพ.06 คำขออนุมัติเครื่อง ECR/POS" }],
+          diagrams: [{ type: "flowchart", title: "Branch Opening Compliance Flow (3 ส่วน)", description: "DBD จดทะเบียนสาขา → กรมสรรพากร ภพ.09 → ภพ.06 คำขออนุมัติเครื่อง ECR/POS", mermaid: `graph TD
+  A([เกิดสาขาใหม่]) --> B[ส่วนที่ 1 — DBD จดทะเบียนสาขา]
+  B --> B1[TBD เตรียมเอกสาร]
+  B1 --> B2[ยื่น DBD e-Filing]
+  B2 --> B3[รอการอนุมัติ]
+  B3 --> C[ส่วนที่ 2 — กรมสรรพากร เพิ่มสถานประกอบการ VAT]
+  C --> C1[TBD ยื่น ภพ.09]
+  C1 --> C2[รับ ภ.พ.20 สาขาใหม่]
+  C2 --> D[ส่วนที่ 3 — ภพ.06 คำขออนุมัติเครื่องบันทึกการเก็บเงิน]
+  D --> D1[TBD เตรียมเอกสาร ภพ.06]
+  D1 --> D2[ยื่นที่สรรพากรพื้นที่]
+  D2 --> D3[รอเจ้าหน้าที่ตรวจสอบสถานที่]
+  D3 --> D4[รับหนังสืออนุมัติ ภพ.06]
+  D4 --> Z([สาขาพร้อมออกใบกำกับภาษี])
+  style A fill:#d1fae5,stroke:#059669
+  style Z fill:#d1fae5,stroke:#059669
+  style B fill:#dbeafe,stroke:#2563eb
+  style C fill:#ede9fe,stroke:#7c3aed
+  style D fill:#fed7aa,stroke:#ea580c` }],
           subPage: "pages/process-branch-opening-compliance.html"
         },
         {
