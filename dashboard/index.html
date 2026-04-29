@@ -501,7 +501,22 @@
             { num: 6, name: "บันทึกบัญชีค่าใช้จ่าย", actor: "AP Officer", tool: "PEAK", output: "รายการบัญชี", notes: "บันทึกตรงเดือน" },
             { num: 7, name: "จัดเก็บเอกสาร", actor: "AP Officer", tool: "—", output: "เอกสารจัดเก็บ", notes: "" }
           ],
-          diagrams: [{ type: "flowchart", title: "Expense Reimbursement Flow", description: "รับใบแจ้งหนี้ → ตรวจเช็ค → EXP PEAK → ตั้งหนี้+แนบเอกสาร → ชำระ → WHT (ถ้ามี) → Drive" }],
+          diagrams: [{ type: "flowchart", title: "Expense Reimbursement Flow", description: "รับใบแจ้งหนี้ → ตรวจเช็ค → EXP PEAK → ตั้งหนี้+แนบเอกสาร → ชำระ → WHT (ถ้ามี) → Drive", mermaid: `graph TD
+  A([รับใบแจ้งหนี้จาก Supplier]) --> B[ตรวจเช็ค ชื่อบริษัท/เลขผู้เสียภาษี/รายละเอียด/เงื่อนไข/WHT]
+  B --> C[PEAK บันทึก EXP หรือคัดลอก EXP เดิม]
+  C --> D[ใส่รายละเอียดครบ วันที่/หมวดหมู่/จำนวน/VAT7%/WHT]
+  D --> E[ตั้งหนี้ไว้ก่อน แนบเอกสารทุกใบใน PEAK]
+  E --> F[ระบุรายละเอียดชำระ วันที่/บัญชีที่จ่าย/WHT]
+  F --> G[อนุมัติ EXP ตรวจยอดชำระ+ยอดหัก ณ ที่จ่าย]
+  G --> H{มีหัก ณ ที่จ่าย}
+  H -->|ไม่มี| I[พิมพ์ EXP + PV เก็บชุดเอกสาร]
+  H -->|มี WHT| J[พิมพ์ EXP+PV+ใบหัก ณ ที่จ่าย]
+  J --> K[Save PDF WHT ใน Drive AI หรือ MS แยกกัน]
+  I --> Z([เสร็จ])
+  K --> Z
+  style A fill:#d1fae5,stroke:#059669
+  style Z fill:#d1fae5,stroke:#059669
+  style H fill:#fef3c7,stroke:#d97706` }],
           subPage: "pages/process-expense-reimbursement.html"
         },
         {
