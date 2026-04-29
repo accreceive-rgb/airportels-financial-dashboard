@@ -879,7 +879,24 @@
             { num: 7, name: "TBD — ยื่นแจ้งยกเลิกที่สรรพากรพื้นที่", actor: "โอ๋", tool: "ยื่นตัวจริง", output: "TBD", notes: "TBD" },
             { num: 8, name: "TBD — รับการยืนยันยกเลิกเครื่อง", actor: "โอ๋", tool: "—", output: "TBD", notes: "TBD" }
           ],
-          diagrams: [{ type: "flowchart", title: "Branch Closing Compliance Flow (3 ส่วน)", description: "DBD แจ้งปิดสาขา → กรมสรรพากร ยกเลิกสถานประกอบการ → ภพ.06 ยกเลิกเครื่องบันทึกการเก็บเงิน" }],
+          diagrams: [{ type: "flowchart", title: "Branch Closing Compliance Flow (3 ส่วน)", description: "DBD แจ้งปิดสาขา → กรมสรรพากร ยกเลิกสถานประกอบการ → ภพ.06 ยกเลิกเครื่องบันทึกการเก็บเงิน", mermaid: `graph TD
+  A([ปิดสาขา]) --> B[ส่วนที่ 1 — DBD แจ้งปิดสาขา]
+  B --> B1[TBD เตรียมเอกสาร]
+  B1 --> B2[ยื่น DBD e-Filing]
+  B2 --> B3[รับเอกสารยืนยันปิดสาขา]
+  B3 --> C[ส่วนที่ 2 — กรมสรรพากร ยกเลิกสถานประกอบการ VAT]
+  C --> C1[TBD ยื่นแจ้งยกเลิก e-Registration]
+  C1 --> C2[รับการยืนยันยกเลิก]
+  C2 --> D[ส่วนที่ 3 — ภพ.06 ยกเลิกเครื่องบันทึกการเก็บเงิน]
+  D --> D1[TBD เตรียมเอกสารยกเลิก ภพ.06]
+  D1 --> D2[ยื่นที่สรรพากรพื้นที่]
+  D2 --> D3[รับการยืนยันยกเลิกเครื่อง]
+  D3 --> Z([สาขาถอนทะเบียนเรียบร้อย])
+  style A fill:#fee2e2,stroke:#dc2626
+  style Z fill:#d1fae5,stroke:#059669
+  style B fill:#dbeafe,stroke:#2563eb
+  style C fill:#ede9fe,stroke:#7c3aed
+  style D fill:#fed7aa,stroke:#ea580c` }],
           subPage: "pages/process-branch-closing-compliance.html"
         }
       ],
