@@ -635,10 +635,42 @@
           ],
           diagrams: [{ type: "flowchart", title: "Branch Opening Compliance Flow (3 ส่วน)", description: "DBD จดทะเบียนสาขา → กรมสรรพากร ภพ.09 → ภพ.06 คำขออนุมัติเครื่อง ECR/POS" }],
           subPage: "pages/process-branch-opening-compliance.html"
+        },
+        {
+          id: "branch-closing-compliance",
+          name: "Branch Closing — Compliance De-registration (DBD / สรรพากร / ภพ.06)",
+          owner: "Accounting Manager (โอ๋)",
+          category: "Compliance",
+          status: "active",
+          completeness: "stub",
+          updatedAt: "2026-04-29",
+          purpose: "ดำเนินการแจ้งยกเลิกและถอนทะเบียนด้านกฎหมายทุกอย่างเมื่อปิดสาขา ครอบคลุมการแจ้งปิดสาขากับ DBD, แจ้งยกเลิกสถานประกอบการกับกรมสรรพากร และแจ้งยกเลิกการใช้เครื่องบันทึกการเก็บเงิน (ภพ.06)",
+          timing: "Event-based — เมื่อปิดสาขาทุกครั้ง",
+          steps: [
+            { num: 1, name: "TBD — เตรียมเอกสารแจ้งปิดสาขา", actor: "โอ๋", tool: "TBD", output: "เอกสารครบชุด", notes: "TBD — รายการเอกสาร" },
+            { num: 2, name: "TBD — ยื่นแจ้งปิดสาขาผ่าน DBD e-Filing", actor: "โอ๋", tool: "DBD e-Filing", output: "TBD", notes: "TBD" },
+            { num: 3, name: "TBD — รับเอกสารยืนยันการปิดสาขา", actor: "โอ๋", tool: "—", output: "TBD", notes: "TBD — ระยะเวลา" },
+            { num: 4, name: "TBD — ยื่นแจ้งยกเลิกสถานประกอบการ VAT", actor: "โอ๋", tool: "ระบบ e-Registration กรมสรรพากร", output: "TBD", notes: "TBD" },
+            { num: 5, name: "TBD — รับการยืนยันยกเลิก", actor: "โอ๋", tool: "—", output: "TBD", notes: "TBD" },
+            { num: 6, name: "TBD — เตรียมเอกสารแจ้งยกเลิก ภพ.06", actor: "โอ๋", tool: "เอกสาร", output: "TBD", notes: "TBD — รายการเอกสาร" },
+            { num: 7, name: "TBD — ยื่นแจ้งยกเลิกที่สรรพากรพื้นที่", actor: "โอ๋", tool: "ยื่นตัวจริง", output: "TBD", notes: "TBD" },
+            { num: 8, name: "TBD — รับการยืนยันยกเลิกเครื่อง", actor: "โอ๋", tool: "—", output: "TBD", notes: "TBD" }
+          ],
+          diagrams: [{ type: "flowchart", title: "Branch Closing Compliance Flow (3 ส่วน)", description: "DBD แจ้งปิดสาขา → กรมสรรพากร ยกเลิกสถานประกอบการ → ภพ.06 ยกเลิกเครื่องบันทึกการเก็บเงิน" }],
+          subPage: "pages/process-branch-closing-compliance.html"
         }
       ],
       plans: [],
       activity: [
+        {
+          date: "2026-04-29",
+          time: "10:00",
+          user: "Oh",
+          action: "created",
+          target: "Branch Closing — Compliance De-registration (Process #15)",
+          detail: "สร้าง Process ใหม่สำหรับโอ๋: แจ้งปิดสาขากับ DBD + ยกเลิกสถานประกอบการ VAT + ยกเลิก ภพ.06 — Trigger: ปิดสาขาทุกครั้ง (stub รอเติมรายละเอียด)",
+          type: "process"
+        },
         {
           date: "2026-04-28",
           time: "20:00",
