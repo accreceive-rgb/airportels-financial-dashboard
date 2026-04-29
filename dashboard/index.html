@@ -1124,15 +1124,29 @@
       if (filtered.length === 0) { grid.innerHTML = ''; noMatchEl.classList.remove('hidden'); return; }
       noMatchEl.classList.add('hidden');
 
-      grid.innerHTML = filtered.map((d, i) => `
+      // Find subPage for each process
+      const procMap = {};
+      DASHBOARD_DATA.processes.forEach(p => { procMap[p.id] = p.subPage || null; });
+
+      grid.innerHTML = filtered.map((d, i) => {
+        const subPage = procMap[d.processId];
+        const diagramBody = d.mermaid
+          ? `<div class="mermaid-pending bg-gray-50 rounded p-2" data-mermaid-src="${d.mermaid.replace(/"/g, '&quot;')}"></div>`
+          : `<div class="bg-gray-50 rounded p-4 text-center">
+               <p class="text-xs text-gray-500 mb-2">${d.description || 'ดู flowchart ใน process page'}</p>
+               ${subPage ? `<a href="${subPage}" class="text-xs text-blue-600 hover:underline font-medium">ดู Flowchart &rarr;</a>` : ''}
+             </div>`;
+        return `
         <div class="bg-white rounded-lg shadow-md p-4">
           <div class="flex items-center gap-2 mb-2">
             ${diagramTypeBadge(d.type)}
             <span class="text-xs text-gray-500">${d.processName}</span>
           </div>
           <p class="text-sm font-medium text-gray-700 mb-3">${d.title}</p>
-          <div class="mermaid-pending bg-gray-50 rounded p-2" data-mermaid-src="${d.mermaid.replace(/"/g, '&quot;')}"></div>
-        </div>`).join('');
+          ${diagramBody}
+          ${subPage ? `<div class="mt-2 text-right"><a href="${subPage}" class="text-xs text-blue-500 hover:underline">Open Process Page &rarr;</a></div>` : ''}
+        </div>`;
+      }).join('');
 
       setTimeout(renderVisibleMermaid, 50);
     }
