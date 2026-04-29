@@ -263,7 +263,36 @@
             { num: 4, name: "จัดทำรายงานรายเดือน", actor: "AR Officer", tool: "Sheet Income", output: "Report รายเดือน", notes: "" },
             { num: 5, name: "ส่ง Email รายงานรายเดือนให้ Landlord", actor: "AR Officer", tool: "Email", output: "Email ส่งแล้ว", notes: "" }
           ],
-          diagrams: [{ type: "flowchart", title: "Landlord Reporting — รายวัน + รายเดือน", description: "รายวัน: Sale Report → Sheet → PDF → ส่ง TPY/ICS/MBK | รายเดือน: Sheet → Form → Email + CNX ไปรษณีย์" }],
+          diagrams: [
+            { type: "flowchart", title: "Landlord Reporting — รายวัน", description: "รายวัน: Sale Report → Sheet → PDF → ส่ง TPY/ICS/MBK", mermaid: `graph TD
+  A([เริ่มทุกวัน]) --> B[ดึงยอดขาย จาก Sale Report Sheet แต่ละสาขา]
+  B --> C[บันทึกลง Sheet Commission branch No.Order/Quantity/Amount]
+  C --> D[Save PDF ตั้งชื่อ ปีเดือนวัน-สาขา]
+  D --> E{สาขา}
+  E -->|TPY| F[ส่ง Email cashier.pattaya@terminal21.co.th]
+  E -->|ICS| G[แปลงเป็น JPEG Upload บน website ICS]
+  E -->|MBK| H[กรอก Dashboard Postels แล้ว Submit website MBK]
+  F --> Z([รายวัน เสร็จ])
+  G --> Z
+  H --> Z
+  style A fill:#d1fae5,stroke:#059669
+  style Z fill:#d1fae5,stroke:#059669
+  style E fill:#fef3c7,stroke:#d97706` },
+            { type: "flowchart", title: "Landlord Reporting — รายเดือน", description: "รายเดือน: Sheet → Form → Email + CNX ไปรษณีย์", mermaid: `graph TD
+  A([เริ่มรายเดือน]) --> B[ตรวจสอบ Sheet Income vs Business Performance]
+  B --> C[Copy ยอด Total ลง Form แต่ละสาขา T21/CTW/CSM/ICS/TPY/CPY]
+  C --> D[ส่ง Email รายเดือน ตาม Landlord Contact List]
+  D --> E{สาขา CNX}
+  E -->|ไม่มี CNX| Z([เสร็จ])
+  E -->|มี CNX| F[กรอก Form CNX Column T Row 20]
+  F --> G[Print Form ผู้บริหารเซ็น แล้ว Scan]
+  G --> H[ส่ง Email พร้อมไฟล์ Scan]
+  H --> I[ส่งเอกสารจริง ทางไปรษณีย์ ทชม.เชียงใหม่]
+  I --> Z
+  style A fill:#d1fae5,stroke:#059669
+  style Z fill:#d1fae5,stroke:#059669
+  style E fill:#fef3c7,stroke:#d97706` }
+          ],
           subPage: "pages/process-landlord-revenue-reporting.html"
         },
         {
