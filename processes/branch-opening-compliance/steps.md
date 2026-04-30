@@ -2,6 +2,7 @@
 title: Branch Opening — Compliance Registration — Steps
 process_id: branch-opening-compliance
 updated: 2026-04-30
+note: มอสเป็นผู้ยื่นเอกสารที่กรมสรรพากร (ภ.พ.09 และ ภพ.06) — ปัจจุบัน
 ---
 
 # Branch Opening Compliance — Step Breakdown
