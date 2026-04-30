@@ -1,7 +1,7 @@
 ---
 title: Branch Opening — Compliance Registration (DBD / สรรพากร / ภพ.06)
 process_id: branch-opening-compliance
-owner: Accounting Manager (โอ๋)
+owner: Accounting Manager (โอ๋) / AP Officer (มอส)
 category: Compliance
 status: active
 completeness: partial
