@@ -220,8 +220,7 @@ Finance Manager / CFO Track
 | 1 | Monthly Close Timeliness | จำนวนวันทำการหลังสิ้นเดือนจนปิดงบเสร็จ | ≤ 10–15 วันทำการ | รายเดือน |
 | 2 | Tax Compliance Rate | % แบบภาษีทุกประเภทที่ยื่นตรงกำหนด ไม่มีค่าปรับ | 100% | รายเดือน/ปี |
 | 3 | Bank Reconciliation Accuracy | % รายการรับ+จ่ายรวมที่กระทบยอดตรง (ดูแลภาพรวม ทั้งฝั่งมุกและมอส) | 100% | รายเดือน |
-| 4 | Audit Adjustment Count | จำนวน Audit Adjustments ที่มีนัยสำคัญ (> 10,000 บาท) ต่อปี | ≤ 3 รายการ/ปี | รายปี |
-| 5 | Team Issue Escalation Rate | % ปัญหาของทีม AP/AR ที่แก้ได้โดยไม่ต้อง escalate ถึง CEO | ≥ 90% | รายไตรมาส |
+| 4 | Team Issue Escalation Rate | % ปัญหาของทีม AP/AR ที่แก้ได้โดยไม่ต้อง escalate ถึง CEO | ≥ 90% | รายไตรมาส |
 
 ---
 
