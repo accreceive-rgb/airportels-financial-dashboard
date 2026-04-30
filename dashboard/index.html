@@ -900,8 +900,37 @@
           subPage: "pages/process-branch-closing-compliance.html"
         }
       ],
-      plans: [],
+      plans: [
+        {
+          id: "ai-billing-automation-ar",
+          title: "AI Auto-Billing สำหรับ AR วางบิล Partner",
+          relatedProcess: "Partner Billing & AR",
+          status: "draft",
+          owner: "โอ๋ (Accounting Manager)",
+          created: "2026-04-30",
+          problem: "AR Officer ต้องดึง Order จาก Partner 13+ ราย คำนวณราคาตามสัญญาด้วยมือทุกรอบบิล ใช้เวลามาก มีความเสี่ยงคลาดเคลื่อน และถ้าคนดูแลออกไป ไม่มีใครรู้สูตรหรือเงื่อนไขของแต่ละราย",
+          actions: [
+            { action: "รวบรวม Contract/Rate Card ของ Partner ทุกราย (13+ ราย)", owner: "มุก + โอ๋", target: "2026-05-15", status: "planned" },
+            { action: "ให้ AI อ่าน Contract แปลง Rate Card เป็น Structured Data (JSON)", owner: "โอ๋ + Dev", target: "2026-05-23", status: "planned" },
+            { action: "เชื่อมต่อแหล่งข้อมูล Order นำร่อง 3 ราย (Klook, KKDay SCM, Samurai)", owner: "Dev", target: "2026-06-06", status: "planned" },
+            { action: "สร้าง AI Price Calculator: Order + Rate Card → คำนวณยอด Invoice", owner: "Dev", target: "2026-06-20", status: "planned" },
+            { action: "Pilot Test กับ 3 Partner นำร่อง เปรียบเทียบกับ Manual 1 รอบ", owner: "มุก + Dev", target: "2026-07-04", status: "planned" },
+            { action: "Roll out ทุก Partner + ปิด Manual Process", owner: "มุก + Dev", target: "2026-07-31", status: "planned" }
+          ],
+          gantt: "gantt\n  title AI Auto-Billing AR — Rollout Plan\n  dateFormat YYYY-MM-DD\n  section Phase 1: ข้อมูล\n    รวบรวม Contract ทุก Partner :a1, 2026-04-30, 2026-05-15\n    AI แปลง Rate Card เป็น JSON :a2, 2026-05-15, 2026-05-23\n  section Phase 2: Development\n    เชื่อมต่อ Order 3 Partner นำร่อง :a3, 2026-05-23, 2026-06-06\n    สร้าง AI Price Calculator :a4, 2026-06-06, 2026-06-20\n  section Phase 3: ทดสอบ & Launch\n    Pilot Test (Klook / KKDay / Samurai) :a5, 2026-06-20, 2026-07-04\n    Roll out ทุก Partner :a6, 2026-07-04, 2026-07-31",
+          subPage: ""
+        }
+      ],
       activity: [
+        {
+          date: "2026-04-30",
+          time: "10:00",
+          user: "Oh",
+          action: "created",
+          target: "Plan: AI Auto-Billing สำหรับ AR วางบิล Partner",
+          detail: "สร้าง Improvement Plan แรก — ให้ AI ดึง Order จากระบบ Partner + อ่านสัญญา + คำนวณราคา Invoice อัตโนมัติ ไม่ต้องสร้างสูตรเอง เป้าหมาย Roll out ภายใน 2026-07-31",
+          type: "plan"
+        },
         {
           date: "2026-04-29",
           time: "10:00",
