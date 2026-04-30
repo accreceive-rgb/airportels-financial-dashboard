@@ -487,6 +487,22 @@
         { "action": "Pilot Test กับ 3 Partner นำร่อง เปรียบเทียบกับ Manual 1 รอบ", "owner": "มุก + Dev", "target": "2026-07-04", "status": "planned" },
         { "action": "Roll out ทุก Partner + ปิด Manual Process", "owner": "มุก + Dev", "target": "2026-07-31", "status": "planned" }
       ]
+    },
+    {
+      "id": "career-growth-kpi-accounting",
+      "title": "Career Growth Path & KPI — แผนกบัญชี",
+      "relatedProcess": "department-wide",
+      "status": "draft",
+      "owner": "โอ๋ (Accounting Manager)",
+      "created": "2026-04-30",
+      "problem": "ยังไม่มีเส้นทางความก้าวหน้าสายอาชีพและเกณฑ์วัดผลงานที่ชัดเจนสำหรับ AR Officer, AP Officer และ Accounting Manager",
+      "actions": [
+        { "action": "ตั้ง KPI Tracking Sheet รายเดือน สำหรับ AR Officer (มุก)", "owner": "โอ๋ + มุก", "target": "2026-05-15", "status": "planned" },
+        { "action": "ตั้ง KPI Tracking Sheet รายเดือน สำหรับ AP Officer (มอส)", "owner": "โอ๋ + มอส", "target": "2026-05-15", "status": "planned" },
+        { "action": "จัดทำ IDP รายคน — มุก, มอส, โอ๋", "owner": "โอ๋", "target": "2026-05-31", "status": "planned" },
+        { "action": "นัด 1:1 รายไตรมาสครั้งแรก — review KPI + วางเป้าพัฒนาทักษะ", "owner": "โอ๋", "target": "2026-06-30", "status": "planned" },
+        { "action": "ประเมินผลประจำปีครั้งแรกตามกรอบ Career Ladder", "owner": "โอ๋", "target": "2026-12-31", "status": "planned" }
+      ]
     }
   ],
   "activity": [
