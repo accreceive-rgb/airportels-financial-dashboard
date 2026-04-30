@@ -168,16 +168,55 @@ Finance Manager / CFO Track
 ### ระดับปัจจุบัน: Accounting Manager
 งานหลัก: Monthly/Annual Close, Tax Oversight, Bank Statement, Team Management, Annual Audit
 
-### ขั้นต่อไป: Finance Manager / Controller
+### Career Path
+```
+Accounting Manager (ปัจจุบัน)
+       ↓  ทักษะ: Budgeting, BI Dashboard, Tax Planning, Leadership
+Finance Manager / Controller  (~3–5 ปี)
+       ↓  ทักษะ: Strategic planning, Multi-entity, Investor relations
+CFO / Finance Director
+```
 
-| ทักษะที่ต้องพัฒนา | วิธีพัฒนา | เป้าหมายเวลา |
-|---|---|---|
-| Financial Planning & Budgeting — วางงบประมาณประจำปี | สร้าง Budget Template ร่วมกับ CEO | 6–12 เดือน |
-| Business Intelligence — Dashboard P&L แบบ real-time | เชื่อมต่อ PEAK → BI Tool | 6 เดือน |
-| Management Reporting — สรุปผลให้ Board/CEO แบบมีนัย | ฝึกเขียน Management Commentary | 3 เดือน |
-| IFRS/TFRS — มาตรฐานบัญชีใหม่ที่กำลังจะบังคับใช้ | อบรม CPD ปีละ 12 ชม. | ต่อเนื่อง |
-| Process Automation — นำ AI/Tool เข้ามาลด manual work | ร่วมกำกับ Plan AI Billing + ออกแบบ workflow | ต่อเนื่อง |
-| Leadership — Coach ทีม AP/AR ให้ self-sufficient | สร้าง SOP + training plan สำหรับทีม | 6 เดือน |
+### ทักษะที่ต้องพัฒนา (เรียงลำดับความสำคัญ)
+
+**1. Financial Planning & Reporting** ← เร่งด่วนที่สุด
+- วางงบประมาณประจำปี (Annual Budget) ร่วมกับ CEO
+- Management Reporting — สรุป P&L แบบมีนัยให้ CEO
+- Financial Forecasting — คาดการณ์กระแสเงินสด
+
+**2. TFRS & มาตรฐานบัญชี**
+- TFRS Updates — ติดตามมาตรฐานที่เปลี่ยนทุกปี
+- TFRS 16 สัญญาเช่า — Airportels เช่าพื้นที่สาขาหลายแห่ง
+- CPD ปีละ 12 ชม. (บังคับถ้ามีใบอนุญาต)
+
+**3. Digital & Business Intelligence**
+- Power BI / Looker Studio — Dashboard P&L real-time
+- PEAK Advanced — ดึง GL report, ตั้งค่า Chart of Accounts
+- AI Tools — สรุปรายงาน, วิเคราะห์ตัวเลขเบื้องต้น
+
+**4. ภาษีขั้นสูง**
+- ภาษีนิติบุคคล (ภงด.50/51) เชิงลึก — Tax Planning
+- Transfer Pricing เบื้องต้น (กรณีมี related entities)
+- Tax Risk Management — ลดความเสี่ยงถูก audit กรมสรรพากร
+
+**5. Leadership & Team Development**
+- Coaching & Feedback — พัฒนาทีม AP/AR ให้ self-sufficient
+- Performance Management — ตั้ง KPI, ให้ feedback รายไตรมาส
+- Process Automation — กำกับ AI/tools ลด manual งานทีม
+
+### หลักสูตรอบรมแนะนำ — Accounting Manager
+
+| หลักสูตร | ผู้จัด | รูปแบบ | ลำดับ |
+|---|---|---|---|
+| Financial Planning & Budgeting for SME | FAP / SET / สถาบันการเงิน | Workshop 1–2 วัน | ⭐⭐⭐ ทำก่อน |
+| TFRS 16 — สัญญาเช่า (Lease Accounting) | สภาวิชาชีพบัญชี (FAP) | Seminar 1 วัน | ⭐⭐⭐ ทำก่อน |
+| CPD สภาวิชาชีพบัญชี ปีละ 12 ชม. | สภาวิชาชีพบัญชี (FAP) | Seminar / Online | ⭐⭐⭐ ต่อเนื่อง |
+| Power BI / Looker Studio — Financial Dashboard | Udemy / Microsoft Learn | Online self-pace | ⭐⭐ ภายใน 6 เดือน |
+| Management Accounting & Cost Analysis | CIMA Thailand / FAP | Seminar | ⭐⭐ ระยะกลาง |
+| ภาษีนิติบุคคลเชิงลึก + Tax Planning (ภงด.50/51) | สภาวิชาชีพบัญชี / RD | Seminar 1–2 วัน | ⭐⭐ ระยะกลาง |
+| Leadership & Coaching for Accounting Managers | HR Institute / IMC | Workshop | ⭐⭐ ระยะกลาง |
+| Mini CFO Program | ACMACS / สถาบันการเงิน | หลักสูตร 3–5 วัน | ⭐ ระยะยาว |
+| CPA (ผู้สอบบัญชีรับอนุญาต) | สภาวิชาชีพบัญชี | สอบ 4 วิชา | ⭐ ถ้ายังไม่มีใบอนุญาต |
 
 ### ระดับถัดไป: CFO / Finance Director Track
 ต้องเพิ่ม: Investor relations, M&A due diligence, Strategic financial modeling, Multi-entity consolidation
