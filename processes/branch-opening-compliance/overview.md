@@ -17,7 +17,8 @@ updated: 2026-04-30
 
 | Name / Role | Involvement | Internal/External |
 |---|---|---|
-| โอ๋ (Accounting Manager) | ดำเนินการยื่นเอกสารทุกขั้นตอน | Internal |
+| โอ๋ (Accounting Manager) | ดูแลกระบวนการทั้งหมด, ยื่น DBD ออนไลน์ | Internal |
+| มอส (AP Officer) | ยื่นเอกสารที่กรมสรรพากรพื้นที่ (ภ.พ.09 + ภพ.06) — ปัจจุบัน | Internal |
 | คุณโฮ่ (CEO) | ลงนามเอกสารยื่นราชการ | Internal |
 | กรมพัฒนาธุรกิจการค้า (DBD) | รับจดทะเบียนสาขา | External |
 | กรมสรรพากร (สรรพากรพื้นที่) | รับแจ้งสถานประกอบการ / อนุมัติ ภพ.06 | External |
