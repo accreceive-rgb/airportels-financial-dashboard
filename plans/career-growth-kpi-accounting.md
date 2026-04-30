@@ -34,15 +34,54 @@ CFO / Finance Director  (Executive)
 ### ระดับปัจจุบัน: AR Officer
 งานหลัก: Partner Billing (15+ ราย), Invoice, Bank Statement Reconciliation (ฝั่ง AR), WHT
 
-### ขั้นต่อไป: Senior AR Officer / Senior Accountant
+### Career Path
+```
+AR Officer (ปัจจุบัน)
+       ↓  ทักษะ: Revenue Analysis, Credit Control, AI Tools, English
+Senior AR Officer / Senior Accountant  (~2–3 ปี)
+       ↓  ทักษะ: Financial Reporting, Team Coordination, Tax ครบวงจร
+AR Supervisor / Accounting Manager  (~5 ปี)
+       ↓  ทักษะ: Budgeting, Business Intelligence, Leadership
+Finance Manager / Controller
+```
 
-| ทักษะที่ต้องพัฒนา | วิธีพัฒนา | เป้าหมายเวลา |
+### ทักษะที่ต้องพัฒนา (เรียงลำดับความสำคัญ)
+
+**1. Digital & Automation** ← เร่งด่วนที่สุด
+
+| ทักษะ | จากระดับ | ไปถึง |
 |---|---|---|
-| Automate ขั้นตอนซ้ำซาก (Google Sheets macro, AI billing) | ทำ Plan AI Auto-Billing ที่วางไว้ | 6–9 เดือน |
-| Revenue Analysis — วิเคราะห์รายได้ตาม Partner/ช่องทาง | ทำ Dashboard รายได้ประจำเดือน | 3–6 เดือน |
-| Credit Control — ติดตามหนี้ค้างชำระอย่างเป็นระบบ | สร้าง AR Aging Report | 3 เดือน |
-| ความรู้ภาษีฝั่ง AR — VAT output, WHT received | ศึกษาร่วมกับโอ๋ในรอบ Monthly Close | ต่อเนื่อง |
-| สื่อสารภาษาอังกฤษ — Email ติดต่อ Partner ต่างชาติ | ฝึกจาก Klook / Veltra / Globaltix | ต่อเนื่อง |
+| Google Sheets | Vlookup (ปัจจุบัน) | Power Query, Apps Script automation |
+| Excel | พื้นฐาน | Pivot Table, Dynamic Array, Conditional Formatting |
+| AI Tools | เริ่มต้น | ใช้ AI อ่านสัญญา, draft email, สรุป Order |
+| PEAK | ใช้งานได้ | Export report, บันทึก advance entries |
+
+**2. ภาษีฝั่ง AR**
+- VAT output tax — กระทบยอดภาษีขายกับ Invoice ทุกรายการ
+- WHT received — บันทึก ภงด.3/53 ที่ได้รับอย่างถูกต้อง
+- ความเข้าใจ Tax Invoice vs ใบแจ้งหนี้ vs ใบเสร็จ — กรณีต่างประเทศ (Klook/Veltra)
+
+**3. Credit Control & Collection**
+- AR Aging Report — วิเคราะห์หนี้ค้างชำระตาม Partner
+- การติดตามหนี้อย่างมีระบบ (Follow-up schedule)
+- การเจรจา Credit Term กับ Partner
+
+**4. ภาษาอังกฤษธุรกิจ** ← ติดต่อ Partner ต่างชาติโดยตรง (Klook, Veltra, Globaltix, Trazy)
+- Email writing — Invoice dispute, payment follow-up
+- Reading contracts in English — Rate Card, Payment Terms
+
+### หลักสูตรอบรมแนะนำ — AR Officer
+
+| หลักสูตร | ผู้จัด | รูปแบบ | ความสำคัญ |
+|---|---|---|---|
+| Excel / Google Sheets ขั้นสูง (Power Query, Pivot) | Udemy / Coursera | Online, self-pace | ⭐⭐⭐ ทำก่อน |
+| AI for Accounting — ใช้ AI ในงานบัญชีจริง | ลองใช้จริง + YouTube | Self-practice | ⭐⭐⭐ ทำก่อน |
+| ภาษีมูลค่าเพิ่มเชิงปฏิบัติ (VAT output) | สภาวิชาชีพบัญชี / กรมสรรพากร | Seminar 1 วัน | ⭐⭐⭐ ภายใน 6 เดือน |
+| หัก ณ ที่จ่าย ครบวงจร (WHT received) | สภาวิชาชีพบัญชี | Seminar 1 วัน | ⭐⭐⭐ ภายใน 6 เดือน |
+| PEAK System Advanced | PEAK Academy | Online ฟรี | ⭐⭐ ทำเลย |
+| Business English for Accounting (Email & Contracts) | AUA / British Council | คอร์สรายเดือน | ⭐⭐ ต่อเนื่อง |
+| Credit Management & AR Collection | CIMA Thailand / สถาบันการเงิน | Seminar | ⭐ ระยะกลาง |
+| CPD สภาวิชาชีพบัญชี ปีละ 12 ชม. | สภาวิชาชีพบัญชี | Seminar / Online | ⭐ ถ้ามีใบอนุญาต |
 
 ### ระดับถัดไป: Accounting Manager Track
 ต้องเพิ่ม: Monthly Close, Financial Reporting, Team Coordination, Tax Overview
@@ -52,20 +91,75 @@ CFO / Finance Director  (Executive)
 ## AP Officer (มอส) — เส้นทางและทักษะ
 
 ### ระดับปัจจุบัน: AP Officer
-งานหลัก: Commission Payment, Expense Reimbursement, Petty Cash, Rider Payroll, Tax Filing (ภงด.3/53)
+งานหลัก: Commission Payment, Expense Reimbursement, Petty Cash, Rider Payroll (MAKESEND), Tax Filing (ภงด.3/53, ภพ.30)
 
-### ขั้นต่อไป: Senior AP Officer / Tax Accountant
+> **หมายเหตุ:** Payroll ของพนักงานบริษัท (ภงด.1, ประกันสังคม) เป็นหน้าที่ของ HR ไม่ใช่ AP Officer
 
-| ทักษะที่ต้องพัฒนา | วิธีพัฒนา | เป้าหมายเวลา |
+### Career Path
+```
+AP Officer (ปัจจุบัน)
+       ↓  ทักษะ: Tax ครบวงจร, Cost Analysis, Fixed Assets
+Senior AP Officer / Tax Accountant  (~2–3 ปี)
+       ↓  ทักษะ: Corporate Tax, Budget prep, Financial Control
+Finance Controller / Tax Specialist  (~5 ปี)
+       ↓  ทักษะ: Strategic planning, Multi-entity, TFRS
+Finance Manager / CFO Track
+```
+
+> **Note:** มอสมีแนวโน้มไป **Tax Specialist track** ได้ชัดมาก เพราะปัจจุบันถือ ภงด.3/53 + ภพ.30 อยู่แล้ว ต่อยอดถึงภาษีนิติบุคคลจะเป็นจุดแข็งมาก
+
+### ทักษะที่ต้องพัฒนา (เรียงลำดับความสำคัญ)
+
+**1. ภาษี — สำคัญที่สุดสำหรับ AP track**
+
+| ทักษะ | ปัจจุบัน | เป้าหมาย |
 |---|---|---|
-| Tax Deep Dive — VAT input, ภงด.1/3/53, ภพ.30 ครบวงจร | ทำ Tax Calendar ร่วมกับโอ๋ | 3–6 เดือน |
-| Payroll System — เข้าใจ Full payroll cycle (ไม่ใช่แค่ Rider) | ศึกษา payroll software + สปส. | 6 เดือน |
-| Cost Analysis — วิเคราะห์ค่าใช้จ่ายตามหมวด/สาขา | ทำ Expense Summary รายเดือน | 3 เดือน |
-| Fixed Assets Management — คำนวณค่าเสื่อม | ทำทะเบียนสินทรัพย์ใน PEAK ให้ครบ | 3 เดือน |
-| ERP/PEAK Admin — ตั้งค่า Chart of Accounts | ขอ access จัดการ PEAK ระดับ admin | 6 เดือน |
+| ภงด.3/53 | ทำได้ | เข้าใจ edge case, กรณีต่างประเทศ |
+| ภพ.30 (VAT input) | ทำได้ | กระทบยอด input tax กับ GL |
+| ภงด.50/51 (นิติบุคคล) | ยังไม่ได้ทำ | เข้าใจภาพรวม corporate tax |
+| Transfer Pricing เบื้องต้น | ยังไม่ได้ทำ | กรณีมี related party transactions |
+
+**2. Fixed Assets & Depreciation**
+- คำนวณค่าเสื่อมราคาตาม TFRS อย่างถูกต้อง
+- TFRS 16 — สัญญาเช่า (relevant มากสำหรับ Airportels ที่มีหลายสาขา)
+- ทำทะเบียนสินทรัพย์ใน PEAK ให้ครบและ update อยู่เสมอ
+
+**3. Cost & Expense Analysis**
+- Expense Summary รายเดือนตามหมวดหมู่/สาขา
+- Budget vs Actual — เปรียบเทียบค่าใช้จ่ายจริงกับงบ
+- Vendor Analysis — วิเคราะห์ Supplier ที่จ่ายบ่อย
+
+**4. Digital Tools**
+- Excel Advanced — Power Query สำหรับรวม Expense data
+- PEAK Admin — ตั้งค่า Chart of Accounts, ดึง GL report
+
+### หลักสูตรอบรมแนะนำ — AP Officer
+
+| หลักสูตร | ผู้จัด | รูปแบบ | ความสำคัญ |
+|---|---|---|---|
+| ภาษีเงินได้หัก ณ ที่จ่าย ครบวงจร (ภงด.3/53) | กรมสรรพากร / สภาวิชาชีพบัญชี | Seminar 1–2 วัน | ⭐⭐⭐ ทำก่อน |
+| ภาษีมูลค่าเพิ่ม (VAT) Input Tax เชิงลึก | สภาวิชาชีพบัญชี | Seminar 1 วัน | ⭐⭐⭐ ภายใน 3 เดือน |
+| Fixed Assets & Depreciation (TFRS) | สภาวิชาชีพบัญชี | Seminar | ⭐⭐⭐ ภายใน 6 เดือน |
+| TFRS 16 — สัญญาเช่า | สภาวิชาชีพบัญชี | Seminar 1 วัน | ⭐⭐ ระยะกลาง |
+| Excel Advanced (Power Query, Pivot) | Udemy / Coursera | Online self-pace | ⭐⭐ ทำเลย |
+| ภาษีนิติบุคคลเบื้องต้น (ภงด.50/51) | สภาวิชาชีพบัญชี | Seminar | ⭐⭐ ระยะกลาง |
+| PEAK System Advanced & Admin | PEAK Academy | Online ฟรี | ⭐⭐ ทำเลย |
+| CPD สภาวิชาชีพบัญชี ปีละ 12 ชม. | สภาวิชาชีพบัญชี | Seminar / Online | ⭐ ถ้ามีใบอนุญาต |
 
 ### ระดับถัดไป: Tax Accountant / Finance Controller Track
 ต้องเพิ่ม: Corporate tax planning, Budget preparation, Financial analysis
+
+---
+
+## เปรียบเทียบทิศทาง AP vs AR
+
+| | AR Officer (มุก) | AP Officer (มอส) |
+|---|---|---|
+| **จุดแข็ง** | Partner relations, Revenue side, International | Tax filing, Expense control, Payroll (Rider) |
+| **Track ที่เหมาะ** | Revenue Accountant → AR Manager | Tax Accountant → Finance Controller |
+| **ทักษะเร่งด่วน** | Digital/AI + English | Tax ครบวงจร + Fixed Assets |
+| **Cert ระยะยาว** | CPA หรือ CIMA | CPA หรือ Tax Auditor (ผู้ตรวจสอบภาษี) |
+| **จุดที่ต้องเสริม** | ความรู้ภาษีฝั่ง Revenue | Financial Analysis + Reporting |
 
 ---
 
@@ -102,7 +196,7 @@ CFO / Finance Director  (Executive)
 | 4 | ความถูกต้องของ Invoice | % Invoice ที่ไม่ต้องแก้ไขหลังส่งออก | ≥ 99% | รายเดือน |
 | 5 | WHT Document Follow-up Rate | % เอกสารหัก ณ ที่จ่ายที่ได้รับและบันทึกครบภายใน 30 วัน | ≥ 90% | รายเดือน |
 
-**หมายเหตุ:** KPI ข้อ 1–2 เหมาะสำหรับวัดในช่วงปกติก่อน AI Automation; หลังจาก AI Billing ใช้งานแล้ว ให้ปรับเป้าขึ้นเป็น ≥ 99.5% และ ≤ 1 วัน
+**หมายเหตุ:** หลังจาก AI Billing ใช้งานแล้ว ปรับเป้า KPI ข้อ 1–2 เป็น ≥ 99.5% และ ≤ 1 วัน
 
 ---
 
