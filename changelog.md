@@ -1,3 +1,30 @@
+## 2026-04-30 — นำเข้าความรู้บัญชีจาก Excel + เพิ่มหน้า Knowledge Base
+
+### What was done
+- นำเข้าข้อมูลจากไฟล์ `ความรู้บัญชี.xlsx` (17 sheets) ของคุณโอ๋
+- อัปเดต Process #14 Branch Opening Compliance: เปลี่ยนจาก Stub → Partial, เพิ่มขั้นตอนและเอกสารครบทุก step (DBD / สรรพากร / ภพ.06)
+- อัปเดต Process #13 Annual Financial Close: เพิ่ม step ปริ้น สบช.3 + จ่ายปันผล
+- อัปเดต Process #10 Tax Filing: เพิ่มตารางกำหนดยื่นครบทุกแบบ + กฎสำคัญ
+- เพิ่มแท็บ "💡 ความรู้บัญชี" ในดาชบอร์ด รวม 6 หมวด: กำหนดยื่นภาษี, ปิดงบประจำปี, จดสาขาใหม่, กฎบัญชีสำคัญ, e-Tax Invoice, ตัวอย่างบันทึกบัญชี
+
+### Files changed
+- `processes/branch-opening-compliance/steps.md` — แทน TBD ด้วยขั้นตอนจริงครบ 10 step + รายการเอกสารทั้ง 2 ส่วน
+- `processes/branch-opening-compliance/overview.md` — completeness stub→partial, เพิ่ม Key Rules
+- `processes/annual-financial-close/steps.md` — เพิ่ม step 13-14 (สบช.3 + จ่ายปันผล)
+- `processes/tax-filing-reporting/overview.md` — เพิ่มตาราง Timing + Key Rules
+- `department/process-map.md` — #14 Stub→Partial
+- `dashboard/index.html` — เพิ่มแท็บ ความรู้บัญชี
+
+### Still TBD
+- Pain Points ของหลาย Process ยังว่าง
+- Process #15 Branch Closing รายละเอียดยังเป็น TBD
+
+### Suggested next steps
+- เติม Pain Points แต่ละ Process
+- เพิ่มขั้นตอน Branch Closing ให้ครบเหมือน Branch Opening
+
+---
+
 ## 2026-04-29 — เพิ่ม Process ใหม่: Branch Closing Compliance (DBD / สรรพากร / ภพ.06)
 
 ### What was done
