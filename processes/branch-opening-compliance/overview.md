@@ -4,8 +4,8 @@ process_id: branch-opening-compliance
 owner: Accounting Manager (โอ๋)
 category: Compliance
 status: active
-completeness: stub
-updated: 2026-04-28
+completeness: partial
+updated: 2026-04-30
 ---
 
 # Branch Opening — Compliance Registration
