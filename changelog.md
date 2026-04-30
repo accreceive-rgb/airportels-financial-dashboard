@@ -1,3 +1,23 @@
+## 2026-04-30 — เพิ่มสรุปอบรมภาษี PIT + CIT ในแท็บ ความรู้บัญชี
+
+### What was done
+- อ่านและสรุป PDF อบรมภาษีเงินได้บุคคลธรรมดา (PIT) 17 ก.พ. 69 — 148 หน้า
+- อ่านและสรุป PDF อบรมภาษีเงินได้นิติบุคคล (CIT) 21-24 เม.ย. 69 — 97 หน้า
+- เพิ่ม 2 cards ในแท็บ ความรู้บัญชี: PIT (เงินได้ 8 ประเภท, อัตราขั้นบันได, ลดหย่อน, กฎใหม่) และ CIT (อัตรา SME/ทั่วไป, ค่าเสื่อมราคา, หนี้สูญ, ค่าใช้จ่ายต้องห้าม)
+
+### Files changed
+- `dashboard/index.html` — เพิ่ม PIT card (3-column grid) + CIT card (3-column grid) ในส่วน #tab-knowledge
+
+### Still TBD
+- Pain Points ของหลาย process ยังเป็น TBD
+- Process #15 Branch Closing ยังเป็น Stub
+
+### Suggested next steps
+- กรอก Pain Points ที่แท้จริงจากประสบการณ์ทีม
+- เพิ่มรายละเอียด Branch Closing process
+
+---
+
 ## 2026-04-30 — นำเข้าความรู้บัญชีจาก Excel + เพิ่มหน้า Knowledge Base
 
 ### What was done
