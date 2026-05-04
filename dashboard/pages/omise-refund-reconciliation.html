@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Omise Refund Reconciliation — Airportels Financial MADGA</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
     body { font-family: 'Sarabun', Arial, sans-serif; background: #f1f5f9; }
@@ -356,6 +356,7 @@ function filterByMonth() {
 }
 
 function exportExcel() {
+  if(typeof XLSX==='undefined'){alert('ไม่สามารถ Export ได้\nกรุณาเชื่อมต่ออินเทอร์เน็ตก่อนเปิดหน้านี้ เนื่องจากต้องโหลด SheetJS library');return;}
   const monthData = RAW_DATA.filter(r => currentMonth === 'all' || refundMonth(r.created_at) === currentMonth);
   const matchLabel = { ok:'✓ ตรง', fail:'✗ ไม่ตรง', noorder:'⚠ ไม่พบ Order' };
 

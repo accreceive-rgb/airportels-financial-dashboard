@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Omise vs Revenue Reconciliation — Airportels Financial MADGA</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 <style>
   body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; }
   .match-ok    { background: #052e16 !important; }
@@ -210,6 +210,7 @@ function updateSummary(data){
 }
 
 function exportExcel(){
+  if(typeof XLSX==='undefined'){alert('ไม่สามารถ Export ได้\nกรุณาเชื่อมต่ออินเทอร์เน็ตก่อนเปิดหน้านี้ เนื่องจากต้องโหลด SheetJS library');return;}
   var today=new Date().toISOString().slice(0,10).replace(/-/g,'');
   var rows=RAW_DATA.map(function(r,i){
     return {
