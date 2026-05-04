@@ -5,24 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Omise Refund Reconciliation — Airportels Financial MADGA</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
     body { font-family: 'Sarabun', Arial, sans-serif; background: #f1f5f9; }
     .match-ok    { background-color: #dcfce7 !important; }
     .match-fail  { background-color: #fee2e2 !important; }
     .no-order    { background-color: #fef9c3 !important; }
+    .row-checked { opacity: 0.55; }
     .match-badge-ok   { background:#16a34a; color:#fff; }
     .match-badge-fail { background:#dc2626; color:#fff; }
     .match-badge-none { background:#d97706; color:#fff; }
     .match-badge-na   { background:#94a3b8; color:#fff; }
     tr.hidden { display: none; }
-    .reason-cell { max-width: 320px; font-size: 0.78rem; line-height: 1.4; }
+    .reason-cell { max-width: 280px; font-size: 0.78rem; line-height: 1.4; }
+    .note-input { width:180px; min-height:36px; font-size:0.75rem; border:1px solid #d1d5db;
+                  border-radius:4px; padding:3px 6px; resize:vertical; background:#fffde7;
+                  font-family:'Sarabun',sans-serif; line-height:1.4; }
+    .note-input:focus { outline:none; border-color:#f59e0b; box-shadow:0 0 0 2px #fde68a; }
+    .check-done { width:18px; height:18px; accent-color:#16a34a; cursor:pointer; }
     th { position: sticky; top: 0; z-index: 10; }
     .table-wrap { overflow-x: auto; overflow-y: auto; max-height: 68vh; border-radius: 0.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
     @media print {
       .no-print { display: none !important; }
       body { background: white; }
       .table-wrap { max-height: none; overflow: visible; box-shadow: none; }
+      .note-input { border:none; background:transparent; resize:none; }
     }
   </style>
 </head>
@@ -41,6 +49,7 @@
     </div>
     <div class="flex items-center gap-2">
       <span class="text-xs font-mono bg-gray-800 text-white px-2 py-1 rounded">MADGA</span>
+      <button onclick="exportExcel()" class="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded border border-green-700 font-medium">⬇ Export Excel</button>
       <button onclick="window.print()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded border border-gray-300 text-gray-700">🖨 Print</button>
     </div>
   </div>
@@ -92,6 +101,8 @@
     <button onclick="applyFilter('ok')"       id="f-ok"       class="filter-btn px-3 py-1 rounded-full text-sm border border-green-400 text-green-700 bg-green-50 hover:bg-green-100">✓ ยอดตรง</button>
     <button onclick="applyFilter('fail')"     id="f-fail"     class="filter-btn px-3 py-1 rounded-full text-sm border border-red-400 text-red-700 bg-red-50 hover:bg-red-100">✗ ยอดไม่ตรง</button>
     <button onclick="applyFilter('noorder')"  id="f-noorder"  class="filter-btn px-3 py-1 rounded-full text-sm border border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100">⚠ ไม่พบ Order</button>
+    <button onclick="applyFilter('unchecked')" id="f-unchecked" class="filter-btn px-3 py-1 rounded-full text-sm border border-purple-400 text-purple-700 bg-purple-50 hover:bg-purple-100">○ ยังไม่เช็ค</button>
+    <button onclick="applyFilter('checked')"   id="f-checked"  class="filter-btn px-3 py-1 rounded-full text-sm border border-gray-400 text-gray-600 bg-gray-50 hover:bg-gray-100">✔ เช็คแล้ว</button>
     <div class="ml-auto flex items-center gap-2">
       <input type="text" id="searchBox" oninput="applyFilter(currentFilter)" placeholder="🔍 ค้นหา Order / ชื่อ / เหตุผล..."
              class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-blue-400">
@@ -116,6 +127,8 @@
           <th class="px-3 py-2.5 text-center whitespace-nowrap">Status</th>
           <th class="px-3 py-2.5 text-left whitespace-nowrap">อนุมัติโดย</th>
           <th class="px-3 py-2.5 text-left text-gray-300 text-xs">ชีทที่พบ</th>
+          <th class="px-3 py-2.5 text-left whitespace-nowrap bg-yellow-800">📝 Note</th>
+          <th class="px-3 py-2.5 text-center whitespace-nowrap bg-yellow-800">เช็คแล้ว</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
@@ -189,14 +202,35 @@ const MONTH_LABELS = {
   '202602': 'กุมภาพันธ์ 2026', '202601': 'มกราคม 2026', 'all': 'ทุกเดือน'
 };
 
+const LS_KEY = 'omise_recon_userdata';
+
+function loadUserData() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; }
+}
+function saveUserData(data) {
+  localStorage.setItem(LS_KEY, JSON.stringify(data));
+}
+function getNote(rid)    { return (loadUserData()[rid] || {}).note    || ''; }
+function getChecked(rid) { return (loadUserData()[rid] || {}).checked || false; }
+
+function onNoteChange(rid, val) {
+  const d = loadUserData();
+  if (!d[rid]) d[rid] = {};
+  d[rid].note = val;
+  saveUserData(d);
+}
+function onCheckChange(rid, checked) {
+  const d = loadUserData();
+  if (!d[rid]) d[rid] = {};
+  d[rid].checked = checked;
+  saveUserData(d);
+  const row = document.querySelector(`tr[data-rid="${rid}"]`);
+  if (row) row.classList.toggle('row-checked', checked);
+}
+
 function fmt(n) {
   if (n == null || n === '') return '—';
   return Number(n).toLocaleString('th-TH');
-}
-
-function sheetMonth(sheet) {
-  if (!sheet) return '';
-  return sheet.replace(/[^\d]/g, '').substring(0, 6);
 }
 
 function refundMonth(d) {
@@ -208,15 +242,22 @@ function getFilteredData() {
   const q = document.getElementById('searchBox').value.trim().toLowerCase();
   return RAW_DATA.filter(r => {
     const monthMatch = currentMonth === 'all' || refundMonth(r.created_at) === currentMonth;
-    const filterMatch = currentFilter === 'all' || r.amt_match === currentFilter;
-    if (!monthMatch || !filterMatch) return false;
+    if (!monthMatch) return false;
+    const isChecked = getChecked(r.refund_id);
+    if (currentFilter === 'checked'   && !isChecked) return false;
+    if (currentFilter === 'unchecked' && isChecked)  return false;
+    if (currentFilter !== 'all' && currentFilter !== 'checked' && currentFilter !== 'unchecked') {
+      if (r.amt_match !== currentFilter) return false;
+    }
     if (!q) return true;
+    const note = getNote(r.refund_id).toLowerCase();
     return (r.order_num||'').toLowerCase().includes(q) ||
            (r.cust_name||'').toLowerCase().includes(q) ||
            (r.claim_reason||'').toLowerCase().includes(q) ||
            (r.charge_id||'').toLowerCase().includes(q) ||
            (r.service||'').toLowerCase().includes(q) ||
-           (r.approve_by||'').toLowerCase().includes(q);
+           (r.approve_by||'').toLowerCase().includes(q) ||
+           note.includes(q);
   });
 }
 
@@ -228,7 +269,10 @@ function renderTable() {
   let totalOmise = 0;
   data.forEach((r, i) => {
     totalOmise += (r.refund_amount || 0);
-    const rowClass = r.amt_match === 'ok' ? 'match-ok' : r.amt_match === 'fail' ? 'match-fail' : 'no-order';
+    const isChecked = getChecked(r.refund_id);
+    const note = getNote(r.refund_id);
+    const rowClass = (r.amt_match === 'ok' ? 'match-ok' : r.amt_match === 'fail' ? 'match-fail' : 'no-order')
+                   + (isChecked ? ' row-checked' : '');
     const matchBadge = r.amt_match === 'ok'
       ? '<span class="match-badge-ok px-2 py-0.5 rounded text-xs font-bold">✓ ตรง</span>'
       : r.amt_match === 'fail'
@@ -244,7 +288,9 @@ function renderTable() {
     const diff = (r.refund_amount != null && r.claim_refund != null && r.amt_match === 'fail')
       ? `<div class="text-red-600 text-xs mt-0.5">diff: ${fmt(r.refund_amount - r.claim_refund)}</div>` : '';
 
-    html += `<tr class="${rowClass} border-b border-gray-100 hover:opacity-90 transition-opacity">
+    const safeNote = note.replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+    html += `<tr class="${rowClass} border-b border-gray-100 transition-opacity" data-rid="${r.refund_id}">
       <td class="px-3 py-2 text-center text-gray-400 text-xs">${i+1}</td>
       <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">${r.created_at || '—'}</td>
       <td class="px-3 py-2 font-mono text-xs text-blue-700 whitespace-nowrap">${r.charge_id || '—'}</td>
@@ -258,10 +304,23 @@ function renderTable() {
       <td class="px-3 py-2 text-center">${statusBadge}</td>
       <td class="px-3 py-2 text-xs whitespace-nowrap text-gray-600">${r.approve_by || '—'}</td>
       <td class="px-3 py-2 text-xs text-gray-300 whitespace-nowrap">${r.found_sheet || '—'}</td>
+      <td class="px-2 py-1.5 no-print"><textarea class="note-input" data-rid="${r.refund_id}" placeholder="พิมพ์ note...">${safeNote}</textarea></td>
+      <td class="px-3 py-2 text-center no-print">
+        <input type="checkbox" class="check-done" data-rid="${r.refund_id}" ${isChecked ? 'checked' : ''} title="เช็คแล้ว / แก้ไขแล้ว">
+      </td>
     </tr>`;
   });
 
-  tbody.innerHTML = html || '<tr><td colspan="13" class="px-6 py-8 text-center text-gray-400">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>';
+  tbody.innerHTML = html || `<tr><td colspan="15" class="px-6 py-8 text-center text-gray-400">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>`;
+
+  // Attach events (event delegation avoids re-attaching per render)
+  tbody.querySelectorAll('.note-input').forEach(el => {
+    el.addEventListener('input', e => onNoteChange(e.target.dataset.rid, e.target.value));
+  });
+  tbody.querySelectorAll('.check-done').forEach(el => {
+    el.addEventListener('change', e => onCheckChange(e.target.dataset.rid, e.target.checked));
+  });
+
   document.getElementById('rowCount').textContent = `แสดง ${data.length} รายการ | ยอดรวม Omise: ฿${fmt(totalOmise)}`;
 }
 
@@ -269,26 +328,23 @@ function updateSummary() {
   const data = RAW_DATA.filter(r => currentMonth === 'all' || refundMonth(r.created_at) === currentMonth);
   const total = data.length;
   const totalAmt = data.reduce((s, r) => s + (r.refund_amount || 0), 0);
-  const ok = data.filter(r => r.amt_match === 'ok').length;
-  const fail = data.filter(r => r.amt_match === 'fail').length;
+  const ok      = data.filter(r => r.amt_match === 'ok').length;
+  const fail    = data.filter(r => r.amt_match === 'fail').length;
   const noorder = data.filter(r => r.amt_match === 'noorder').length;
-  document.getElementById('st-total').textContent = total;
-  document.getElementById('st-amount').textContent = fmt(totalAmt);
-  document.getElementById('st-match').textContent = ok;
+  document.getElementById('st-total').textContent   = total;
+  document.getElementById('st-amount').textContent  = fmt(totalAmt);
+  document.getElementById('st-match').textContent   = ok;
   document.getElementById('st-mismatch').textContent = fail;
-  document.getElementById('st-noorder').textContent = noorder;
+  document.getElementById('st-noorder').textContent  = noorder;
 }
 
 function applyFilter(f) {
   currentFilter = f;
   document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600',
-      'bg-green-600', 'bg-red-600', 'bg-yellow-600');
+    btn.classList.remove('bg-blue-600','text-white','border-blue-600');
   });
   const active = document.getElementById('f-' + f);
-  if (active) {
-    active.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-  }
+  if (active) active.classList.add('bg-blue-600','text-white','border-blue-600');
   renderTable();
 }
 
@@ -297,6 +353,44 @@ function filterByMonth() {
   document.getElementById('monthLabel').textContent = MONTH_LABELS[currentMonth] || currentMonth;
   updateSummary();
   renderTable();
+}
+
+function exportExcel() {
+  const monthData = RAW_DATA.filter(r => currentMonth === 'all' || refundMonth(r.created_at) === currentMonth);
+  const matchLabel = { ok:'✓ ตรง', fail:'✗ ไม่ตรง', noorder:'⚠ ไม่พบ Order' };
+
+  const rows = monthData.map((r, i) => ({
+    '#': i + 1,
+    'วันที่ Refund':   r.created_at || '',
+    'Charge ID':       r.charge_id  || '',
+    'Order':           r.order_num  || '',
+    'ชื่อลูกค้า':       r.cust_name  || '',
+    'บริการ':          r.service    || '',
+    'ยอด Omise (฿)':  r.refund_amount ?? '',
+    'ยอด Claim (฿)':  r.claim_refund  ?? '',
+    'ยอดตรง?':        matchLabel[r.amt_match] || '',
+    'เหตุผล Claim':   r.claim_reason  || '',
+    'Claim Status':    r.claim_status  || '',
+    'อนุมัติโดย':      r.approve_by    || '',
+    'ชีทที่พบ':        r.found_sheet   || '',
+    'Note':            getNote(r.refund_id),
+    'เช็คแล้ว':       getChecked(r.refund_id) ? 'เช็คแล้ว' : ''
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Column widths
+  ws['!cols'] = [
+    {wch:4},{wch:18},{wch:26},{wch:16},{wch:24},{wch:10},
+    {wch:13},{wch:13},{wch:10},{wch:55},{wch:12},{wch:14},{wch:18},{wch:35},{wch:10}
+  ];
+
+  const wb = XLSX.utils.book_new();
+  const sheetName = `Recon_${currentMonth === 'all' ? 'All' : currentMonth}`;
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  XLSX.writeFile(wb, `Omise_Refund_Reconciliation_${sheetName}_${today}.xlsx`);
 }
 
 // Init
