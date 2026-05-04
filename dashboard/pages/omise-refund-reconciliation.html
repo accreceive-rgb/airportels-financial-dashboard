@@ -357,6 +357,7 @@ function filterByMonth() {
 
 function exportExcel() {
   if(typeof XLSX==='undefined'){alert('ไม่สามารถ Export ได้\nกรุณาเชื่อมต่ออินเทอร์เน็ตก่อนเปิดหน้านี้ เนื่องจากต้องโหลด SheetJS library');return;}
+  try {
   const monthData = RAW_DATA.filter(r => currentMonth === 'all' || refundMonth(r.created_at) === currentMonth);
   const matchLabel = { ok:'✓ ตรง', fail:'✗ ไม่ตรง', noorder:'⚠ ไม่พบ Order' };
 
@@ -391,13 +392,12 @@ function exportExcel() {
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
   const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
-  var _wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  var _blob=new Blob([_wbout],{type:'application/octet-stream'});
-  var _url=URL.createObjectURL(_blob);
-  var _a=document.createElement('a');
-  _a.href=_url; _a.download=`Omise_Refund_Reconciliation_${sheetName}_${today}.xlsx`;
-  document.body.appendChild(_a); _a.click();
-  document.body.removeChild(_a); URL.revokeObjectURL(_url);
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
+  var a=document.createElement('a');
+  a.href='data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'+wbout;
+  a.download=`Omise_Refund_Reconciliation_${sheetName}_${today}.xlsx`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch(e) { alert('Export Error: '+e.message); }
 }
 
 // Init

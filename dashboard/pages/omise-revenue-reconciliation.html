@@ -210,36 +210,40 @@ function updateSummary(data){
 }
 
 function exportExcel(){
-  if(typeof XLSX==='undefined'){alert('ไม่สามารถ Export ได้\nกรุณาเชื่อมต่ออินเทอร์เน็ตก่อนเปิดหน้านี้ เนื่องจากต้องโหลด SheetJS library');return;}
-  var today=new Date().toISOString().slice(0,10).replace(/-/g,'');
-  var rows=RAW_DATA.map(function(r,i){
-    return {
-      '#':i+1,
-      'Order ID':r.oid,
-      'Service':r.svc,
-      'วันที่':r.dt,
-      'ชื่อ':((r.fn||'')+(r.ln?' '+r.ln:'')).trim(),
-      'Receipt No':r.rno||'',
-      'Revenue Amount':r.rev,
-      'Omise Amount':r.oamt!=null?r.oamt:'',
-      'Diff':r.diff,
-      'Charge ID':r.cid||'',
-      'Omise Card':r.ocard||'',
-      'Match Status':r.ms,
-      'Note':getNote(r.oid),
-      'เช็คแล้ว':getChk(r.oid)?'เช็คแล้ว':''
-    };
-  });
-  var ws=XLSX.utils.json_to_sheet(rows);
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,'Reconciliation',ws);
-  var _wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  var _blob=new Blob([_wbout],{type:'application/octet-stream'});
-  var _url=URL.createObjectURL(_blob);
-  var _a=document.createElement('a');
-  _a.href=_url; _a.download='Omise_Revenue_Recon_202604_'+today+'.xlsx';
-  document.body.appendChild(_a); _a.click();
-  document.body.removeChild(_a); URL.revokeObjectURL(_url);
+  try {
+    if(typeof XLSX==='undefined'){alert('XLSX library ยังโหลดไม่ได้ กรุณาเชื่อมต่ออินเทอร์เน็ต');return;}
+    var today=new Date().toISOString().slice(0,10).replace(/-/g,'');
+    var rows=RAW_DATA.map(function(r,i){
+      return {
+        '#':i+1,
+        'Order ID':r.oid,
+        'Service':r.svc,
+        'วันที่':r.dt,
+        'ชื่อ':((r.fn||'')+(r.ln?' '+r.ln:'')).trim(),
+        'Receipt No':r.rno||'',
+        'Revenue Amount':r.rev,
+        'Omise Amount':r.oamt!=null?r.oamt:'',
+        'Diff':r.diff,
+        'Charge ID':r.cid||'',
+        'Omise Card':r.ocard||'',
+        'Match Status':r.ms,
+        'Note':getNote(r.oid),
+        'เช็คแล้ว':getChk(r.oid)?'เช็คแล้ว':''
+      };
+    });
+    var ws=XLSX.utils.json_to_sheet(rows);
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,'Reconciliation',ws);
+    var wbout=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
+    var a=document.createElement('a');
+    a.href='data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'+wbout;
+    a.download='Omise_Revenue_Recon_202604_'+today+'.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch(e) {
+    alert('Export Error: '+e.message);
+  }
 }
 
 renderTable();
