@@ -233,7 +233,7 @@ function exportExcel(){
     });
     var ws=XLSX.utils.json_to_sheet(rows);
     var wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,'Reconciliation',ws);
+    XLSX.utils.book_append_sheet(wb,ws,'Reconciliation');
     var wbout=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
     var a=document.createElement('a');
     a.href='data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'+wbout;
