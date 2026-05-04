@@ -233,7 +233,13 @@ function exportExcel(){
   var ws=XLSX.utils.json_to_sheet(rows);
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Reconciliation',ws);
-  XLSX.writeFile(wb,'Omise_Revenue_Recon_202604_'+today+'.xlsx');
+  var _wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var _blob=new Blob([_wbout],{type:'application/octet-stream'});
+  var _url=URL.createObjectURL(_blob);
+  var _a=document.createElement('a');
+  _a.href=_url; _a.download='Omise_Revenue_Recon_202604_'+today+'.xlsx';
+  document.body.appendChild(_a); _a.click();
+  document.body.removeChild(_a); URL.revokeObjectURL(_url);
 }
 
 renderTable();
