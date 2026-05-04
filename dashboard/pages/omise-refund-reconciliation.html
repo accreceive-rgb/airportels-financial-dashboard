@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omise Refund Reconciliation — Airportels Financial MADGA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Sarabun', Arial, sans-serif; background: #f1f5f9; }
+    .match-ok    { background-color: #dcfce7 !important; }
+    .match-fail  { background-color: #fee2e2 !important; }
+    .no-order    { background-color: #fef9c3 !important; }
+    .match-badge-ok   { background:#16a34a; color:#fff; }
+    .match-badge-fail { background:#dc2626; color:#fff; }
+    .match-badge-none { background:#d97706; color:#fff; }
+    .match-badge-na   { background:#94a3b8; color:#fff; }
+    tr.hidden { display: none; }
+    .reason-cell { max-width: 320px; font-size: 0.78rem; line-height: 1.4; }
+    th { position: sticky; top: 0; z-index: 10; }
+    .table-wrap { overflow-x: auto; overflow-y: auto; max-height: 68vh; border-radius: 0.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; }
+      .table-wrap { max-height: none; overflow: visible; box-shadow: none; }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<div class="bg-white border-b border-gray-200 shadow-sm no-print">
+  <div class="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="../index.html" class="text-blue-600 hover:text-blue-800 text-sm">← Dashboard</a>
+      <span class="text-gray-300">|</span>
+      <div>
+        <h1 class="text-xl font-bold text-gray-800">Omise Refund Reconciliation</h1>
+        <p class="text-xs text-gray-500 mt-0.5">เปรียบเทียบ Refund Omise vs Claim — เดือน <span id="monthLabel"></span></p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-mono bg-gray-800 text-white px-2 py-1 rounded">MADGA</span>
+      <button onclick="window.print()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded border border-gray-300 text-gray-700">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-screen-2xl mx-auto px-6 py-6">
+
+  <!-- Month Selector -->
+  <div class="no-print mb-4 flex items-center gap-3">
+    <label class="text-sm font-medium text-gray-700">เลือกเดือน:</label>
+    <select id="monthSelect" onchange="filterByMonth()" class="text-sm border border-gray-300 rounded px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <option value="all">ทุกเดือน</option>
+      <option value="202604" selected>เมษายน 2026</option>
+      <option value="202603">มีนาคม 2026</option>
+      <option value="202602">กุมภาพันธ์ 2026</option>
+      <option value="202601">มกราคม 2026</option>
+    </select>
+    <span class="text-xs text-gray-400 ml-2">ข้อมูล ณ วันที่ 4 พ.ค. 2569</span>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+    <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+      <div class="text-2xl font-bold text-gray-800" id="st-total">—</div>
+      <div class="text-xs text-gray-500 mt-1">รายการทั้งหมด</div>
+    </div>
+    <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+      <div class="text-2xl font-bold text-blue-700" id="st-amount">—</div>
+      <div class="text-xs text-gray-500 mt-1">ยอดรวม Refund (฿)</div>
+    </div>
+    <div class="bg-green-50 rounded-xl p-4 border border-green-200 shadow-sm">
+      <div class="text-2xl font-bold text-green-700" id="st-match">—</div>
+      <div class="text-xs text-green-600 mt-1">✓ ยอดตรง</div>
+    </div>
+    <div class="bg-red-50 rounded-xl p-4 border border-red-200 shadow-sm">
+      <div class="text-2xl font-bold text-red-700" id="st-mismatch">—</div>
+      <div class="text-xs text-red-600 mt-1">✗ ยอดไม่ตรง</div>
+    </div>
+    <div class="bg-yellow-50 rounded-xl p-4 border border-yellow-200 shadow-sm">
+      <div class="text-2xl font-bold text-yellow-700" id="st-noorder">—</div>
+      <div class="text-xs text-yellow-600 mt-1">⚠ ไม่พบ Order</div>
+    </div>
+  </div>
+
+  <!-- Filters + Search -->
+  <div class="no-print flex flex-wrap items-center gap-2 mb-4">
+    <span class="text-sm text-gray-600 font-medium mr-1">กรอง:</span>
+    <button onclick="applyFilter('all')"      id="f-all"      class="filter-btn px-3 py-1 rounded-full text-sm border bg-blue-600 text-white border-blue-600">ทั้งหมด</button>
+    <button onclick="applyFilter('ok')"       id="f-ok"       class="filter-btn px-3 py-1 rounded-full text-sm border border-green-400 text-green-700 bg-green-50 hover:bg-green-100">✓ ยอดตรง</button>
+    <button onclick="applyFilter('fail')"     id="f-fail"     class="filter-btn px-3 py-1 rounded-full text-sm border border-red-400 text-red-700 bg-red-50 hover:bg-red-100">✗ ยอดไม่ตรง</button>
+    <button onclick="applyFilter('noorder')"  id="f-noorder"  class="filter-btn px-3 py-1 rounded-full text-sm border border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100">⚠ ไม่พบ Order</button>
+    <div class="ml-auto flex items-center gap-2">
+      <input type="text" id="searchBox" oninput="applyFilter(currentFilter)" placeholder="🔍 ค้นหา Order / ชื่อ / เหตุผล..."
+             class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-blue-400">
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table class="w-full text-sm border-collapse bg-white">
+      <thead>
+        <tr class="bg-gray-700 text-white text-xs">
+          <th class="px-3 py-2.5 text-center w-8">#</th>
+          <th class="px-3 py-2.5 text-left whitespace-nowrap">วันที่ Refund</th>
+          <th class="px-3 py-2.5 text-left whitespace-nowrap">Charge ID</th>
+          <th class="px-3 py-2.5 text-left whitespace-nowrap">Order</th>
+          <th class="px-3 py-2.5 text-left">ชื่อลูกค้า</th>
+          <th class="px-3 py-2.5 text-left">บริการ</th>
+          <th class="px-3 py-2.5 text-right whitespace-nowrap">Omise (฿)</th>
+          <th class="px-3 py-2.5 text-right whitespace-nowrap">Claim (฿)</th>
+          <th class="px-3 py-2.5 text-center">ตรง?</th>
+          <th class="px-3 py-2.5 text-left">เหตุผล Claim</th>
+          <th class="px-3 py-2.5 text-center whitespace-nowrap">Status</th>
+          <th class="px-3 py-2.5 text-left whitespace-nowrap">อนุมัติโดย</th>
+          <th class="px-3 py-2.5 text-left text-gray-300 text-xs">ชีทที่พบ</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="mt-3 flex items-center justify-between text-xs text-gray-400 no-print">
+    <span id="rowCount">แสดง — รายการ</span>
+    <span>สร้างจากไฟล์ Omise_2026.xlsx — ชีท 202604Refund + รับชำระ + Claim</span>
+  </div>
+</div>
+
+<script>
+const RAW_DATA = [
+  {"refund_id":"rfnd_67dg6kwpgugu5nv56ts","created_at":"2026-04-16 17:04","refund_status":"closed","refund_amount":2500,"charge_id":"chrg_67de5f546l2tefsny3q","description":"Charge for order STR260416477","order_num":"STR260416477","found_sheet":"202604รับชำระ","cust_name":"Mr Carlos Ruiz Lantero","service":"Storage","claim_status":"Done","approve_by":"ICZ CS","claim_reason":"ลูกค้าเคยจองที่ฝากกระเป๋าที่ DMK ไว้ (เริ่มวันที่ 15/04) แต่เที่ยวบินมีปัญหา (Flight disruptions) เลยไม่ได้ไปใช้บริการ และจองเข้าใหม่ แต่ยังไม่เริ่มเป็นวันที่ 18/04 เลยทำการรีฟันคืนออเดอร์นี้ให้ และใช้ออเดอร์เดิม","claim_refund":2500,"claim_paid":2500,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dg8k0awhdx9uahrrk","created_at":"2026-04-16 17:09","refund_status":"closed","refund_amount":500,"charge_id":"chrg_67d04i2cjh0crxfk4ct","description":"Charge for order INTX2604735","order_num":"INTX2604735","found_sheet":"202604รับชำระ","cust_name":"Ms Chulaphan Kitisarn","service":"Delivery","claim_status":"Done","approve_by":"ICZ CS","claim_reason":"เนื่องจากลูกค้ามีการเปลี่ยนแผน","claim_refund":598,"claim_paid":1098,"amt_match":"fail"},
+  {"refund_id":"rfnd_67dg9zdc9uozxda6lby","created_at":"2026-04-16 17:13","refund_status":"closed","refund_amount":500,"charge_id":"chrg_67c2jjrz2hprl7vdv4l","description":"Charge for order STR260413659","order_num":"STR260413659","found_sheet":"202604รับชำระ","cust_name":"Ms Sabeehah Omar","service":"Storage","claim_status":"Done","approve_by":"Winn CS","claim_reason":"เป็นออเดอร์ที่จองซ้ำและลูกค้าโดนตัดเงิน 2 รอบครับ","claim_refund":500,"claim_paid":500,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dgalmwml6dh0zdcy3","created_at":"2026-04-16 17:15","refund_status":"closed","refund_amount":600,"charge_id":"chrg_67bfz8hinkj0nxc3bwn","description":"Charge for order STR260411265","order_num":"STR260411265","found_sheet":"202604รับชำระ","cust_name":"Mr Napat Kongchoosak","service":"Storage","claim_status":"Done","approve_by":"ICZ CS","claim_reason":"ระบบรอบแรกขึ้นเป็นหน้าขาว ไม่มียืนยันอะไรให้เลย เลยคิดว่าจองยังไม่สำเร็จ เลยทำการจองใหม่อีกครั้ง ระบบตัดเงินลูกค้า 2 รอบ","claim_refund":600,"claim_paid":600,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dgbl4fm42syvl2aki","created_at":"2026-04-16 17:18","refund_status":"closed","refund_amount":400,"charge_id":"chrg_67blu18vxjpno80wrtc","description":"Charge for order STR260411274","order_num":"STR260411274","found_sheet":"202604รับชำระ","cust_name":"Mrs Claudia Arunmitr","service":"Storage","claim_status":"Done","approve_by":"Tam DMK","claim_reason":"ลูกค้าจองออเดอร์ซ้ำ ต้องการยกเลิก","claim_refund":400,"claim_paid":400,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dgcfpxrfb79pxadrd","created_at":"2026-04-16 17:20","refund_status":"closed","refund_amount":720,"charge_id":"chrg_67blq3cf9mu0o4rgnz2","description":"Charge for order STR260411514","order_num":"STR260411514","found_sheet":"202604รับชำระ","cust_name":"Mrs Claudia Arunmitr","service":"Storage","claim_status":"Done","approve_by":"Tam DMK","claim_reason":"ลูกค้าจองออเดอร์ซ้ำ ต้องการยกเลิก","claim_refund":720,"claim_paid":720,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dgd0fmhy4cr1606gx","created_at":"2026-04-16 17:22","refund_status":"closed","refund_amount":598,"charge_id":"chrg_67blfo8chqnc4ty35pg","description":"Charge for order INTX2604560","order_num":"INTX2604560","found_sheet":"202604รับชำระ","cust_name":"Mr SHOGO MACHI","service":"Delivery","claim_status":"Done","approve_by":"Tam DMK","claim_reason":"ลูกค้าจองซ้ำและต้องการเปลี่ยนสถานที่ปลายทาง","claim_refund":598,"claim_paid":598,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dgdg9sx6icgs4neb4","created_at":"2026-04-16 17:23","refund_status":"closed","refund_amount":2847,"charge_id":"chrg_67aoeesv8uhw6jxhpgw","description":"Charge for order LUG260409278","order_num":"LUG260409278","found_sheet":"202604รับชำระ","cust_name":"Mr Mohammed Vishal Khan","service":"Delivery","claim_status":"Done","approve_by":"Aon DMK","claim_reason":"ลูกค้าเปลี่ยนแผนการเดินทางกระทันหัน","claim_refund":2847,"claim_paid":2847,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqkur0y8fmwi61rh1","created_at":"2026-04-17 10:47","refund_status":"closed","refund_amount":598,"charge_id":"chrg_67blkyaabu4h370v8la","description":"Charge for order INTX2604561","order_num":"INTX2604561","found_sheet":"202604รับชำระ","cust_name":"Mr SHOGO MACHI","service":"Delivery","claim_status":"Done","approve_by":"ICZ CS","claim_reason":"His flight has been cancelled.","claim_refund":598,"claim_paid":598,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dql87ed10zy35zm15","created_at":"2026-04-17 10:48","refund_status":"closed","refund_amount":600,"charge_id":"chrg_67bl14chhxvfe0rogqb","description":"Charge for order STR260411144","order_num":"STR260411144","found_sheet":"202604รับชำระ","cust_name":"Mr SHOGO MACHI","service":"Storage","claim_status":"Done","approve_by":"ICZ CS","claim_reason":"His flight has been cancelled.","claim_refund":600,"claim_paid":600,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqmdxepmly7nbw3b9","created_at":"2026-04-17 10:51","refund_status":"closed","refund_amount":1500,"charge_id":"chrg_67cdylln261nzj60com","description":"Charge for order STR260413636","order_num":"STR260413636","found_sheet":"202604รับชำระ","cust_name":"Mr Jimboy Odtohn","service":"Storage","claim_status":"Done","approve_by":"Tam DMK","claim_reason":"ลูกค้าเปลี่ยนแผนการเดินทางไปโรงแรม","claim_refund":1500,"claim_paid":1500,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqnkbjunih9ekdaws","created_at":"2026-04-17 10:55","refund_status":"closed","refund_amount":500,"charge_id":"chrg_67aopcp8dfqgims1u1g","description":"Charge for order STR260409952","order_num":"STR260409952","found_sheet":"202604รับชำระ","cust_name":"Mr Lovely Esperanza","service":"Storage","claim_status":"Done","approve_by":"Winn CS","claim_reason":"ลูกค้าขอยกเลิกเนื่องจากจะไม่ได้มาใช้บริการที่ DMK แล้ว แต่จะไปทำรายการใหม่ที่หน้าเคาร์เตอร์ที่ BKK แทนครับ","claim_refund":500,"claim_paid":500,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqnyyfploertdljpe","created_at":"2026-04-17 10:56","refund_status":"closed","refund_amount":750,"charge_id":"chrg_679c2x5pkzli8mghvxl","description":"Charge for order STR260406759","order_num":"STR260406759","found_sheet":"202604รับชำระ","cust_name":"Mr Tathagata Raha","service":"Storage","claim_status":"Done","approve_by":"Aon DMK","claim_reason":"ลูกค้าจองฝาก 6 โมงเช้า ซึ่งเคาน์เตอร์ที่ Yaowarat Chinatown ยังไม่เปิด จึงต้องยกเลิกและขอรีฟันคืน จองตอน 04:38 จองดรอป 06:35 // โทรเข้ามาขอยกเลิกและรีฟัน","claim_refund":750,"claim_paid":750,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqodd7f38wc066iol","created_at":"2026-04-17 10:57","refund_status":"closed","refund_amount":1098,"charge_id":"chrg_678793tqjkd5zqvl8f3","description":"Charge for order INTX2604087","order_num":"INTX2604087","found_sheet":"202604รับชำระ","cust_name":"Mrs YUMIKO ONOZAKI","service":"Delivery","claim_status":"Done","approve_by":"Name CS","claim_reason":"แจ้งยกเลิกก่อนเวลา 3 ชั่วโมง ลูกค้าต้องการนำกระเป๋าไปเอง","claim_refund":1098,"claim_paid":1098,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqoqgniutej1ok2bv","created_at":"2026-04-17 10:58","refund_status":"closed","refund_amount":1098,"charge_id":"chrg_6781ub5qqmgz4b7lk94","description":"Charge for order INTX2604084","order_num":"INTX2604084","found_sheet":"202604รับชำระ","cust_name":"Mrs YUMIKO ONOZAKI","service":"Delivery","claim_status":"Done","approve_by":"Cream BKK","claim_reason":"แจ้งยกเลิกก่อนเวลา 3 ชั่วโมง ลูกค้าต้องการนำกระเป๋าไปเอง","claim_refund":1098,"claim_paid":1098,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqp7zjqrj3jx9vxwn","created_at":"2026-04-17 10:59","refund_status":"closed","refund_amount":1000,"charge_id":"chrg_66qo9xntwgrse08evfw","description":"Charge for order STR260217339","order_num":"STR260217339","found_sheet":"202602รับชำระ","cust_name":"Mr Abhiraj Talekar","service":"Storage","claim_status":"Done","approve_by":"Name CS","claim_reason":"ลูกค้าโทรมาแจ้งว่า ไม่ต้องการใช้บริการฝากแล้ว ลูกค้าจะนำกระเป๋าไปเอง","claim_refund":1000,"claim_paid":1000,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqpn31nuxyd7s2l7f","created_at":"2026-04-17 11:00","refund_status":"closed","refund_amount":200,"charge_id":"chrg_671fxqm3kp0mxx31ukz","description":"Charge for order STR260317491","order_num":"STR260317491","found_sheet":"202603รับชำระ","cust_name":"Mr eunjeong kim","service":"Storage","claim_status":"Done","approve_by":"Name CS","claim_reason":"ลูกค้าไม่ได้รับเมลล์คอนเฟริมเลยขอยกเลิกในวันที่ใช้บริการ","claim_refund":200,"claim_paid":200,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqqh4o9lk26bd8lks","created_at":"2026-04-17 11:03","refund_status":"closed","refund_amount":1000,"charge_id":"chrg_676hmwhtms034bmnjeb","description":"Charge for order STR260329273","order_num":"STR260329273","found_sheet":"202603รับชำระ","cust_name":"Mr Deana Desouza Lawrence","service":"Storage","claim_status":"Done","approve_by":"AOM.BKK","claim_reason":"ลค จองฝากทางออนไลน์ซ้ำ ต้องการยกเลิกออเดอร์และรีฟันด์เงินคืนอ้างอิงออเดอร์ฝากจองเรียบร้อย STR260329242","claim_refund":1000,"claim_paid":1000,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dqqqtqo48io75gf5r","created_at":"2026-04-17 11:04","refund_status":"closed","refund_amount":1200,"charge_id":"chrg_674prtb2mr12dxj8rsr","description":"Charge for order STR260325586","order_num":"STR260325586","found_sheet":"202603รับชำระ","cust_name":"Mr Walter Junior Machado","service":"Delivery","claim_status":"Done","approve_by":"Winn CS","claim_reason":"แจ้งยกเลิกก่อนเวลา 3 ชั่วโมง ลูกค้าโทรมาแจ้งว่าขอยกเลิกครับ","claim_refund":1200,"claim_paid":1200,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dt17swby7wwayjwqb","created_at":"2026-04-17 14:58","refund_status":"closed","refund_amount":9891,"charge_id":"chrg_65jun8fgui1p8l565zn","description":null,"order_num":"","found_sheet":"","cust_name":"","service":"","claim_status":"","approve_by":"","claim_reason":"","claim_refund":null,"claim_paid":null,"amt_match":"noorder"},
+  {"refund_id":"rfnd_67dt19o3u375ge2qm0a","created_at":"2026-04-17 14:58","refund_status":"closed","refund_amount":1099,"charge_id":"chrg_65rzpvoe0ad8g52cpy8","description":null,"order_num":"","found_sheet":"","cust_name":"","service":"","claim_status":"","approve_by":"","claim_reason":"","claim_refund":null,"claim_paid":null,"amt_match":"noorder"},
+  {"refund_id":"rfnd_67dt1b6w35cuolj512c","created_at":"2026-04-17 14:58","refund_status":"closed","refund_amount":1099,"charge_id":"chrg_66eg1nheau8kwzvebex","description":"Charge for order LUG251030589","order_num":"LUG251030589","found_sheet":"202601รับชำระ","cust_name":"Mr Víctor Sánchez Granda","service":"Delivery","claim_status":"Done","approve_by":"ICZ CS","claim_reason":"ลูกค้ายกเลิกทริป","claim_refund":12089,"claim_paid":12089,"amt_match":"fail"},
+  {"refund_id":"rfnd_67dt1qzvjuyyarcckpt","created_at":"2026-04-17 14:59","refund_status":"closed","refund_amount":998,"charge_id":"chrg_673a1cv6w3np16zsjai","description":"Charge for order INTX26031424","order_num":"INTX26031424","found_sheet":"202603รับชำระ","cust_name":"Mrs ANNA WROBLEWSKA","service":"Delivery","claim_status":"Done","approve_by":"Name CS","claim_reason":"ลูกค้าไปกัมพูชา แจ้งยกเลิกก่อนใช้บริการ1วัน","claim_refund":998,"claim_paid":998,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dt2dms0o7747mferf","created_at":"2026-04-17 15:01","refund_status":"closed","refund_amount":1000,"charge_id":"chrg_673k319w4jwpe8ymja2","description":"Charge for order STR260322929","order_num":"STR260322929","found_sheet":"202603รับชำระ","cust_name":"Mr Wilfred Benard","service":"Storage","claim_status":"Done","approve_by":"Toomtam BKK","claim_reason":"ลูกค้าจองออเดอร์ซ้ำ ต้องการยกเลิก 1 ออเดอร์","claim_refund":1000,"claim_paid":1000,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dt2lt86l0dy6upvk8","created_at":"2026-04-17 15:02","refund_status":"closed","refund_amount":1098,"charge_id":"chrg_66q9a9f3ptvx3wejr14","description":"Charge for order INTX26021208","order_num":"INTX26021208","found_sheet":"202602รับชำระ","cust_name":"Mr Kenneth Hsu","service":"Delivery","claim_status":"Done","approve_by":"Winn CS","claim_reason":"แจ้งยกเลิกก่อนเวลา 3 ชั่วโมง ลูกค้าแจ้งว่ามีเปลี่ยนไฟล์บินครับ เลยขอยกเลิกรายการเข้ารับครับ","claim_refund":1098,"claim_paid":1098,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dtg4g3nheuupw1mpn","created_at":"2026-04-17 15:40","refund_status":"closed","refund_amount":500,"charge_id":"chrg_6738xcyrny29j1yow2l","description":"Charge for order STR260321678","order_num":"STR260321678","found_sheet":"202603รับชำระ","cust_name":"Mrs Isariya Bajjada","service":"Storage","claim_status":"Done","approve_by":"ICZ CS","claim_reason":"ลูกค้าต้องการยกเลิก","claim_refund":500,"claim_paid":500,"amt_match":"ok"},
+  {"refund_id":"rfnd_67dth39hkl53hoj0hks","created_at":"2026-04-17 15:43","refund_status":"closed","refund_amount":299,"charge_id":"chrg_672yoxof3b7f2oazoag","description":"Charge for order INTX26031337","order_num":"INTX26031337","found_sheet":"202603รับชำระ","cust_name":"Mr Yuta SAWADA","service":"Delivery","claim_status":"Done","approve_by":"Winn CS","claim_reason":"ลูกค้าจองให้เข้ารับ 9 โมง แต่ว่าระบบไม่ได้คิดค่า OD มา เราเลยให้ไปรอบปกติ แต่ลูกค้าแจ้งว่าที่พักไม่ให้ฝาก เลยต้องยกเลิกและคืนเงินให้ลูกค้าคับ","claim_refund":299,"claim_paid":299,"amt_match":"ok"},
+  {"refund_id":"rfnd_67exy0zcxbidzaf1cp6","created_at":"2026-04-20 12:42","refund_status":"closed","refund_amount":799,"charge_id":"chrg_66xvoj3n1lr4o8v314v","description":"Charge for order INTX2603493","order_num":"INTX2603493","found_sheet":"202603รับชำระ","cust_name":"Ms Tinny Phan","service":"Delivery","claim_status":"Done","approve_by":"AOM.BKK","claim_reason":"ลค ต้องการยกเลิก เนื่องจากออเดอร์ซ้ำ อ้างอิง INTX2603494 จึงต้องการยกเลิกออเดอร์นี้และขอเงินคืนคะ","claim_refund":799,"claim_paid":799,"amt_match":"ok"},
+  {"refund_id":"rfnd_67eyjb7b9dbw37abyi2","created_at":"2026-04-20 13:42","refund_status":"closed","refund_amount":1600,"charge_id":"chrg_659rclsajbokh13w7g1","description":null,"order_num":"","found_sheet":"","cust_name":"","service":"","claim_status":"","approve_by":"","claim_reason":"","claim_refund":null,"claim_paid":null,"amt_match":"noorder"},
+  {"refund_id":"rfnd_67eyjv3ugdin5ffkgko","created_at":"2026-04-20 13:44","refund_status":"closed","refund_amount":2000,"charge_id":"chrg_67dxuxkbtsg0x0r5344","description":"Charge for order STR260417239","order_num":"STR260417239","found_sheet":"202604รับชำระ","cust_name":"Mr Eain Dra Nilar","service":"Storage","claim_status":"Done","approve_by":"Cream BKK","claim_reason":"ลูกค้าจองซ้ำมาเนื่องจากเข้าใจผิดว่ายังจองไม่สำเร็จเพราะไม่ได้รับอีเมลยืนยันการจอง โดยออเดอร์ที่ใช้ฝากจริงคือ STR260417764","claim_refund":2000,"claim_paid":2000,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fdxeyo6fj1baen99f","created_at":"2026-04-21 15:56","refund_status":"closed","refund_amount":1399,"charge_id":"chrg_66hr3wrjjzuljco5heh","description":"Charge for order INTX26011691","order_num":"INTX26011691","found_sheet":"202601รับชำระ","cust_name":"Mr Jan Tloust","service":"Delivery","claim_status":"Done","approve_by":"Winn CS","claim_reason":"เนื่องจากภาวะสงครามทำให้ลูกค้าไม่สามารถเดินทางมาไทยได้แล้วครับ ลูกค้าเลยแจ้งมาขอยกเลิกรายการครับ","claim_refund":1399,"claim_paid":1399,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fe24dtd7f7su4q3i4","created_at":"2026-04-21 16:10","refund_status":"closed","refund_amount":1995,"charge_id":"chrg_66xx5b1fgbuoa4hswx7","description":"Charge for order INTX2603499","order_num":"INTX2603499","found_sheet":"202603รับชำระ","cust_name":"Mr King Chun Alvis Ng","service":"Delivery","claim_status":"Done","approve_by":"MAI","claim_reason":"ลูกค้าจองซ้ำยกเลิกขอคืนเงิน 1 ออเดอร์ค่ะ","claim_refund":1995,"claim_paid":1995,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fv8x400nw07fqc4ik","created_at":"2026-04-22 21:27","refund_status":"closed","refund_amount":400,"charge_id":"chrg_67fopl7vukuojxjx1d7","description":"Charge for order STR260422752","order_num":"STR260422752","found_sheet":"202604รับชำระ","cust_name":"Ms Henrion Sarah","service":"Storage","claim_status":"Done","approve_by":"Aon DMK","claim_reason":"ออเดอร์เด้งซ้ำ ระบบคิดเงินลูกค้าเบิ้ล ลูกค้าจองมาแล้วอีก 1 ออเดอร์คือ STR260422799 จองมาช่วง 10:15 เข้าใช้ 11:40","claim_refund":400,"claim_paid":400,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fv95jngsup8ixfyb3","created_at":"2026-04-22 21:28","refund_status":"closed","refund_amount":1000,"charge_id":"chrg_66oao47gy1c8eihe2un","description":"Charge for order STR260211831","order_num":"STR260211831","found_sheet":"202602รับชำระ","cust_name":"Mr Matthieu Tissot","service":"Storage","claim_status":"Done","approve_by":"Tam DMK","claim_reason":"ลูกค้าเปลี่ยนแผนการเดินทางครับ","claim_refund":1000,"claim_paid":1000,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fv9j6x4n477pko3ml","created_at":"2026-04-22 21:29","refund_status":"closed","refund_amount":1000,"charge_id":"chrg_67f04i8kdfpw551cswt","description":"Charge for order STR260420692","order_num":"STR260420692","found_sheet":"202604รับชำระ","cust_name":"Ms Ambre Cecille","service":"Storage","claim_status":"Done","approve_by":"Winn CS","claim_reason":"เป็นออเดอร์ที่จองซ้ำครับ ออเดอร์ที่ใช้จริงๆคือ STR260420696","claim_refund":1000,"claim_paid":1000,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fv9tjlzt9kkuevrr9","created_at":"2026-04-22 21:30","refund_status":"closed","refund_amount":500,"charge_id":"chrg_67ex7y0pbsrgcgt7l2o","description":"Charge for order STR260420251","order_num":"STR260420251","found_sheet":"202604รับชำระ","cust_name":"Mrs SATOMI TAKAMATSU","service":"Storage","claim_status":"Done","approve_by":"Name CS","claim_reason":"ตอนแรกลค.จองเพราะดูไฟท์บินผิดเวลาเลยจะฝากกระเป๋าไว้ แต่สรุปดูถูกไฟท์แล้วเลยขอยกเลิก","claim_refund":500,"claim_paid":500,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fva39g1hxh2jvi9mr","created_at":"2026-04-22 21:31","refund_status":"closed","refund_amount":2800,"charge_id":"chrg_67ejijkpa7uk6zxrvoy","description":"Charge for order STR260419713","order_num":"STR260419713","found_sheet":"202604รับชำระ","cust_name":"Mr David Enright","service":"Storage","claim_status":"Done","approve_by":"Winn CS","claim_reason":"ลูกค้าแจ้งว่าจะไม่ได้เดินทางมาใช้บริการแล้วครับ เนื่องจากมีการเปลี่ยนแผนการเดินทาง","claim_refund":2800,"claim_paid":2800,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvad4fexkgiv4zj1w","created_at":"2026-04-22 21:32","refund_status":"closed","refund_amount":1197,"charge_id":"chrg_67dxz1s571g5ouak6zq","description":"Charge for order INTX2604850","order_num":"INTX2604850","found_sheet":"202604รับชำระ","cust_name":"Mr Hendrik Eggen","service":"Delivery","claim_status":"Done","approve_by":"Winn CS","claim_reason":"สัมภาระของลูกค้าคือ Surfboard ซึ่งขนาดมันเกินลิมิตที่เจ้าหน้าที่จะรับ-ส่งได้ ลูกค้าเลยขอยกเลิกรายการครับ","claim_refund":1197,"claim_paid":1197,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvaphsks2p2hi2f0t","created_at":"2026-04-22 21:33","refund_status":"closed","refund_amount":598,"charge_id":"chrg_67d04i2cjh0crxfk4ct","description":"Charge for order INTX2604735","order_num":"INTX2604735","found_sheet":"202604รับชำระ","cust_name":"Ms Chulaphan Kitisarn","service":"Delivery","claim_status":"Done","approve_by":"ICZ CS","claim_reason":"เนื่องจากลูกค้ามีการเปลี่ยนแผน","claim_refund":598,"claim_paid":1098,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvbenbo0v8yj75qki","created_at":"2026-04-22 21:35","refund_status":"closed","refund_amount":799,"charge_id":"chrg_672i08tmzmvm7j2tq16","description":"Charge for order INTX26031276","order_num":"INTX26031276","found_sheet":"202603รับชำระ","cust_name":"Ms Dolly Lu","service":"Delivery","claim_status":"Done","approve_by":"Name CS","claim_reason":"แจ้งยกเลิกก่อนใช้บริการ1วัน","claim_refund":799,"claim_paid":799,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvc8pthzkboa359x5","created_at":"2026-04-22 21:37","refund_status":"closed","refund_amount":1098,"charge_id":"chrg_66xi069yeaurtt3szpy","description":"Charge for order INTX2603420","order_num":"INTX2603420","found_sheet":"202603รับชำระ","cust_name":"Mr Choosurang Kit","service":"Delivery","claim_status":"Done","approve_by":"Name CS","claim_reason":"ลูกค้าจองใช้บริการอีกเลขออเดอร์นึงแทน NTWX26031146 (เลขเก่าแจ้งยกเลิกล่วงหน้า3วัน)","claim_refund":1098,"claim_paid":1098,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvi95z1saj0zp4cci","created_at":"2026-04-22 21:54","refund_status":"closed","refund_amount":300,"charge_id":"chrg_66zoia3sn16s6lnouha","description":"Charge for order NTWX2603772","order_num":"NTWX2603772","found_sheet":"202603รับชำระ","cust_name":"Mr Joseph Myrtetus","service":"Delivery","claim_status":"Done","approve_by":"bkk","claim_reason":"ลค ได้ RP แจ้งปัญหาเวลฝากและเวลารับ ต้องการฝากจริงวันที่ 16/03 รับที่ CNX วันที่ 20/03 ระบบเรียกเก็บค่าฝาก 11 วัน คำนวณคิดค่าฝากที่ CNX 4 วัน รวม 600 บาท รีฟันด์คืน 300 บาท","claim_refund":300,"claim_paid":1599,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvin0o6mq2tp298g7","created_at":"2026-04-22 21:55","refund_status":"closed","refund_amount":1200,"charge_id":"chrg_66tj40x2uss2cr9t66a","description":"Charge for order STR260224461","order_num":"STR260224461","found_sheet":"202602รับชำระ","cust_name":"Mr Peter Paul Pfendt","service":"Storage","claim_status":"Done","approve_by":"AOM.BKK","claim_reason":"ลค walk in แจ้งว่ามีปัญหาไฟท์ดีเลย์ ไม่สามารถใช้บริการตามวันที่กำหนดได้ ต้องการยกเลิกและขอเงินคืน","claim_refund":1200,"claim_paid":1200,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvixs8r56u0aqlxfp","created_at":"2026-04-22 21:56","refund_status":"closed","refund_amount":699,"charge_id":"chrg_6726d2bujy3wv8vl4tq","description":"Charge for order NTWX26031231","order_num":"NTWX26031231","found_sheet":"202603รับชำระ","cust_name":"Mr Arunava Chowdhury","service":"Delivery","claim_status":"Done","approve_by":"Aon DMK","claim_reason":"ลูกค้าจองซ้ำ มีอีก 1 ออเดอร์ คือ NTWX26031233","claim_refund":699,"claim_paid":699,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvj6vmgf1tw9jbf8z","created_at":"2026-04-22 21:57","refund_status":"closed","refund_amount":299,"charge_id":"chrg_672tealalnxhr590rjn","description":"Charge for order INTX26031316","order_num":"INTX26031316","found_sheet":"202603รับชำระ","cust_name":"Ms onanong sattayabanphot","service":"Delivery","claim_status":"Done","approve_by":"Name CS","claim_reason":"จองsameday เว็ปคิด 299 แต่ลูกค้าจะส่งอุปกรณ์ดำน้ำ ยกเลิกเพราะไม่สามารถจัดส่งได้","claim_refund":299,"claim_paid":299,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvjpetz20b9mhgr5g","created_at":"2026-04-22 21:58","refund_status":"closed","refund_amount":400,"charge_id":"chrg_67333ryz2cje4lryd9l","description":"Charge for order STR260321448","order_num":"STR260321448","found_sheet":"202603รับชำระ","cust_name":"Mr Blenn Suan","service":"Storage","claim_status":"Done","approve_by":"Phak.BKK","claim_reason":"ลูกค้าจองเกินมา 1 ใบค่ะ // จองมาและใช้งานทันทีอนุโลมให้ได้","claim_refund":400,"claim_paid":800,"amt_match":"ok"},
+  {"refund_id":"rfnd_67fvkkvrgt775h5qast","created_at":"2026-04-22 22:01","refund_status":"closed","refund_amount":600,"charge_id":"chrg_67dwfhtzqqjjknl97z4","description":"Charge for order STR260417348","order_num":"STR260417348","found_sheet":"202604รับชำระ","cust_name":"Mr Janelle Matthews","service":"Storage","claim_status":"Done","approve_by":"Name CS","claim_reason":"ลค.ไม่ได้รับอีเมลล์คอนเฟริม์เลยขอยกเลิก และลค.แจ้งว่าจองสถานที่ผิด (ลูกค้าทักมาขอแคนเซิลตั้งแต่วันที่ใช้บริการ)","claim_refund":600,"claim_paid":600,"amt_match":"ok"},
+  {"refund_id":"rfnd_67g5cbs0xpxf9172o5u","created_at":"2026-04-23 14:40","refund_status":"closed","refund_amount":600,"charge_id":"chrg_67dr8sgzu2312h08wov","description":"Charge for order STR260417617","order_num":"STR260417617","found_sheet":"202604รับชำระ","cust_name":"Mr Michal Kocifaj","service":"Storage","claim_status":null,"approve_by":"ICZ CS","claim_reason":"โรงแรมเพิ่งยืนยันว่าลูกค้าสามารถฝากสัมภาระได้","claim_refund":600,"claim_paid":600,"amt_match":"ok"},
+  {"refund_id":"rfnd_67hr0kvghhu2apaxf45","created_at":"2026-04-27 16:58","refund_status":"closed","refund_amount":299,"charge_id":"chrg_67guefidojyhvuu58ld","description":"Charge for order LUGX26041136","order_num":"LUGX26041136","found_sheet":"202604รับชำระ","cust_name":"Mr Mr.Tsukamoto Masaaki","service":"Delivery","claim_status":"Done","approve_by":"MAI","claim_reason":"ลูกค้าแจ้งว่าระบบตัดเงิน 3 รอบค่ะ ลูกค้าใช้บริการส่งกระเป่า 1 ใบ","claim_refund":598,"claim_paid":897,"amt_match":"fail"}
+];
+
+let currentFilter = 'all';
+let currentMonth = '202604';
+
+const MONTH_LABELS = {
+  '202604': 'เมษายน 2026', '202603': 'มีนาคม 2026',
+  '202602': 'กุมภาพันธ์ 2026', '202601': 'มกราคม 2026', 'all': 'ทุกเดือน'
+};
+
+function fmt(n) {
+  if (n == null || n === '') return '—';
+  return Number(n).toLocaleString('th-TH');
+}
+
+function sheetMonth(sheet) {
+  if (!sheet) return '';
+  return sheet.replace(/[^\d]/g, '').substring(0, 6);
+}
+
+function refundMonth(d) {
+  if (!d) return '';
+  return d.replace(/-/g,'').substring(0,6);
+}
+
+function getFilteredData() {
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  return RAW_DATA.filter(r => {
+    const monthMatch = currentMonth === 'all' || refundMonth(r.created_at) === currentMonth;
+    const filterMatch = currentFilter === 'all' || r.amt_match === currentFilter;
+    if (!monthMatch || !filterMatch) return false;
+    if (!q) return true;
+    return (r.order_num||'').toLowerCase().includes(q) ||
+           (r.cust_name||'').toLowerCase().includes(q) ||
+           (r.claim_reason||'').toLowerCase().includes(q) ||
+           (r.charge_id||'').toLowerCase().includes(q) ||
+           (r.service||'').toLowerCase().includes(q) ||
+           (r.approve_by||'').toLowerCase().includes(q);
+  });
+}
+
+function renderTable() {
+  const data = getFilteredData();
+  const tbody = document.getElementById('tableBody');
+
+  let html = '';
+  let totalOmise = 0;
+  data.forEach((r, i) => {
+    totalOmise += (r.refund_amount || 0);
+    const rowClass = r.amt_match === 'ok' ? 'match-ok' : r.amt_match === 'fail' ? 'match-fail' : 'no-order';
+    const matchBadge = r.amt_match === 'ok'
+      ? '<span class="match-badge-ok px-2 py-0.5 rounded text-xs font-bold">✓ ตรง</span>'
+      : r.amt_match === 'fail'
+      ? '<span class="match-badge-fail px-2 py-0.5 rounded text-xs font-bold">✗ ไม่ตรง</span>'
+      : '<span class="match-badge-none px-2 py-0.5 rounded text-xs font-bold">⚠ ไม่พบ</span>';
+
+    const statusBadge = r.claim_status === 'Done'
+      ? '<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">Done</span>'
+      : r.claim_status
+      ? `<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">${r.claim_status}</span>`
+      : '<span class="text-gray-300 text-xs">—</span>';
+
+    const diff = (r.refund_amount != null && r.claim_refund != null && r.amt_match === 'fail')
+      ? `<div class="text-red-600 text-xs mt-0.5">diff: ${fmt(r.refund_amount - r.claim_refund)}</div>` : '';
+
+    html += `<tr class="${rowClass} border-b border-gray-100 hover:opacity-90 transition-opacity">
+      <td class="px-3 py-2 text-center text-gray-400 text-xs">${i+1}</td>
+      <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">${r.created_at || '—'}</td>
+      <td class="px-3 py-2 font-mono text-xs text-blue-700 whitespace-nowrap">${r.charge_id || '—'}</td>
+      <td class="px-3 py-2 font-mono text-xs font-semibold whitespace-nowrap">${r.order_num || '<span class="text-gray-400">—</span>'}</td>
+      <td class="px-3 py-2 text-xs">${r.cust_name || '<span class="text-gray-300">ไม่พบ</span>'}</td>
+      <td class="px-3 py-2 text-xs whitespace-nowrap">${r.service ? `<span class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-xs">${r.service}</span>` : '<span class="text-gray-300">—</span>'}</td>
+      <td class="px-3 py-2 text-right font-semibold whitespace-nowrap">${fmt(r.refund_amount)}</td>
+      <td class="px-3 py-2 text-right whitespace-nowrap">${fmt(r.claim_refund)}${diff}</td>
+      <td class="px-3 py-2 text-center">${matchBadge}</td>
+      <td class="px-3 py-2 reason-cell text-gray-700">${r.claim_reason || '<span class="text-gray-300">ไม่พบ Claim</span>'}</td>
+      <td class="px-3 py-2 text-center">${statusBadge}</td>
+      <td class="px-3 py-2 text-xs whitespace-nowrap text-gray-600">${r.approve_by || '—'}</td>
+      <td class="px-3 py-2 text-xs text-gray-300 whitespace-nowrap">${r.found_sheet || '—'}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = html || '<tr><td colspan="13" class="px-6 py-8 text-center text-gray-400">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>';
+  document.getElementById('rowCount').textContent = `แสดง ${data.length} รายการ | ยอดรวม Omise: ฿${fmt(totalOmise)}`;
+}
+
+function updateSummary() {
+  const data = RAW_DATA.filter(r => currentMonth === 'all' || refundMonth(r.created_at) === currentMonth);
+  const total = data.length;
+  const totalAmt = data.reduce((s, r) => s + (r.refund_amount || 0), 0);
+  const ok = data.filter(r => r.amt_match === 'ok').length;
+  const fail = data.filter(r => r.amt_match === 'fail').length;
+  const noorder = data.filter(r => r.amt_match === 'noorder').length;
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-amount').textContent = fmt(totalAmt);
+  document.getElementById('st-match').textContent = ok;
+  document.getElementById('st-mismatch').textContent = fail;
+  document.getElementById('st-noorder').textContent = noorder;
+}
+
+function applyFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600',
+      'bg-green-600', 'bg-red-600', 'bg-yellow-600');
+  });
+  const active = document.getElementById('f-' + f);
+  if (active) {
+    active.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+  }
+  renderTable();
+}
+
+function filterByMonth() {
+  currentMonth = document.getElementById('monthSelect').value;
+  document.getElementById('monthLabel').textContent = MONTH_LABELS[currentMonth] || currentMonth;
+  updateSummary();
+  renderTable();
+}
+
+// Init
+document.getElementById('monthLabel').textContent = MONTH_LABELS['202604'];
+updateSummary();
+renderTable();
+</script>
+
+</body>
+</html>
