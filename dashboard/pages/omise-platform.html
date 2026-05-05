@@ -186,7 +186,7 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#22c55e}
 <script>var rS={wb:null,stor:null,deli:null,data:[],f:{svc:"all",ms:"all",chk:"all"}};
 var fS={wb:null,data:[],f:{ms:"all",chk:"all"}};
 var LS="omise_platform_v2";
-var ORD_PAT=/\b(STR|LUG|DPOS|DLV|DEL)\d{6,}/i;
+var ORD_PAT=/\b(STR|LUG|LUGX|INTX|NTWX|DPOS|DLV|DEL)\d{5,}/i;
 
 function lu(){try{return JSON.parse(localStorage.getItem(LS)||"{}");}catch(e){return{};}}
 function su(d){localStorage.setItem(LS,JSON.stringify(d));}
@@ -482,7 +482,7 @@ function runRefund(){
             reason:(getCol(row,"reason","Reason","เหตุผล")||"").toString(),
             status:(getCol(row,"status","Status","สถานะ")||"").toString(),
             ap:(getCol(row,"approve by","approved by","Approve by","approver","Approved by")||"").toString(),
-            amt:parseFloat(getCol(row,"amount","Amount","refund amount","Refund Amount")||0)
+            amt:parseFloat(getCol(row,"Refund","refund","amount","Amount","refund amount","Refund Amount","ยอด Refund","ยอด")||0)
           };
         });
       }
@@ -491,7 +491,7 @@ function runRefund(){
       var rfCols=rfRows.length?Object.keys(rfRows[0]):[];
       var pyCols=[];
       if(pySn.length){var pyR=XLSX.utils.sheet_to_json(wb.Sheets[pySn[0]],{defval:""});if(pyR.length)pyCols=Object.keys(pyR[0]);}
-      st.innerHTML+="<br><span style=\"font-size:11px;color:#64748b\">Refund cols: ["+rfCols.join(", ")+"] | รับชำระ cols: ["+pyCols.join(", ")+"] | c2o entries: "+Object.keys(c2o).length+"</span>";
+      // debug info removed after fix confirmed
 
       var res=[];
       rfRows.forEach(function(row){
