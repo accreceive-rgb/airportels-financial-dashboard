@@ -463,7 +463,17 @@ function runRefund(){
       var c2o={};
       pySn.forEach(function(sn){
         XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:""}).forEach(function(row){
-          var cid=(getCol(row,"id","charge id","Charge ID","charge_id")||"").toString().trim();
+          // Try to find the charge ID column (Omise exports it as 'id')
+          var cid=(getCol(row,"id","ID","charge id","Charge ID","charge_id","Charge Id")||"").toString().trim();
+          // Only use values that look like charge IDs (chrg_...)
+          if(!cid||cid.indexOf("chrg_")<0){
+            // Fallback: scan all values for chrg_ pattern
+            var keys=Object.keys(row);
+            for(var k=0;k<keys.length;k++){
+              var v=(row[keys[k]]||"").toString().trim();
+              if(v.indexOf("chrg_")===0){cid=v;break;}
+            }
+          }
           var oid=getOrdId((getCol(row,"description","Description")||"").toString());
           if(cid&&oid)c2o[cid]=oid;
         });
@@ -482,10 +492,17 @@ function runRefund(){
           };
         });
       }
+      // Debug: show column names in both sheets
+      var rfRows=XLSX.utils.sheet_to_json(wb.Sheets[rfSn],{defval:""});
+      var rfCols=rfRows.length?Object.keys(rfRows[0]):[];
+      var pyCols=[];
+      if(pySn.length){var pyR=XLSX.utils.sheet_to_json(wb.Sheets[pySn[0]],{defval:""});if(pyR.length)pyCols=Object.keys(pyR[0]);}
+      st.innerHTML+="<br><span style=\"font-size:11px;color:#64748b\">Refund cols: ["+rfCols.join(", ")+"] | รับชำระ cols: ["+pyCols.join(", ")+"] | c2o entries: "+Object.keys(c2o).length+"</span>";
+
       var res=[];
-      XLSX.utils.sheet_to_json(wb.Sheets[rfSn],{defval:""}).forEach(function(row){
+      rfRows.forEach(function(row){
         var rid=(getCol(row,"refund id","id","Refund ID","refund_id")||"").toString().trim();
-        var cid=(getCol(row,"charge id","Charge ID","original charge id","charge_id","Original Charge ID")||"").toString().trim();
+        var cid=(getCol(row,"charge","charge id","Charge ID","original charge id","charge_id","Original Charge ID","Charge")||"").toString().trim();
         var amt=parseFloat(getCol(row,"amount","Amount","refund amount","Refund Amount")||0);
         var dt=(getCol(row,"created (utc+7)","created","Created","date","Date")||"").toString();
         var reason=(getCol(row,"reason","Reason")||"").toString();
