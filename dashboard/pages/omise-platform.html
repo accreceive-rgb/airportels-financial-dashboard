@@ -120,9 +120,8 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#22c55e}
 
 <!-- REFUND TAB -->
 <div id="tab-refund" class="p-6 hidden">
-  <p class="text-slate-400 text-sm mb-1">อัปโหลดไฟล์ Omise Excel เพียงไฟล์เดียว — ระบบหา Sheet Refund, รับชำระ และ Claim ให้อัตโนมัติ</p>
-  <p class="text-slate-600 text-xs mb-4">รองรับทุกเดือน เพียงเปลี่ยนไฟล์ใหม่</p>
-  <div class="max-w-sm mb-5">
+  <p class="text-slate-400 text-sm mb-4">อัปโหลดไฟล์ Omise Excel แล้วเลือก Sheet ที่ต้องการ</p>
+  <div class="max-w-2xl mb-5">
     <div class="flex items-center mb-2"><span class="step-num">1</span><span class="text-slate-200 text-sm font-semibold">Omise Excel (.xlsx)</span></div>
     <div class="upload-zone" id="ref-oz" onclick="document.getElementById('ref-oi').click()"
          ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
@@ -130,7 +129,29 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#22c55e}
       <div><div class="text-2xl mb-1">📂</div><div class="text-slate-400 text-sm" id="ref-ol">คลิกหรือลากไฟล์ Omise_2026.xlsx มาวาง</div></div>
       <input type="file" id="ref-oi" accept=".xlsx,.xls" class="hidden" onchange="processRefOmise(this.files[0])">
     </div>
-    <div id="ref-info" class="mt-2 text-xs text-slate-500 hidden p-2 bg-slate-900 rounded border border-slate-700"></div>
+
+    <!-- Sheet selectors — shown after upload -->
+    <div id="ref-sheet-wrap" class="hidden mt-4 grid grid-cols-1 gap-3">
+
+      <!-- Refund Sheet -->
+      <div class="bg-slate-900 border border-slate-700 rounded-lg p-3">
+        <label class="text-slate-300 text-xs font-semibold block mb-2">📋 Sheet Refund (เลือก 1 เดือน)</label>
+        <select id="ref-ss-refund" class="w-full bg-slate-800 border border-slate-600 text-slate-200 text-sm rounded px-2 py-1.5"></select>
+      </div>
+
+      <!-- รับชำระ Sheets -->
+      <div class="bg-slate-900 border border-slate-700 rounded-lg p-3">
+        <label class="text-slate-300 text-xs font-semibold block mb-2">💳 Sheet รับชำระ (ค้นหา Charge ID — เลือกได้หลายเดือน)</label>
+        <div id="ref-ss-pay" class="flex flex-wrap gap-2"></div>
+        <p class="text-slate-600 text-xs mt-1">ปกติเลือกเดือนเดียวกับ Refund + เดือนก่อนหน้า เผื่อ charge ข้ามเดือน</p>
+      </div>
+
+      <!-- Claim Sheet -->
+      <div class="bg-slate-900 border border-slate-700 rounded-lg p-3">
+        <label class="text-slate-300 text-xs font-semibold block mb-2">📁 Sheet Claim</label>
+        <select id="ref-ss-claim" class="w-full bg-slate-800 border border-slate-600 text-slate-200 text-sm rounded px-2 py-1.5"></select>
+      </div>
+    </div>
   </div>
   <button class="run-btn" onclick="runRefund()">▶ Reconcile</button>
   <div id="ref-status" class="mt-3 text-sm text-slate-400"></div>
@@ -386,15 +407,43 @@ function renderRevSum(){
     if(err){alert("อ่านไฟล์ไม่ได้: "+err.message);return;}
     fS.wb=wb;
     document.getElementById("ref-oz").classList.add("done");
-    setEl("ref-ol","✓ "+esc(file.name));
+    setEl("ref-ol","✓ "+esc(file.name)+" ("+wb.SheetNames.length+" sheets)");
+
     var rf=wb.SheetNames.filter(function(n){return n.toLowerCase().indexOf("refund")>=0;});
     var py=wb.SheetNames.filter(function(n){return n.indexOf("รับชำระ")>=0;});
     var cl=wb.SheetNames.filter(function(n){return n.toLowerCase().indexOf("claim")>=0;});
-    setEl("ref-info","<b>ตรวจพบ:</b> "
-      +"<span style=\"color:#4ade80\">Refund: "+(rf.join(", ")||"ไม่พบ")+"</span> &nbsp;|&nbsp; "
-      +"<span style=\"color:#60a5fa\">รับชำระ: "+(py.join(", ")||"ไม่พบ")+"</span> &nbsp;|&nbsp; "
-      +"<span style=\"color:#fbbf24\">Claim: "+(cl[0]||"ไม่พบ")+"</span>");
-    document.getElementById("ref-info").classList.remove("hidden");
+
+    // Populate Refund dropdown
+    var selR=document.getElementById("ref-ss-refund");
+    selR.innerHTML="";
+    (rf.length?rf:wb.SheetNames).forEach(function(n){
+      var o=document.createElement("option");o.value=n;o.text=n;selR.appendChild(o);
+    });
+
+    // Populate รับชำระ checkboxes
+    var payDiv=document.getElementById("ref-ss-pay");
+    payDiv.innerHTML="";
+    (py.length?py:wb.SheetNames).forEach(function(n,i){
+      var label=document.createElement("label");
+      label.className="flex items-center gap-1.5 bg-slate-800 px-3 py-1.5 rounded cursor-pointer border border-slate-600 hover:border-blue-500 text-sm text-slate-200";
+      var cb=document.createElement("input");
+      cb.type="checkbox"; cb.value=n; cb.checked=true;
+      cb.style.width="14px"; cb.style.height="14px"; cb.style.accentColor="#22c55e";
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(n));
+      payDiv.appendChild(label);
+    });
+
+    // Populate Claim dropdown
+    var selC=document.getElementById("ref-ss-claim");
+    selC.innerHTML="";
+    var clAll=cl.length?cl:wb.SheetNames.filter(function(n){return n.toLowerCase().indexOf("claim")>=0||n.toLowerCase()==="claim";});
+    if(!clAll.length)clAll=wb.SheetNames;
+    clAll.forEach(function(n){
+      var o=document.createElement("option");o.value=n;o.text=n;selC.appendChild(o);
+    });
+
+    document.getElementById("ref-sheet-wrap").classList.remove("hidden");
   });
 }
 function runRefund(){
@@ -404,11 +453,13 @@ function runRefund(){
   setTimeout(function(){
     try{
       var wb=fS.wb;
-      var rfSn=wb.SheetNames.find(function(n){return n.toLowerCase().indexOf("refund")>=0;});
-      var pySn=wb.SheetNames.filter(function(n){return n.indexOf("รับชำระ")>=0;});
-      var clSn=wb.SheetNames.find(function(n){return n.toLowerCase().indexOf("claim")>=0;});
-      if(!rfSn){st.innerHTML="❌ ไม่พบ Sheet ชื่อมี Refund";return;}
-      if(!pySn.length){st.innerHTML="❌ ไม่พบ Sheet รับชำระ";return;}
+      // Read from user-selected dropdowns/checkboxes
+      var rfSn=document.getElementById("ref-ss-refund").value;
+      var clSn=document.getElementById("ref-ss-claim").value;
+      var pySn=[];
+      document.querySelectorAll("#ref-ss-pay input[type=checkbox]:checked").forEach(function(cb){pySn.push(cb.value);});
+      if(!rfSn){st.innerHTML="❌ กรุณาเลือก Sheet Refund";return;}
+      if(!pySn.length){st.innerHTML="❌ กรุณาเลือก Sheet รับชำระ อย่างน้อย 1 Sheet";return;}
       var c2o={};
       pySn.forEach(function(sn){
         XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:""}).forEach(function(row){
