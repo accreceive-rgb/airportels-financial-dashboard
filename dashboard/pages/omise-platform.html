@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omise Reconciliation Platform โ€” Airportels Financial MADGA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0}
+.upload-zone{border:2px dashed #334155;border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;transition:all .2s;min-height:90px;display:flex;align-items:center;justify-content:center}
+.upload-zone:hover,.upload-zone.drag-over{border-color:#3b82f6;background:#1e3a5f}
+.upload-zone.done{border-color:#22c55e;background:#052e16}
+.tab-btn{padding:8px 24px;border-radius:8px 8px 0 0;font-weight:600;cursor:pointer;border:1px solid #334155;border-bottom:none;font-size:14px}
+.tab-btn.active{background:#1e293b;color:#60a5fa;border-color:#3b82f6}
+.tab-btn:not(.active){background:#0f172a;color:#64748b}
+.match-ok{background:#052e16!important}
+.match-fail{background:#450a0a!important}
+.match-noomi,.match-noclaim,.match-noorder{background:#1c1917!important}
+.row-checked{opacity:.5}
+.badge-ok{background:#166534;color:#bbf7d0;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-fail{background:#7f1d1d;color:#fecaca;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-grey{background:#44403c;color:#d6d3d1;padding:2px 7px;border-radius:4px;font-size:11px;white-space:nowrap}
+.filter-btn{padding:3px 11px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid #475569;background:#1e293b;color:#94a3b8;transition:all .15s}
+.filter-btn.active{background:#3b82f6;color:#fff;border-color:#3b82f6}
+th{position:sticky;top:0;background:#1e293b;z-index:2;padding:6px 8px;text-align:left;font-size:11px;color:#94a3b8;white-space:nowrap}
+td{padding:4px 8px;font-size:12px;border-top:1px solid #1e293b}
+.note-box{background:#1e293b;color:#cbd5e1;border:1px solid #334155;border-radius:4px;resize:none;font-size:11px;width:100%;min-width:100px}
+.sum-card{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:14px}
+input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#22c55e}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#3b82f6;color:#fff;font-size:11px;font-weight:700;margin-right:6px;flex-shrink:0}
+.run-btn{background:#2563eb;color:#fff;padding:10px 28px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;border:none}
+.run-btn:hover{background:#1d4ed8}
+</style>
+</head>
+<body>
+
+<div style="background:#020617;border-bottom:1px solid #1e293b" class="px-6 py-3 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <a href="../index.html" class="text-slate-400 text-sm hover:text-white">&#8592; Dashboard</a>
+    <span class="text-slate-700">|</span>
+    <span class="text-white font-bold text-lg">Omise Reconciliation Platform</span>
+    <span class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">MADGA</span>
+  </div>
+  <span class="text-slate-600 text-xs">เธญเธฑเธเนเธซเธฅเธ”เนเธเธฅเนเน€เธญเธเนเธ”เนเธ—เธธเธเน€เธ”เธทเธญเธ เนเธกเนเธ•เนเธญเธเธฃเธญ</span>
+</div>
+
+<div class="px-6 pt-4 flex gap-0" style="border-bottom:1px solid #334155">
+  <button class="tab-btn active" onclick="switchTab('revenue',this)">&#128202; Revenue Reconciliation</button>
+  <button class="tab-btn" onclick="switchTab('refund',this)">&#8617; Refund Reconciliation</button>
+</div>
+
+<!-- REVENUE TAB -->
+<div id="tab-revenue" class="p-6">
+  <p class="text-slate-400 text-sm mb-4">เธญเธฑเธเนเธซเธฅเธ”เนเธเธฅเน 3 เนเธเธฅเน เนเธฅเนเธงเธเธ” Reconcile โ€” เนเธเนเธเธฒเธเนเธ”เนเธ—เธธเธเน€เธ”เธทเธญเธ เนเธกเนเธ•เนเธญเธเนเธเน code</p>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+
+    <div>
+      <div class="flex items-center mb-2"><span class="step-num">1</span><span class="text-slate-200 text-sm font-semibold">Omise Excel (.xlsx)</span></div>
+      <div class="upload-zone" id="rev-oz" onclick="document.getElementById('rev-oi').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+           ondrop="dropF(event,'rev-oz',processRevOmise)">
+        <div><div class="text-2xl mb-1">&#128194;</div><div class="text-slate-400 text-sm" id="rev-ol">เธเธฅเธดเธเธซเธฃเธทเธญเธฅเธฒเธเนเธเธฅเน Omise_2026.xlsx เธกเธฒเธงเธฒเธ</div></div>
+        <input type="file" id="rev-oi" accept=".xlsx,.xls" class="hidden" onchange="processRevOmise(this.files[0])">
+      </div>
+      <div id="rev-sw" class="mt-2 hidden">
+        <label class="text-slate-400 text-xs block mb-1">Sheet (เธฃเธฑเธเธเธณเธฃเธฐ):</label>
+        <select id="rev-ss" class="w-full bg-slate-800 border border-slate-600 text-slate-200 text-sm rounded px-2 py-1.5"></select>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center mb-2"><span class="step-num">2</span><span class="text-slate-200 text-sm font-semibold">Storage CSV</span></div>
+      <div class="upload-zone" id="rev-sz" onclick="document.getElementById('rev-si').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+           ondrop="dropF(event,'rev-sz',processStorage)">
+        <div><div class="text-2xl mb-1">&#128196;</div><div class="text-slate-400 text-sm" id="rev-sl">AI Revenue Report_Storage_...csv</div></div>
+        <input type="file" id="rev-si" accept=".csv" class="hidden" onchange="processStorage(this.files[0])">
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center mb-2"><span class="step-num">3</span><span class="text-slate-200 text-sm font-semibold">Delivery CSV</span></div>
+      <div class="upload-zone" id="rev-dz" onclick="document.getElementById('rev-di').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+           ondrop="dropF(event,'rev-dz',processDelivery)">
+        <div><div class="text-2xl mb-1">&#128196;</div><div class="text-slate-400 text-sm" id="rev-dl">AI Revenue Report_Delivery_...csv</div></div>
+        <input type="file" id="rev-di" accept=".csv" class="hidden" onchange="processDelivery(this.files[0])">
+      </div>
+    </div>
+  </div>
+  <button class="run-btn" onclick="runRevenue()">&#9654; Reconcile</button>
+  <div id="rev-status" class="mt-3 text-sm text-slate-400"></div>
+
+  <div id="rev-results" class="hidden mt-6">
+    <div id="rev-summary" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4"></div>
+    <div class="flex flex-wrap gap-2 mb-3 items-center">
+      <span class="text-slate-500 text-xs">Service:</span>
+      <button class="filter-btn active" onclick="setF('rev','svc','all',this)">All</button>
+      <button class="filter-btn" onclick="setF('rev','svc','Storage',this)">Storage</button>
+      <button class="filter-btn" onclick="setF('rev','svc','Delivery',this)">Delivery</button>
+      <span class="text-slate-500 text-xs ml-3">Status:</span>
+      <button class="filter-btn active" onclick="setF('rev','ms','all',this)">All</button>
+      <button class="filter-btn" onclick="setF('rev','ms','ok',this)">&#10003; เธ•เธฃเธ</button>
+      <button class="filter-btn" onclick="setF('rev','ms','fail',this)">&#9888; เนเธกเนเธ•เธฃเธ</button>
+      <button class="filter-btn" onclick="setF('rev','ms','noomi',this)">เนเธกเนเธกเธตเนเธ Omise</button>
+      <button class="filter-btn" onclick="setF('rev','chk','unchecked',this)">เธขเธฑเธเนเธกเนเน€เธเนเธ</button>
+      <button class="filter-btn" onclick="setF('rev','chk','checked',this)">เน€เธเนเธเนเธฅเนเธง</button>
+      <input id="rev-q" type="text" placeholder="เธเนเธเธซเธฒ Order ID / เธเธทเนเธญ..." oninput="renderRev()" class="ml-2 px-3 py-1 rounded bg-slate-800 border border-slate-600 text-sm text-slate-200 w-52">
+      <button onclick="exportRev()" class="ml-auto bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-sm font-semibold">&#11015; Export Excel</button>
+    </div>
+    <div class="overflow-x-auto rounded-lg" style="border:1px solid #334155">
+      <table class="w-full">
+        <thead><tr>
+          <th>#</th><th>Order ID</th><th>Service</th><th>เธงเธฑเธเธ—เธตเน</th><th>เธเธทเนเธญ</th>
+          <th>Receipt</th><th class="text-right">Revenue (เธฟ)</th><th class="text-right">Omise (เธฟ)</th>
+          <th class="text-right">เธเธฅเธ•เนเธฒเธ</th><th>Charge ID</th><th>Card</th><th>Status</th>
+          <th>Note</th><th class="text-center">เน€เธเนเธเนเธฅเนเธง</th>
+        </tr></thead>
+        <tbody id="rev-tb"></tbody>
+      </table>
+    </div>
+    <div id="rev-cnt" class="text-slate-600 text-xs mt-2"></div>
+  </div>
+</div>
+
+<!-- REFUND TAB -->
+<div id="tab-refund" class="p-6 hidden">
+  <p class="text-slate-400 text-sm mb-1">เธญเธฑเธเนเธซเธฅเธ”เนเธเธฅเน Omise Excel เน€เธเธตเธขเธเนเธเธฅเนเน€เธ”เธตเธขเธง โ€” เธฃเธฐเธเธเธซเธฒ Sheet Refund, เธฃเธฑเธเธเธณเธฃเธฐ เนเธฅเธฐ Claim เนเธซเนเธญเธฑเธ•เนเธเธกเธฑเธ•เธด</p>
+  <p class="text-slate-600 text-xs mb-4">เธฃเธญเธเธฃเธฑเธเธ—เธธเธเน€เธ”เธทเธญเธ เน€เธเธตเธขเธเน€เธเธฅเธตเนเธขเธเนเธเธฅเนเนเธซเธกเน</p>
+  <div class="max-w-sm mb-5">
+    <div class="flex items-center mb-2"><span class="step-num">1</span><span class="text-slate-200 text-sm font-semibold">Omise Excel (.xlsx)</span></div>
+    <div class="upload-zone" id="ref-oz" onclick="document.getElementById('ref-oi').click()"
+         ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+         ondrop="dropF(event,'ref-oz',processRefOmise)">
+      <div><div class="text-2xl mb-1">&#128194;</div><div class="text-slate-400 text-sm" id="ref-ol">เธเธฅเธดเธเธซเธฃเธทเธญเธฅเธฒเธเนเธเธฅเน Omise_2026.xlsx เธกเธฒเธงเธฒเธ</div></div>
+      <input type="file" id="ref-oi" accept=".xlsx,.xls" class="hidden" onchange="processRefOmise(this.files[0])">
+    </div>
+    <div id="ref-info" class="mt-2 text-xs text-slate-500 hidden p-2 bg-slate-900 rounded border border-slate-700"></div>
+  </div>
+  <button class="run-btn" onclick="runRefund()">&#9654; Reconcile</button>
+  <div id="ref-status" class="mt-3 text-sm text-slate-400"></div>
+
+  <div id="ref-results" class="hidden mt-6">
+    <div class="flex flex-wrap gap-2 mb-3 items-center">
+      <span class="text-slate-500 text-xs">Status:</span>
+      <button class="filter-btn active" onclick="setF('ref','ms','all',this)">All</button>
+      <button class="filter-btn" onclick="setF('ref','ms','ok',this)">&#10003; เธ•เธฃเธ</button>
+      <button class="filter-btn" onclick="setF('ref','ms','fail',this)">&#9888; เนเธกเนเธ•เธฃเธ</button>
+      <button class="filter-btn" onclick="setF('ref','ms','noorder',this)">เนเธกเนเธเธ Order</button>
+      <button class="filter-btn" onclick="setF('ref','ms','noclaim',this)">เนเธกเนเธเธเนเธ Claim</button>
+      <button class="filter-btn" onclick="setF('ref','chk','unchecked',this)">เธขเธฑเธเนเธกเนเน€เธเนเธ</button>
+      <button class="filter-btn" onclick="setF('ref','chk','checked',this)">เน€เธเนเธเนเธฅเนเธง</button>
+      <input id="ref-q" type="text" placeholder="เธเนเธเธซเธฒ Refund ID / Order ID..." oninput="renderRef()" class="ml-2 px-3 py-1 rounded bg-slate-800 border border-slate-600 text-sm text-slate-200 w-52">
+      <button onclick="exportRef()" class="ml-auto bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-sm font-semibold">&#11015; Export Excel</button>
+    </div>
+    <div class="overflow-x-auto rounded-lg" style="border:1px solid #334155">
+      <table class="w-full">
+        <thead><tr>
+          <th>#</th><th>Refund ID</th><th>Charge ID</th><th>Order ID</th>
+          <th class="text-right">Refund (เธฟ)</th><th>เธงเธฑเธเธ—เธตเน</th>
+          <th>Claim Reason</th><th>Claim Status</th><th>Approve by</th>
+          <th class="text-right">Claim (เธฟ)</th><th class="text-right">เธเธฅเธ•เนเธฒเธ</th>
+          <th>เธชเธ–เธฒเธเธฐ</th><th>Note</th><th class="text-center">เน€เธเนเธเนเธฅเนเธง</th>
+        </tr></thead>
+        <tbody id="ref-tb"></tbody>
+      </table>
+    </div>
+    <div id="ref-cnt" class="text-slate-600 text-xs mt-2"></div>
+  </div>
+</div>
+
+<script>
+var rS={wb:null,stor:null,deli:null,data:[],f:{svc:"all",ms:"all",chk:"all"}};
+var fS={wb:null,data:[],f:{ms:"all",chk:"all"}};
+var LS="omise_platform_v2";
+var ORD_PAT=/\b(STR|LUG|DPOS|DLV|DEL)\d{6,}/i;
+
+function lu(){try{return JSON.parse(localStorage.getItem(LS)||"{}");}catch(e){return{};}}
+function su(d){localStorage.setItem(LS,JSON.stringify(d));}
+function gn(id){var d=lu();return d[id]&&d[id].note||"";}
+function gc(id){var d=lu();return !!(d[id]&&d[id].chk);}
+function sn(id,v){var d=lu();if(!d[id])d[id]={};d[id].note=v;su(d);}
+function sc(id,v,tr){var d=lu();if(!d[id])d[id]={};d[id].chk=v;su(d);tr.classList.toggle("row-checked",v);}
+
+function fmt(n){if(n===null||n===undefined)return"&#8212;";return(+n).toLocaleString("th-TH",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return(s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+function getCol(row){
+  var names=[].slice.call(arguments,1);
+  var keys=Object.keys(row);
+  for(var i=0;i<names.length;i++){
+    var lc=names[i].toLowerCase().trim();
+    var k=null;
+    for(var j=0;j<keys.length;j++){if(keys[j].toLowerCase().trim()===lc){k=keys[j];break;}}
+    if(k!==null&&row[k]!==null&&row[k]!==undefined&&row[k]!=="")return row[k];
+  }
+  return null;
+}
+
+function getOrdId(str){
+  var s=(str||"").toString().trim().toUpperCase();
+  var m=s.match(ORD_PAT);
+  return m?m[0].toUpperCase():null;
+}
+
+function readXL(file,cb){
+  var r=new FileReader();
+  r.onload=function(e){try{cb(null,XLSX.read(new Uint8Array(e.target.result),{type:"array"}));}catch(ex){cb(ex,null);}};
+  r.onerror=function(){cb(new Error("read error"),null);};
+  r.readAsArrayBuffer(file);
+}
+function readCSV(file,cb){
+  var r=new FileReader();
+  r.onload=function(e){
+    try{var wb=XLSX.read(e.target.result,{type:"string"});cb(null,XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""}));}
+    catch(ex){cb(ex,null);}
+  };
+  r.onerror=function(){cb(new Error("read error"),null);};
+  r.readAsText(file,"UTF-8");
+}
+
+function dropF(e,zoneId,fn){
+  e.preventDefault();
+  document.getElementById(zoneId).classList.remove("drag-over");
+  var f=e.dataTransfer.files[0];
+  if(f)fn(f);
+}
+
+function switchTab(tab,el){
+  ["revenue","refund"].forEach(function(t){document.getElementById("tab-"+t).classList.add("hidden");});
+  document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.remove("active");});
+  document.getElementById("tab-"+tab).classList.remove("hidden");
+  el.classList.add("active");
+}
+
+function processRevOmise(file){
+  if(!file)return;
+  document.getElementById("rev-ol").textContent="เธเธณเธฅเธฑเธเธญเนเธฒเธ "+file.name+"...";
+  readXL(file,function(err,wb){
+    if(err){alert("เธญเนเธฒเธเนเธเธฅเนเนเธกเนเนเธ”เน: "+err.message);return;}
+    rS.wb=wb;
+    document.getElementById("rev-oz").classList.add("done");
+    document.getElementById("rev-ol").textContent="&#10003; "+file.name+" ("+wb.SheetNames.length+" sheets)";
+    var sel=document.getElementById("rev-ss");sel.innerHTML="";
+    var pay=wb.SheetNames.filter(function(n){return n.indexOf("เธฃเธฑเธเธเธณเธฃเธฐ")>=0;});
+    (pay.length?pay:wb.SheetNames).forEach(function(n){var o=document.createElement("option");o.value=n;o.text=n;sel.appendChild(o);});
+    document.getElementById("rev-sw").classList.remove("hidden");
+  });
+}
+function processStorage(file){
+  if(!file)return;
+  document.getElementById("rev-sl").textContent="เธเธณเธฅเธฑเธเธญเนเธฒเธ "+file.name+"...";
+  readCSV(file,function(err,data){
+    if(err){alert("เธญเนเธฒเธเนเธเธฅเนเนเธกเนเนเธ”เน: "+err.message);return;}
+    rS.stor=data;
+    document.getElementById("rev-sz").classList.add("done");
+    document.getElementById("rev-sl").textContent="&#10003; "+file.name+" ("+data.length+" rows)";
+  });
+}
+function processDelivery(file){
+  if(!file)return;
+  document.getElementById("rev-dl").textContent="เธเธณเธฅเธฑเธเธญเนเธฒเธ "+file.name+"...";
+  readCSV(file,function(err,data){
+    if(err){alert("เธญเนเธฒเธเนเธเธฅเนเนเธกเนเนเธ”เน: "+err.message);return;}
+    rS.deli=data;
+    document.getElementById("rev-dz").classList.add("done");
+    document.getElementById("rev-dl").textContent="&#10003; "+file.name+" ("+data.length+" rows)";
+  });
+}
+
+function runRevenue(){
+  var st=document.getElementById("rev-status");
+  if(!rS.wb){st.textContent="&#9888; เธเธฃเธธเธ“เธฒเธญเธฑเธเนเธซเธฅเธ”เนเธเธฅเน Omise Excel";return;}
+  if(!rS.stor&&!rS.deli){st.textContent="&#9888; เธเธฃเธธเธ“เธฒเธญเธฑเธเนเธซเธฅเธ” CSV เธญเธขเนเธฒเธเธเนเธญเธข 1 เนเธเธฅเน";return;}
+  st.textContent="&#9203; เธเธณเธฅเธฑเธ Reconcile...";
+  setTimeout(function(){
+    try{
+      var sn=document.getElementById("rev-ss").value;
+      var omRows=XLSX.utils.sheet_to_json(rS.wb.Sheets[sn],{defval:""});
+      var om={};
+      omRows.forEach(function(row){
+        var status=(getCol(row,"status","Status")||"").toString().toLowerCase();
+        if(status!=="successful")return;
+        var desc=(getCol(row,"description","Description")||"").toString();
+        var oid=getOrdId(desc);if(!oid)return;
+        var cid=(getCol(row,"id","charge id","Charge ID","charge_id")||"").toString().trim();
+        var amt=parseFloat(getCol(row,"amount","Amount","net amount")||0);
+        var dt=(getCol(row,"created (utc+7)","created","Created","date","Date")||"").toString();
+        var card=(getCol(row,"cardholder name","card name","Cardholder name","cardholder","Card Name")||"").toString();
+        var ref=(getCol(row,"refunded","Refunded")||"").toString().toLowerCase()==="yes";
+        if(!om[oid])om[oid]=[];
+        om[oid].push({cid:cid,amt:amt,dt:dt,card:card,ref:ref});
+      });
+      var used={},res=[];
+      function addRows(csv,svc){
+        if(!csv)return;
+        csv.forEach(function(row){
+          var ch=(getCol(row,"channel","Channel")||"").toString().trim().toUpperCase();
+          if(ch!=="OB")return;
+          var rawOid=(getCol(row,"order_id","order id","Order_ID","Order ID","orderid")||"").toString().trim();
+          var oid=getOrdId(rawOid)||rawOid.toUpperCase()||null;
+          if(!oid)return;
+          var rev=parseFloat(getCol(row,"amount","Amount","total","Total","rev_total","Grand Total","grand_total")||0);
+          var fn=(getCol(row,"first_name","firstname","First_Name","First Name","first name")||"").toString();
+          var ln=(getCol(row,"last_name","lastname","Last_Name","Last Name","last name")||"").toString();
+          var rno=(getCol(row,"receipt_no","Receipt_No","receipt no","Receipt No","receipt","Receipt")||"").toString();
+          var dt=(getCol(row,"date","Date","created_date","order_date","booking_date","Created Date")||"").toString();
+          var mc=null;
+          if(om[oid]){for(var i=0;i<om[oid].length;i++){var c=om[oid][i];if(used[c.cid])continue;if(Math.abs(c.amt-rev)<1.0){mc=c;used[c.cid]=true;break;}}}
+          var ms=mc?(Math.abs(mc.amt-rev)<0.01?"ok":"fail"):"noomi";
+          res.push({oid:oid,svc:svc,dt:dt,fn:fn,ln:ln,rno:rno,rev:rev,oamt:mc?mc.amt:null,cid:mc?mc.cid:null,odt:mc?mc.dt:null,ocard:mc?mc.card:null,diff:mc?mc.amt-rev:null,ms:ms});
+        });
+      }
+      addRows(rS.stor,"Storage");addRows(rS.deli,"Delivery");
+      rS.data=res;rS.f={svc:"all",ms:"all",chk:"all"};
+      document.getElementById("rev-results").classList.remove("hidden");
+      renderRevSum();renderRev();
+      st.textContent="&#10003; Reconcile เน€เธชเธฃเนเธ โ€” "+res.length+" เธฃเธฒเธขเธเธฒเธฃ";
+    }catch(e){st.textContent="&#10060; Error: "+e.message;console.error(e);}
+  },50);
+}
+
+function setF(tool,type,val,el){
+  var state=tool==="rev"?rS:fS;
+  state.f[type]=val;
+  var pref="setF('"+tool+"','"+type+"'";
+  var tabId=tool==="rev"?"tab-revenue":"tab-refund";
+  document.querySelectorAll("#"+tabId+" .filter-btn").forEach(function(b){
+    if((b.getAttribute("onclick")||"").indexOf(pref)>=0)b.classList.remove("active");
+  });
+  el.classList.add("active");
+  tool==="rev"?renderRev():renderRef();
+}
+
+function getFiltRev(){
+  var q=(document.getElementById("rev-q")||{value:""}).value.trim().toLowerCase();
+  var f=rS.f;
+  return rS.data.filter(function(r){
+    if(f.svc!=="all"&&r.svc!==f.svc)return false;
+    if(f.ms!=="all"&&r.ms!==f.ms)return false;
+    if(f.chk==="checked"&&!gc("rv_"+r.oid))return false;
+    if(f.chk==="unchecked"&&gc("rv_"+r.oid))return false;
+    if(q&&((r.oid||"")+(r.fn||"")+(r.ln||"")+(r.cid||"")).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+}
+
+function renderRev(){
+  var data=getFiltRev();var html="";
+  data.forEach(function(r,i){
+    var id="rv_"+r.oid;var chk=gc(id);var note=gn(id);
+    var cls=(r.ms==="ok"?"match-ok":r.ms==="fail"?"match-fail":"match-noomi")+(chk?" row-checked":"");
+    var bdg=r.ms==="ok"?"<span class=\"badge-ok\">&#10003; เธ•เธฃเธ</span>":r.ms==="fail"?"<span class=\"badge-fail\">&#9888; เนเธกเนเธ•เธฃเธ</span>":"<span class=\"badge-grey\">&#8212; เนเธกเนเธกเธตเนเธ Omise</span>";
+    var df=r.ms==="noomi"?"&#8212;":(Math.abs(r.diff||0)<0.01?"<span style=\"color:#4ade80\">0.00</span>":"<span style=\"color:#f87171\">"+fmt(r.diff)+"</span>");
+    html+="<tr class=\""+cls+"\">"
+      +"<td class=\"text-slate-500\">"+(i+1)+"</td>"
+      +"<td class=\"font-mono font-semibold\">"+esc(r.oid)+"</td>"
+      +"<td><span style=\"padding:2px 6px;border-radius:4px;font-size:11px;"+(r.svc==="Storage"?"background:#1e3a5f;color:#93c5fd":"background:#3b0764;color:#d8b4fe")+"\">"+r.svc+"</span></td>"
+      +"<td style=\"white-space:nowrap\">"+esc(r.dt||"&#8212;")+"</td>"
+      +"<td>"+esc((r.fn||"")+(r.ln?" "+r.ln:""))+"</td>"
+      +"<td class=\"font-mono text-xs\">"+esc(r.rno||"&#8212;")+"</td>"
+      +"<td class=\"text-right\">"+fmt(r.rev)+"</td>"
+      +"<td class=\"text-right\">"+(r.oamt!==null?fmt(r.oamt):"&#8212;")+"</td>"
+      +"<td class=\"text-right\">"+df+"</td>"
+      +"<td class=\"font-mono text-xs\" style=\"max-width:130px;overflow:hidden;text-overflow:ellipsis\" title=\""+esc(r.cid||"")+"\">"+esc(r.cid||"&#8212;")+"</td>"
+      +"<td>"+esc(r.ocard||"&#8212;")+"</td>"
+      +"<td>"+bdg+"</td>"
+      +"<td><textarea class=\"note-box\" rows=\"1\" onchange=\"sn('"+id+"',this.value)\">"+esc(note)+"</textarea></td>"
+      +"<td class=\"text-center\"><input type=\"checkbox\" "+(chk?"checked":"")+" onchange=\"sc('"+id+"',this.checked,this.closest('tr'))\"></td>"
+      +"</tr>";
+  });
+  document.getElementById("rev-tb").innerHTML=html;
+  document.getElementById("rev-cnt").textContent="เนเธชเธ”เธ "+data.length+" / "+rS.data.length+" เธฃเธฒเธขเธเธฒเธฃ";
+}
+
+function renderRevSum(){
+  var st={rev:0,omi:0,ok:0,fail:0,no:0},de={rev:0,omi:0,ok:0,fail:0,no:0};
+  rS.data.forEach(function(r){
+    var t=r.svc==="Storage"?st:de;
+    t.rev+=r.rev||0;if(r.oamt!==null)t.omi+=r.oamt;
+    if(r.ms==="ok")t.ok++;else if(r.ms==="fail")t.fail++;else t.no++;
+  });
+  function card(title,d,color){
+    var diff=d.rev-d.omi;var ok=Math.abs(diff)<0.01;
+    return "<div class=\"sum-card\">"
+      +"<div style=\"font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px\">"+title+"</div>"
+      +"<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px\">"
+      +"<span style=\"color:#94a3b8\">Revenue:</span><span style=\"text-align:right;font-family:monospace;color:"+color+"\">&#3647;"+fmt(d.rev)+"</span>"
+      +"<span style=\"color:#94a3b8\">Omise:</span><span style=\"text-align:right;font-family:monospace;color:"+color+"\">&#3647;"+fmt(d.omi)+"</span>"
+      +"<span style=\"color:#94a3b8\">เธเธฅเธ•เนเธฒเธ:</span><span style=\"text-align:right;font-family:monospace;font-weight:700;color:"+(ok?"#4ade80":"#f87171")+"\">&#3647;"+fmt(diff)+"</span>"
+      +"</div>"
+      +"<div style=\"margin-top:8px;display:flex;gap:6px;flex-wrap:wrap\">"
+      +"<span class=\"badge-ok\">"+d.ok+" เธ•เธฃเธ</span>"
+      +"<span class=\"badge-fail\">"+d.fail+" เนเธกเนเธ•เธฃเธ</span>"
+      +"<span class=\"badge-grey\">"+d.no+" เนเธกเนเธกเธตเนเธ Omise</span>"
+      +"</div></div>";
+  }
+  var gr={rev:st.rev+de.rev,omi:st.omi+de.omi};var gd=gr.rev-gr.omi;
+  document.getElementById("rev-summary").innerHTML=card("&#128230; Storage",st,"#93c5fd")+card("&#128666; Delivery",de,"#d8b4fe")
+    +"<div class=\"sum-card\" style=\"grid-column:span 2\">"
+    +"<div style=\"font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px\">&#128176; Grand Total</div>"
+    +"<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:13px\">"
+    +"<span style=\"color:#94a3b8\">Revenue เธฃเธงเธก:</span><span style=\"text-align:right;font-family:monospace;font-weight:700;color:#6ee7b7\">&#3647;"+fmt(gr.rev)+"</span>"
+    +"<span style=\"color:#94a3b8\">Omise เธฃเธงเธก:</span><span style=\"text-align:right;font-family:monospace;font-weight:700;color:#6ee7b7\">&#3647;"+fmt(gr.omi)+"</span>"
+    +"<span style=\"color:#94a3b8\">เธเธฅเธ•เนเธฒเธเธฃเธงเธก:</span><span style=\"text-align:right;font-family:monospace;font-weight:800;font-size:15px;color:"+(Math.abs(gd)<0.01?"#4ade80":"#f87171")+"\">&#3647;"+fmt(gd)+"</span>"
+    +"</div></div>";
+}
+
+function processRefOmise(file){
+  if(!file)return;
+  document.getElementById("ref-ol").textContent="เธเธณเธฅเธฑเธเธญเนเธฒเธ "+file.name+"...";
+  readXL(file,function(err,wb){
+    if(err){alert("เธญเนเธฒเธเนเธเธฅเนเนเธกเนเนเธ”เน: "+err.message);return;}
+    fS.wb=wb;
+    document.getElementById("ref-oz").classList.add("done");
+    document.getElementById("ref-ol").textContent="&#10003; "+file.name;
+    var rf=wb.SheetNames.filter(function(n){return n.toLowerCase().indexOf("refund")>=0;});
+    var py=wb.SheetNames.filter(function(n){return n.indexOf("เธฃเธฑเธเธเธณเธฃเธฐ")>=0;});
+    var cl=wb.SheetNames.filter(function(n){return n.toLowerCase().indexOf("claim")>=0;});
+    var info=document.getElementById("ref-info");info.classList.remove("hidden");
+    info.innerHTML="<b>เธ•เธฃเธงเธเธเธ:</b> "
+      +"<span style=\"color:#4ade80\">Refund: "+(rf.join(", ")||"เนเธกเนเธเธ")+"</span> &nbsp;|&nbsp; "
+      +"<span style=\"color:#60a5fa\">เธฃเธฑเธเธเธณเธฃเธฐ: "+(py.join(", ")||"เนเธกเนเธเธ")+"</span> &nbsp;|&nbsp; "
+      +"<span style=\"color:#fbbf24\">Claim: "+(cl[0]||"เนเธกเนเธเธ")+"</span>";
+  });
+}
+
+function runRefund(){
+  var st=document.getElementById("ref-status");
+  if(!fS.wb){st.textContent="&#9888; เธเธฃเธธเธ“เธฒเธญเธฑเธเนเธซเธฅเธ”เนเธเธฅเน Omise Excel";return;}
+  st.textContent="&#9203; เธเธณเธฅเธฑเธ Reconcile...";
+  setTimeout(function(){
+    try{
+      var wb=fS.wb;
+      var rfSn=wb.SheetNames.find(function(n){return n.toLowerCase().indexOf("refund")>=0;});
+      var pySn=wb.SheetNames.filter(function(n){return n.indexOf("เธฃเธฑเธเธเธณเธฃเธฐ")>=0;});
+      var clSn=wb.SheetNames.find(function(n){return n.toLowerCase().indexOf("claim")>=0;});
+      if(!rfSn){st.textContent="&#10060; เนเธกเนเธเธ Sheet เธเธทเนเธญเธกเธต Refund";return;}
+      if(!pySn.length){st.textContent="&#10060; เนเธกเนเธเธ Sheet เธฃเธฑเธเธเธณเธฃเธฐ";return;}
+      var c2o={};
+      pySn.forEach(function(sn){
+        XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:""}).forEach(function(row){
+          var cid=(getCol(row,"id","charge id","Charge ID","charge_id")||"").toString().trim();
+          var desc=(getCol(row,"description","Description")||"").toString();
+          var oid=getOrdId(desc);
+          if(cid&&oid)c2o[cid]=oid;
+        });
+      });
+      var cm={};
+      if(clSn){
+        XLSX.utils.sheet_to_json(wb.Sheets[clSn],{defval:""}).forEach(function(row){
+          var oid=null;var vals=Object.values(row);
+          for(var i=0;i<vals.length;i++){oid=getOrdId((vals[i]||"").toString());if(oid)break;}
+          if(!oid)return;
+          cm[oid]={
+            reason:(getCol(row,"reason","Reason","เน€เธซเธ•เธธเธเธฅ")||"").toString(),
+            status:(getCol(row,"status","Status","เธชเธ–เธฒเธเธฐ")||"").toString(),
+            ap:(getCol(row,"approve by","approved by","Approve by","approver","Approved by")||"").toString(),
+            amt:parseFloat(getCol(row,"amount","Amount","refund amount","Refund Amount")||0)
+          };
+        });
+      }
+      var res=[];
+      XLSX.utils.sheet_to_json(wb.Sheets[rfSn],{defval:""}).forEach(function(row){
+        var rid=(getCol(row,"refund id","id","Refund ID","refund_id")||"").toString().trim();
+        var cid=(getCol(row,"charge id","Charge ID","original charge id","charge_id","Original Charge ID")||"").toString().trim();
+        var amt=parseFloat(getCol(row,"amount","Amount","refund amount","Refund Amount")||0);
+        var dt=(getCol(row,"created (utc+7)","created","Created","date","Date")||"").toString();
+        var reason=(getCol(row,"reason","Reason")||"").toString();
+        if(!rid&&!cid)return;
+        var oid=c2o[cid]||null;
+        var cl=oid?cm[oid]:null;
+        var ms=oid?(cl?(Math.abs((cl.amt||0)-amt)<1.0?"ok":"fail"):"noclaim"):"noorder";
+        var diff=cl?cl.amt-amt:null;
+        res.push({rid:rid,cid:cid,oid:oid||"&#8212;",amt:amt,dt:dt,reason:reason,cr:cl?cl.reason:"",cs:cl?cl.status:"",cap:cl?cl.ap:"",camt:cl?cl.amt:null,diff:diff,ms:ms});
+      });
+      fS.data=res;fS.f={ms:"all",chk:"all"};
+      document.getElementById("ref-results").classList.remove("hidden");
+      renderRef();
+      st.textContent="&#10003; Reconcile เน€เธชเธฃเนเธ โ€” "+res.length+" เธฃเธฒเธขเธเธฒเธฃ";
+    }catch(e){st.textContent="&#10060; Error: "+e.message;console.error(e);}
+  },50);
+}
+
+function getFiltRef(){
+  var q=(document.getElementById("ref-q")||{value:""}).value.trim().toLowerCase();
+  var f=fS.f;
+  return fS.data.filter(function(r){
+    if(f.ms!=="all"&&r.ms!==f.ms)return false;
+    if(f.chk==="checked"&&!gc("rf_"+r.rid))return false;
+    if(f.chk==="unchecked"&&gc("rf_"+r.rid))return false;
+    if(q&&((r.rid||"")+(r.cid||"")+(r.oid||"")).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+}
+
+function renderRef(){
+  var data=getFiltRef();var html="";
+  data.forEach(function(r,i){
+    var id="rf_"+r.rid;var chk=gc(id);var note=gn(id);
+    var cls=(r.ms==="ok"?"match-ok":r.ms==="fail"?"match-fail":"match-noomi")+(chk?" row-checked":"");
+    var bdg=r.ms==="ok"?"<span class=\"badge-ok\">&#10003; เธ•เธฃเธ</span>":r.ms==="fail"?"<span class=\"badge-fail\">&#9888; เนเธกเนเธ•เธฃเธ</span>":r.ms==="noclaim"?"<span class=\"badge-grey\">เนเธกเนเธกเธตเนเธ Claim</span>":"<span class=\"badge-grey\">เนเธกเนเธเธ Order</span>";
+    var df=r.diff!==null?(Math.abs(r.diff)<0.01?"<span style=\"color:#4ade80\">0.00</span>":"<span style=\"color:#f87171\">"+fmt(r.diff)+"</span>"):"&#8212;";
+    html+="<tr class=\""+cls+"\">"
+      +"<td class=\"text-slate-500\">"+(i+1)+"</td>"
+      +"<td class=\"font-mono text-xs\">"+esc(r.rid||"&#8212;")+"</td>"
+      +"<td class=\"font-mono text-xs\" style=\"max-width:120px;overflow:hidden;text-overflow:ellipsis\" title=\""+esc(r.cid||"")+"\">"+esc(r.cid||"&#8212;")+"</td>"
+      +"<td class=\"font-mono font-semibold\">"+esc(r.oid||"&#8212;")+"</td>"
+      +"<td class=\"text-right\">"+fmt(r.amt)+"</td>"
+      +"<td style=\"white-space:nowrap\">"+esc(r.dt||"&#8212;")+"</td>"
+      +"<td>"+esc(r.cr||"&#8212;")+"</td>"
+      +"<td>"+esc(r.cs||"&#8212;")+"</td>"
+      +"<td>"+esc(r.cap||"&#8212;")+"</td>"
+      +"<td class=\"text-right\">"+(r.camt!==null?fmt(r.camt):"&#8212;")+"</td>"
+      +"<td class=\"text-right\">"+df+"</td>"
+      +"<td>"+bdg+"</td>"
+      +"<td><textarea class=\"note-box\" rows=\"1\" onchange=\"sn('"+id+"',this.value)\">"+esc(note)+"</textarea></td>"
+      +"<td class=\"text-center\"><input type=\"checkbox\" "+(chk?"checked":"")+" onchange=\"sc('"+id+"',this.checked,this.closest('tr'))\"></td>"
+      +"</tr>";
+  });
+  document.getElementById("ref-tb").innerHTML=html;
+  document.getElementById("ref-cnt").textContent="เนเธชเธ”เธ "+data.length+" / "+fS.data.length+" เธฃเธฒเธขเธเธฒเธฃ";
+}
+
+function doExport(rows,fname){
+  try{
+    if(typeof XLSX==="undefined"){alert("XLSX library เธขเธฑเธเนเธซเธฅเธ”เนเธกเนเนเธ”เน");return;}
+    var ws=XLSX.utils.json_to_sheet(rows);
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,"Reconciliation");
+    var out=XLSX.write(wb,{bookType:"xlsx",type:"base64"});
+    var a=document.createElement("a");
+    a.href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+out;
+    a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  }catch(e){alert("Export Error: "+e.message);}
+}
+
+function exportRev(){
+  if(!rS.data.length){alert("เธขเธฑเธเนเธกเนเธกเธตเธเนเธญเธกเธนเธฅ เธเธฃเธธเธ“เธฒ Reconcile เธเนเธญเธ");return;}
+  var today=new Date().toISOString().slice(0,10).replace(/-/g,"");
+  doExport(rS.data.map(function(r,i){
+    var id="rv_"+r.oid;
+    return {"#":i+1,"Order ID":r.oid,"Service":r.svc,"เธงเธฑเธเธ—เธตเน":r.dt,
+      "เธเธทเนเธญ":((r.fn||"")+(r.ln?" "+r.ln:"")).trim(),"Receipt":r.rno||"",
+      "Revenue (เธฟ)":r.rev,"Omise (เธฟ)":r.oamt!==null?r.oamt:"","เธเธฅเธ•เนเธฒเธ":r.diff!==null?r.diff:"",
+      "Charge ID":r.cid||"","Card":r.ocard||"","Status":r.ms,
+      "Note":gn(id),"เน€เธเนเธเนเธฅเนเธง":gc(id)?"เน€เธเนเธเนเธฅเนเธง":""};
+  }),"Omise_Revenue_Recon_"+today+".xlsx");
+}
+
+function exportRef(){
+  if(!fS.data.length){alert("เธขเธฑเธเนเธกเนเธกเธตเธเนเธญเธกเธนเธฅ เธเธฃเธธเธ“เธฒ Reconcile เธเนเธญเธ");return;}
+  var today=new Date().toISOString().slice(0,10).replace(/-/g,"");
+  doExport(fS.data.map(function(r,i){
+    var id="rf_"+r.rid;
+    return {"#":i+1,"Refund ID":r.rid,"Charge ID":r.cid,"Order ID":r.oid,
+      "Refund (เธฟ)":r.amt,"เธงเธฑเธเธ—เธตเน":r.dt,"Refund Reason":r.reason,
+      "Claim Reason":r.cr,"Claim Status":r.cs,"Approve by":r.cap,
+      "Claim (เธฟ)":r.camt!==null?r.camt:"","เธเธฅเธ•เนเธฒเธ":r.diff!==null?r.diff:"","Status":r.ms,
+      "Note":gn(id),"เน€เธเนเธเนเธฅเนเธง":gc(id)?"เน€เธเนเธเนเธฅเนเธง":""};
+  }),"Omise_Refund_Recon_"+today+".xlsx");
+}
+</script>
+</body>
+</html>
