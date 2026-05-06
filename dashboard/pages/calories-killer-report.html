@@ -6,56 +6,34 @@
   <title>CALORIES KILLER — รายงานยอดจัดส่ง</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
     body { font-family: 'Sarabun', sans-serif; }
 
-    .gradient-header {
-      background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 50%, #1e3a5f 100%);
-    }
-    .day-header {
-      background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
-    }
-    .zone-header {
-      background: linear-gradient(90deg, #1e40af 0%, #1e3a8a 100%);
-    }
-    .row-even { background-color: #f0f7ff; }
-    .row-odd  { background-color: #ffffff; }
-    .total-row {
-      background: linear-gradient(90deg, #1e3a5f 0%, #2d6a9f 100%);
-    }
-    .grand-total {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-    }
-    .stat-card {
-      background: linear-gradient(135deg, #1e40af, #2563eb);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(30,64,175,0.3); }
-    .stat-card-green {
-      background: linear-gradient(135deg, #065f46, #059669);
-    }
-    .stat-card-green:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(5,150,105,0.3); }
+    .gradient-header { background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 50%, #1e3a5f 100%); }
+    .day-header       { background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%); }
+    .zone-header      { background: linear-gradient(90deg, #1e40af 0%, #1e3a8a 100%); }
+    .row-even         { background-color: #f0f7ff; }
+    .row-odd          { background-color: #ffffff; }
+    .total-row        { background: linear-gradient(90deg, #1e3a5f 0%, #2d6a9f 100%); }
+    .grand-total      { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); }
+
+    .stat-card       { background: linear-gradient(135deg, #1e40af, #2563eb); transition: transform .2s, box-shadow .2s; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(30,64,175,.3); }
+    .stat-card-green       { background: linear-gradient(135deg, #065f46, #059669); transition: transform .2s; }
+    .stat-card-green:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(5,150,105,.3); }
 
     table { border-collapse: separate; border-spacing: 0; }
-    th, td { border-right: 1px solid rgba(255,255,255,0.15); }
-    th:last-child, td:last-child { border-right: none; }
     .data-table td { border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
     .data-table td:last-child { border-right: none; }
     .data-table tr:last-child td { border-bottom: none; }
 
-    .badge {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 999px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-    }
-    .print-btn {
-      transition: all 0.2s;
-    }
-    .print-btn:hover { transform: scale(1.03); }
+    /* Drop zone */
+    #drop-zone { border: 2.5px dashed #93c5fd; transition: all .2s; cursor: pointer; }
+    #drop-zone.drag-over { border-color: #2563eb; background: #eff6ff; transform: scale(1.01); }
+    #drop-zone:hover { border-color: #3b82f6; background: #f8faff; }
+
     @media print {
       .no-print { display: none !important; }
       body { background: white; }
@@ -64,302 +42,522 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-  <!-- Top Bar -->
-  <div class="gradient-header text-white px-6 py-5 shadow-xl">
-    <div class="max-w-4xl mx-auto flex items-center justify-between flex-wrap gap-3">
-      <div>
-        <div class="flex items-center gap-3 mb-1">
-          <span class="text-2xl">🔥</span>
-          <h1 class="text-2xl font-bold tracking-wide">CALORIES KILLER</h1>
-          <span class="badge bg-white text-blue-800">Partner Report</span>
-        </div>
-        <p class="text-blue-200 text-sm">รายงานยอดจัดส่ง 24 – 27 เมษายน 2026</p>
+<!-- ───────── TOP BAR ───────── -->
+<div class="gradient-header text-white px-6 py-5 shadow-xl no-print">
+  <div class="max-w-4xl mx-auto flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <div class="flex items-center gap-3 mb-1">
+        <span class="text-2xl">🔥</span>
+        <h1 class="text-2xl font-bold tracking-wide">CALORIES KILLER</h1>
+        <span class="text-xs font-mono bg-white text-blue-800 px-2 py-0.5 rounded font-semibold">Partner Report</span>
       </div>
-      <div class="flex gap-2 no-print">
-        <button onclick="window.print()" class="print-btn bg-white text-blue-800 font-semibold text-sm px-4 py-2 rounded-lg shadow hover:bg-blue-50">
-          🖨️ พิมพ์
-        </button>
-        <a href="../index.html" class="print-btn bg-blue-700 hover:bg-blue-600 text-white font-semibold text-sm px-4 py-2 rounded-lg shadow">
-          ← Dashboard
-        </a>
+      <p id="hdr-subtitle" class="text-blue-200 text-sm">รายงานยอดจัดส่ง</p>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="exportExcel()" class="bg-green-600 hover:bg-green-500 text-white font-semibold text-sm px-4 py-2 rounded-lg shadow transition-all">
+        ⬇️ Export Excel
+      </button>
+      <button onclick="window.print()" class="bg-white text-blue-800 font-semibold text-sm px-4 py-2 rounded-lg shadow hover:bg-blue-50 transition-all">
+        🖨️ พิมพ์
+      </button>
+      <a href="../index.html" class="bg-blue-700 hover:bg-blue-600 text-white font-semibold text-sm px-4 py-2 rounded-lg shadow transition-all">
+        ← Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-4 py-8 space-y-6">
+
+  <!-- ───────── UPLOAD ZONE ───────── -->
+  <div id="drop-zone" class="no-print bg-white rounded-2xl px-6 py-8 text-center shadow-md"
+       onclick="document.getElementById('file-input').click()"
+       ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+    <input type="file" id="file-input" accept=".xlsx,.xls" class="hidden" onchange="onFileChange(event)" />
+    <div id="drop-icon" class="text-5xl mb-3">📂</div>
+    <p class="font-semibold text-gray-700 text-base">วางไฟล์ Excel ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+    <p class="text-gray-400 text-xs mt-1">รองรับ .xlsx / .xls — ระบบจะอ่านข้อมูลและอัพเดทหน้าให้อัตโนมัติ</p>
+    <div id="upload-status" class="mt-3 text-sm font-medium hidden"></div>
+  </div>
+
+  <!-- ───────── SUMMARY CARDS ───────── -->
+  <div id="summary-cards" class="grid grid-cols-2 md:grid-cols-4 gap-4 no-print"></div>
+
+  <!-- ───────── CHART ───────── -->
+  <div id="chart-container" class="bg-white rounded-2xl shadow-md p-5 no-print hidden">
+    <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">เปรียบเทียบยอดรายวัน (บาท) แยก Zone</h2>
+    <div class="h-56"><canvas id="barChart"></canvas></div>
+  </div>
+
+  <!-- ───────── DAILY TABLES (dynamic) ───────── -->
+  <div id="daily-tables" class="space-y-6"></div>
+
+  <!-- ───────── GRAND TOTAL ───────── -->
+  <div id="grand-total-box" class="hidden grand-total rounded-2xl shadow-xl overflow-hidden">
+    <div class="px-5 py-3 border-b border-white/10">
+      <h2 id="gt-title" class="text-white font-bold text-base tracking-wide">📊 รวมทั้งหมด</h2>
+    </div>
+    <div class="grid grid-cols-2 divide-x divide-white/10">
+      <div class="px-6 py-5 text-center">
+        <div class="text-blue-300 text-xs font-semibold uppercase tracking-widest mb-1">จำนวน Order รวม</div>
+        <div id="gt-orders" class="text-white text-4xl font-bold">—</div>
+        <div class="text-blue-300 text-sm mt-1">รายการ</div>
+      </div>
+      <div class="px-6 py-5 text-center">
+        <div class="text-green-300 text-xs font-semibold uppercase tracking-widest mb-1">ยอดเงินรวม</div>
+        <div id="gt-amount" class="text-white text-4xl font-bold">—</div>
+        <div class="text-green-300 text-sm mt-1">บาท</div>
       </div>
     </div>
   </div>
 
-  <div class="max-w-4xl mx-auto px-4 py-8 space-y-6">
-
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 no-print">
-      <div class="stat-card text-white rounded-xl p-4 text-center shadow-lg col-span-2 md:col-span-1">
-        <div class="text-3xl font-bold">2</div>
-        <div class="text-blue-200 text-sm mt-1">วันที่รายงาน</div>
-      </div>
-      <div class="stat-card text-white rounded-xl p-4 text-center shadow-lg">
-        <div class="text-3xl font-bold">579</div>
-        <div class="text-blue-200 text-sm mt-1">รายการรวม</div>
-      </div>
-      <div class="stat-card-green text-white rounded-xl p-4 text-center shadow-lg col-span-2 md:col-span-1">
-        <div class="text-2xl font-bold">46,802</div>
-        <div class="text-green-200 text-sm mt-1">ยอดรวม (บาท)</div>
-      </div>
-      <div class="stat-card text-white rounded-xl p-4 text-center shadow-lg">
-        <div class="text-3xl font-bold">4</div>
-        <div class="text-blue-200 text-sm mt-1">Zone ทั้งหมด</div>
-      </div>
+  <!-- ───────── ZONE BREAKDOWN ───────── -->
+  <div id="zone-breakdown" class="hidden bg-white rounded-2xl shadow-md overflow-hidden">
+    <div class="bg-gray-50 border-b px-5 py-3">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">สรุปยอดรวมทุกวัน แยก Zone</h2>
     </div>
+    <div id="zone-grid" class="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100"></div>
+  </div>
 
-    <!-- Chart -->
-    <div class="bg-white rounded-2xl shadow-md p-5 no-print">
-      <h2 class="text-base font-semibold text-gray-700 mb-4">เปรียบเทียบยอดรายวัน (บาท)</h2>
-      <div class="h-52">
-        <canvas id="barChart"></canvas>
-      </div>
-    </div>
+  <!-- ───────── FOOTER ───────── -->
+  <div class="text-center text-xs text-gray-400 pb-4">
+    Airportels Financial — MADGA &nbsp;|&nbsp; CALORIES KILLER Partner Report
+  </div>
 
-    <!-- Date 24/04/2026 -->
-    <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-      <div class="day-header text-white px-5 py-3 flex items-center gap-3">
-        <span class="text-lg">📅</span>
-        <div>
-          <div class="font-bold text-base tracking-wide">วันที่ 24/04/2026</div>
-          <div class="text-blue-200 text-xs">วันพฤหัสบดี</div>
-        </div>
-        <div class="ml-auto text-right">
-          <div class="text-xs text-blue-200">ยอดวัน</div>
-          <div class="font-bold text-lg">21,046 ฿</div>
-        </div>
-      </div>
-      <table class="w-full data-table text-sm">
-        <thead>
-          <tr class="zone-header text-white">
-            <th class="px-4 py-2.5 text-left font-semibold">Zone</th>
-            <th class="px-4 py-2.5 text-right font-semibold">จำนวน (รายการ)</th>
-            <th class="px-4 py-2.5 text-right font-semibold">ยอดรวม (บาท)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="row-even">
-            <td class="px-4 py-3 font-medium text-gray-700">
-              <span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span>BKK Inner
-            </td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">213</td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">16,614.00</td>
-          </tr>
-          <tr class="row-odd">
-            <td class="px-4 py-3 font-medium text-gray-700">
-              <span class="inline-block w-2 h-2 rounded-full bg-indigo-400 mr-2"></span>BKK Outer
-            </td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">17</td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">1,462.00</td>
-          </tr>
-          <tr class="row-even">
-            <td class="px-4 py-3 font-medium text-gray-700">
-              <span class="inline-block w-2 h-2 rounded-full bg-cyan-500 mr-2"></span>GBKK Inner
-            </td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">30</td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">2,970.00</td>
-          </tr>
-          <tr class="row-odd">
-            <td class="px-4 py-3 font-medium text-gray-500">
-              <span class="inline-block w-2 h-2 rounded-full bg-gray-300 mr-2"></span>GBKK Outer
-            </td>
-            <td class="px-4 py-3 text-right text-gray-400 font-mono">0</td>
-            <td class="px-4 py-3 text-right text-gray-400 font-mono">—</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr class="total-row text-white">
-            <td class="px-4 py-3 font-bold">รวม</td>
-            <td class="px-4 py-3 text-right font-bold font-mono">260</td>
-            <td class="px-4 py-3 text-right font-bold font-mono">21,046.00</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+</div><!-- /max-w -->
 
-    <!-- Date 27/04/2026 -->
-    <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-      <div class="day-header text-white px-5 py-3 flex items-center gap-3">
-        <span class="text-lg">📅</span>
-        <div>
-          <div class="font-bold text-base tracking-wide">วันที่ 27/04/2026</div>
-          <div class="text-blue-200 text-xs">วันอาทิตย์</div>
-        </div>
-        <div class="ml-auto text-right">
-          <div class="text-xs text-blue-200">ยอดวัน</div>
-          <div class="font-bold text-lg">25,756 ฿</div>
-        </div>
-      </div>
-      <table class="w-full data-table text-sm">
-        <thead>
-          <tr class="zone-header text-white">
-            <th class="px-4 py-2.5 text-left font-semibold">Zone</th>
-            <th class="px-4 py-2.5 text-right font-semibold">จำนวน (รายการ)</th>
-            <th class="px-4 py-2.5 text-right font-semibold">ยอดรวม (บาท)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="row-even">
-            <td class="px-4 py-3 font-medium text-gray-700">
-              <span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span>BKK Inner
-            </td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">265</td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">20,592.00</td>
-          </tr>
-          <tr class="row-odd">
-            <td class="px-4 py-3 font-medium text-gray-700">
-              <span class="inline-block w-2 h-2 rounded-full bg-indigo-400 mr-2"></span>BKK Outer
-            </td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">14</td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">1,204.00</td>
-          </tr>
-          <tr class="row-even">
-            <td class="px-4 py-3 font-medium text-gray-700">
-              <span class="inline-block w-2 h-2 rounded-full bg-cyan-500 mr-2"></span>GBKK Inner
-            </td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">40</td>
-            <td class="px-4 py-3 text-right text-gray-700 font-mono">3,960.00</td>
-          </tr>
-          <tr class="row-odd">
-            <td class="px-4 py-3 font-medium text-gray-500">
-              <span class="inline-block w-2 h-2 rounded-full bg-gray-300 mr-2"></span>GBKK Outer
-            </td>
-            <td class="px-4 py-3 text-right text-gray-400 font-mono">0</td>
-            <td class="px-4 py-3 text-right text-gray-400 font-mono">—</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr class="total-row text-white">
-            <td class="px-4 py-3 font-bold">รวม</td>
-            <td class="px-4 py-3 text-right font-bold font-mono">319</td>
-            <td class="px-4 py-3 text-right font-bold font-mono">25,756.00</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════ -->
+<script>
+// ─── Zone config ───────────────────────────────────────
+const ZONE_CONFIG = {
+  'BKK Inner':  { color: 'bg-blue-500',   text: 'text-blue-600',   label: 'BKK Inner' },
+  'BKK Outer':  { color: 'bg-indigo-400', text: 'text-indigo-600', label: 'BKK Outer' },
+  'GBKK Inner': { color: 'bg-cyan-500',   text: 'text-cyan-600',   label: 'GBKK Inner' },
+  'GBKK Outer': { color: 'bg-gray-300',   text: 'text-gray-400',   label: 'GBKK Outer' },
+};
+const ZONE_CHART_COLORS = ['rgba(37,99,235,.85)', 'rgba(99,102,241,.85)', 'rgba(6,182,212,.85)', 'rgba(156,163,175,.85)'];
+const KNOWN_ZONES = Object.keys(ZONE_CONFIG);
 
-    <!-- Grand Total -->
-    <div class="grand-total rounded-2xl shadow-xl overflow-hidden">
-      <div class="px-5 py-3 border-b border-white/10">
-        <h2 class="text-white font-bold text-base tracking-wide">📊 รวมทั้งหมด 2 วัน</h2>
-      </div>
-      <div class="grid grid-cols-2 divide-x divide-white/10">
-        <div class="px-6 py-5 text-center">
-          <div class="text-blue-300 text-xs font-semibold uppercase tracking-widest mb-1">จำนวน Order รวม</div>
-          <div class="text-white text-4xl font-bold">579</div>
-          <div class="text-blue-300 text-sm mt-1">รายการ</div>
-        </div>
-        <div class="px-6 py-5 text-center">
-          <div class="text-green-300 text-xs font-semibold uppercase tracking-widest mb-1">ยอดเงินรวม</div>
-          <div class="text-white text-4xl font-bold">46,802</div>
-          <div class="text-green-300 text-sm mt-1">บาท</div>
-        </div>
-      </div>
-    </div>
+let reportData = null;
+let barChartInst = null;
 
-    <!-- Zone Breakdown -->
-    <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-      <div class="bg-gray-50 border-b px-5 py-3">
-        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">สรุปยอดรวมแยกตาม Zone (2 วัน)</h2>
-      </div>
-      <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
-        <div class="p-4 text-center">
-          <div class="flex items-center justify-center gap-1.5 mb-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-            <span class="text-xs font-semibold text-gray-500 uppercase">BKK Inner</span>
-          </div>
-          <div class="text-2xl font-bold text-gray-800">478</div>
-          <div class="text-xs text-gray-400 mt-0.5">รายการ</div>
-          <div class="text-sm font-semibold text-blue-600 mt-1">37,206 ฿</div>
-        </div>
-        <div class="p-4 text-center">
-          <div class="flex items-center justify-center gap-1.5 mb-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
-            <span class="text-xs font-semibold text-gray-500 uppercase">BKK Outer</span>
-          </div>
-          <div class="text-2xl font-bold text-gray-800">31</div>
-          <div class="text-xs text-gray-400 mt-0.5">รายการ</div>
-          <div class="text-sm font-semibold text-indigo-600 mt-1">2,666 ฿</div>
-        </div>
-        <div class="p-4 text-center">
-          <div class="flex items-center justify-center gap-1.5 mb-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
-            <span class="text-xs font-semibold text-gray-500 uppercase">GBKK Inner</span>
-          </div>
-          <div class="text-2xl font-bold text-gray-800">70</div>
-          <div class="text-xs text-gray-400 mt-0.5">รายการ</div>
-          <div class="text-sm font-semibold text-cyan-600 mt-1">6,930 ฿</div>
-        </div>
-        <div class="p-4 text-center">
-          <div class="flex items-center justify-center gap-1.5 mb-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span>
-            <span class="text-xs font-semibold text-gray-500 uppercase">GBKK Outer</span>
-          </div>
-          <div class="text-2xl font-bold text-gray-400">0</div>
-          <div class="text-xs text-gray-400 mt-0.5">รายการ</div>
-          <div class="text-sm font-semibold text-gray-400 mt-1">— ฿</div>
-        </div>
-      </div>
-    </div>
+// ─── Thai day names ─────────────────────────────────────
+function getDayName(dateStr) {
+  // dateStr: DD/MM/YYYY
+  const [d, m, y] = dateStr.split('/').map(Number);
+  if (!d || !m || !y) return '';
+  const days = ['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];
+  return days[new Date(y, m - 1, d).getDay()];
+}
 
-    <!-- Footer -->
-    <div class="text-center text-xs text-gray-400 pb-4">
-      Airportels Financial — MADGA &nbsp;|&nbsp; Report: CALORIES KILLER &nbsp;|&nbsp; 24–27 เม.ย. 2026
-    </div>
+// ─── Number formatting ───────────────────────────────────
+function fmt(n) {
+  if (!n && n !== 0) return '—';
+  return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtInt(n) {
+  if (!n && n !== 0) return '—';
+  return Number(n).toLocaleString('th-TH');
+}
+function parseNum(v) {
+  if (v === null || v === undefined || v === '') return 0;
+  if (typeof v === 'number') return v;
+  const s = String(v).replace(/,/g, '').trim();
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
 
-  </div><!-- end max-w -->
+// ─── Derived totals ───────────────────────────────────────
+function dayTotal(day) {
+  return day.zones.reduce((a, z) => ({ orders: a.orders + z.orders, amount: a.amount + z.amount }), { orders: 0, amount: 0 });
+}
+function grandTotal() {
+  return reportData.days.reduce((a, d) => {
+    const t = dayTotal(d);
+    return { orders: a.orders + t.orders, amount: a.amount + t.amount };
+  }, { orders: 0, amount: 0 });
+}
+function zoneTotals() {
+  const map = {};
+  KNOWN_ZONES.forEach(z => map[z] = { orders: 0, amount: 0 });
+  reportData.days.forEach(d => d.zones.forEach(z => {
+    if (map[z.name]) {
+      map[z.name].orders += z.orders;
+      map[z.name].amount += z.amount;
+    }
+  }));
+  return map;
+}
 
-  <script>
-    // Bar Chart
-    const ctx = document.getElementById('barChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['BKK Inner', 'BKK Outer', 'GBKK Inner', 'GBKK Outer'],
-        datasets: [
-          {
-            label: '24/04/2026',
-            data: [16614, 1462, 2970, 0],
-            backgroundColor: 'rgba(37,99,235,0.85)',
-            borderRadius: 6,
-            borderSkipped: false,
-          },
-          {
-            label: '27/04/2026',
-            data: [20592, 1204, 3960, 0],
-            backgroundColor: 'rgba(6,182,212,0.85)',
-            borderRadius: 6,
-            borderSkipped: false,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top', labels: { font: { family: 'Sarabun', size: 12 }, boxWidth: 12 } },
-          tooltip: {
-            callbacks: {
-              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('th-TH')} ฿`
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: v => v.toLocaleString('th-TH'),
-              font: { family: 'Sarabun', size: 11 }
-            },
-            grid: { color: 'rgba(0,0,0,0.05)' }
-          },
-          x: {
-            ticks: { font: { family: 'Sarabun', size: 11 } },
-            grid: { display: false }
-          }
+// ═══════════════════════════════════════════════════
+//  EXCEL PARSER
+// ═══════════════════════════════════════════════════
+function parseWorkbook(wb) {
+  const sheetName = wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+
+  const data = { title: 'CALORIES KILLER', subtitle: '', days: [] };
+  let currentDay = null;
+
+  for (let r = 0; r < aoa.length; r++) {
+    const row = aoa[r] || [];
+    // flatten: find first non-null cell
+    const cells = row.map(c => (c === null || c === undefined) ? '' : String(c).trim());
+    const firstNonEmpty = cells.find(c => c !== '') || '';
+
+    // ── Title line ──────────────────────────────
+    if (firstNonEmpty.includes('CALORIES KILLER') || firstNonEmpty.toUpperCase().includes('CALORIES')) {
+      if (firstNonEmpty.includes('|')) {
+        const parts = firstNonEmpty.split('|');
+        data.title = parts[0].trim();
+        data.subtitle = parts.slice(1).join('|').trim();
+      } else {
+        data.title = firstNonEmpty;
+        // subtitle might be in next cell or next row
+        const rest = cells.slice(1).find(c => c !== '');
+        if (rest) data.subtitle = rest;
+      }
+      continue;
+    }
+
+    // ── Date header ─────────────────────────────
+    // Look for "วันที่" text or a date pattern in any cell
+    const dateCell = cells.find(c => /\d{1,2}\/\d{1,2}\/\d{4}/.test(c) || c.includes('วันที่'));
+    if (dateCell) {
+      const match = dateCell.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+      const dateStr = match ? match[1].padStart(10, '0').replace(/^(\d)\//, '0$1/').replace(/\/(\d)\//, '/0$1/') : dateCell;
+      // Normalize to DD/MM/YYYY
+      const normalized = dateStr.replace(/(\d{1,2})\/(\d{1,2})\/(\d{4})/, (_, d, m, y) =>
+        d.padStart(2,'0') + '/' + m.padStart(2,'0') + '/' + y);
+      currentDay = { date: normalized, zones: [] };
+      data.days.push(currentDay);
+      continue;
+    }
+
+    // ── Skip header rows (Zone / จำนวน) ────────
+    if (firstNonEmpty.includes('Zone') || firstNonEmpty.includes('จำนวน')) continue;
+
+    // ── Zone data rows ───────────────────────────
+    if (currentDay) {
+      const zoneName = KNOWN_ZONES.find(z => firstNonEmpty.includes(z));
+      if (zoneName) {
+        // Find two numeric values in the row
+        const nums = [];
+        for (let c = 1; c < row.length; c++) {
+          const v = parseNum(row[c]);
+          if (row[c] !== null && row[c] !== '') nums.push(v);
+          if (nums.length === 2) break;
         }
+        currentDay.zones.push({
+          name: zoneName,
+          orders: nums[0] || 0,
+          amount: nums[1] || 0,
+        });
+        continue;
+      }
+    }
+  }
+
+  // Fill missing zones with 0
+  data.days.forEach(day => {
+    KNOWN_ZONES.forEach(zn => {
+      if (!day.zones.find(z => z.name === zn)) {
+        day.zones.push({ name: zn, orders: 0, amount: 0 });
       }
     });
-  </script>
+    // Sort zones in KNOWN_ZONES order
+    day.zones.sort((a, b) => KNOWN_ZONES.indexOf(a.name) - KNOWN_ZONES.indexOf(b.name));
+  });
+
+  return data;
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════
+function render() {
+  if (!reportData) return;
+
+  // Header subtitle
+  document.getElementById('hdr-subtitle').textContent = reportData.subtitle || reportData.title;
+
+  const gt = grandTotal();
+  const zt = zoneTotals();
+  const numDays = reportData.days.length;
+
+  // ── Summary cards ────────────────────────────────
+  const cardsEl = document.getElementById('summary-cards');
+  cardsEl.innerHTML = `
+    <div class="stat-card text-white rounded-xl p-4 text-center shadow-lg">
+      <div class="text-3xl font-bold">${numDays}</div>
+      <div class="text-blue-200 text-sm mt-1">วันที่รายงาน</div>
+    </div>
+    <div class="stat-card text-white rounded-xl p-4 text-center shadow-lg">
+      <div class="text-3xl font-bold">${fmtInt(gt.orders)}</div>
+      <div class="text-blue-200 text-sm mt-1">รายการรวม</div>
+    </div>
+    <div class="stat-card-green text-white rounded-xl p-4 text-center shadow-lg">
+      <div class="text-2xl font-bold">${fmtInt(gt.amount)}</div>
+      <div class="text-green-200 text-sm mt-1">ยอดรวม (บาท)</div>
+    </div>
+    <div class="stat-card text-white rounded-xl p-4 text-center shadow-lg">
+      <div class="text-3xl font-bold">4</div>
+      <div class="text-blue-200 text-sm mt-1">Zone ทั้งหมด</div>
+    </div>
+  `;
+
+  // ── Daily tables ──────────────────────────────────
+  const tablesEl = document.getElementById('daily-tables');
+  tablesEl.innerHTML = '';
+  reportData.days.forEach(day => {
+    const dt = dayTotal(day);
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-2xl shadow-md overflow-hidden';
+    const rows = day.zones.map((z, i) => {
+      const cfg = ZONE_CONFIG[z.name] || {};
+      const isZero = z.orders === 0 && z.amount === 0;
+      return `
+        <tr class="${i % 2 === 0 ? 'row-even' : 'row-odd'}">
+          <td class="px-4 py-3 font-medium ${isZero ? 'text-gray-400' : 'text-gray-700'}">
+            <span class="inline-block w-2 h-2 rounded-full ${cfg.color || 'bg-gray-300'} mr-2"></span>${z.name}
+          </td>
+          <td class="px-4 py-3 text-right font-mono ${isZero ? 'text-gray-400' : 'text-gray-700'}">${isZero ? '0' : fmtInt(z.orders)}</td>
+          <td class="px-4 py-3 text-right font-mono ${isZero ? 'text-gray-400' : 'text-gray-700'}">${isZero ? '—' : fmt(z.amount)}</td>
+        </tr>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="day-header text-white px-5 py-3 flex items-center gap-3">
+        <span class="text-lg">📅</span>
+        <div>
+          <div class="font-bold text-base tracking-wide">วันที่ ${day.date}</div>
+          <div class="text-blue-200 text-xs">${getDayName(day.date)}</div>
+        </div>
+        <div class="ml-auto text-right">
+          <div class="text-xs text-blue-200">ยอดวัน</div>
+          <div class="font-bold text-lg">${fmtInt(dt.amount)} ฿</div>
+        </div>
+      </div>
+      <table class="w-full data-table text-sm">
+        <thead>
+          <tr class="zone-header text-white">
+            <th class="px-4 py-2.5 text-left font-semibold">Zone</th>
+            <th class="px-4 py-2.5 text-right font-semibold">จำนวน (รายการ)</th>
+            <th class="px-4 py-2.5 text-right font-semibold">ยอดรวม (บาท)</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr class="total-row text-white">
+            <td class="px-4 py-3 font-bold">รวม</td>
+            <td class="px-4 py-3 text-right font-bold font-mono">${fmtInt(dt.orders)}</td>
+            <td class="px-4 py-3 text-right font-bold font-mono">${fmt(dt.amount)}</td>
+          </tr>
+        </tfoot>
+      </table>`;
+    tablesEl.appendChild(card);
+  });
+
+  // ── Grand total ───────────────────────────────────
+  const gtBox = document.getElementById('grand-total-box');
+  gtBox.classList.remove('hidden');
+  document.getElementById('gt-title').textContent = `📊 รวมทั้งหมด ${numDays} วัน`;
+  document.getElementById('gt-orders').textContent = fmtInt(gt.orders);
+  document.getElementById('gt-amount').textContent = fmtInt(gt.amount);
+
+  // ── Zone breakdown ────────────────────────────────
+  const zbBox = document.getElementById('zone-breakdown');
+  zbBox.classList.remove('hidden');
+  const grid = document.getElementById('zone-grid');
+  grid.innerHTML = KNOWN_ZONES.map(zn => {
+    const cfg = ZONE_CONFIG[zn];
+    const z = zt[zn];
+    const isZero = z.orders === 0;
+    return `
+      <div class="p-4 text-center">
+        <div class="flex items-center justify-center gap-1.5 mb-2">
+          <span class="w-2.5 h-2.5 rounded-full ${cfg.color}"></span>
+          <span class="text-xs font-semibold text-gray-500 uppercase">${zn}</span>
+        </div>
+        <div class="text-2xl font-bold ${isZero ? 'text-gray-400' : 'text-gray-800'}">${fmtInt(z.orders)}</div>
+        <div class="text-xs text-gray-400 mt-0.5">รายการ</div>
+        <div class="text-sm font-semibold ${isZero ? 'text-gray-400' : cfg.text} mt-1">${isZero ? '—' : fmtInt(z.amount)} ฿</div>
+      </div>`;
+  }).join('');
+
+  // ── Chart ─────────────────────────────────────────
+  renderChart();
+}
+
+function renderChart() {
+  const container = document.getElementById('chart-container');
+  container.classList.remove('hidden');
+
+  const labels = KNOWN_ZONES;
+  const datasets = reportData.days.map((day, i) => ({
+    label: day.date,
+    data: KNOWN_ZONES.map(zn => (day.zones.find(z => z.name === zn) || {}).amount || 0),
+    backgroundColor: `hsla(${210 + i * 30}, 80%, ${50 - i * 5}%, 0.85)`,
+    borderRadius: 6,
+    borderSkipped: false,
+  }));
+
+  if (barChartInst) barChartInst.destroy();
+  const ctx = document.getElementById('barChart').getContext('2d');
+  barChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { family: 'Sarabun', size: 12 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString('th-TH')} ฿` } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('th-TH'), font: { family: 'Sarabun', size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { ticks: { font: { family: 'Sarabun', size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  EXCEL EXPORT
+// ═══════════════════════════════════════════════════
+function exportExcel() {
+  if (!reportData) return alert('ยังไม่มีข้อมูล — กรุณาโหลดไฟล์ก่อน');
+
+  const wb = XLSX.utils.book_new();
+  const numDays = reportData.days.length;
+  const gt = grandTotal();
+
+  // Build array-of-arrays
+  const aoa = [];
+
+  // Title
+  const title = reportData.title + (reportData.subtitle ? ' | ' + reportData.subtitle : '');
+  aoa.push([title, null, null]);
+  aoa.push([null, null, null]);
+
+  reportData.days.forEach(day => {
+    const dt = dayTotal(day);
+    aoa.push(['วันที่ ' + day.date, null, null]);
+    aoa.push(['Zone', 'จำนวน (รายการ)', 'ยอดรวม (บาท)']);
+    day.zones.forEach(z => aoa.push([z.name, z.orders, z.amount]));
+    aoa.push(['รวม', dt.orders, dt.amount]);
+    aoa.push([null, null, null]);
+  });
+
+  aoa.push(['รวมทั้งหมด ' + numDays + ' วัน', null, null]);
+  aoa.push(['จำนวน Order รวม', gt.orders, 'รายการ']);
+  aoa.push(['ยอดเงินรวม', gt.amount, 'บาท']);
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{ wch: 30 }, { wch: 22 }, { wch: 22 }];
+
+  // Merge title cell
+  ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Report');
+
+  // Generate filename with date range
+  const dates = reportData.days.map(d => d.date).join(' & ');
+  const filename = `Calories_Killer_${dates.replace(/\//g, '-')}.xlsx`;
+  XLSX.writeFile(wb, filename);
+}
+
+// ═══════════════════════════════════════════════════
+//  FILE UPLOAD HANDLERS
+// ═══════════════════════════════════════════════════
+function setStatus(msg, type) {
+  const el = document.getElementById('upload-status');
+  el.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-blue-600');
+  el.classList.add(type === 'ok' ? 'text-green-600' : type === 'err' ? 'text-red-600' : 'text-blue-600');
+  el.textContent = msg;
+}
+
+function processFile(file) {
+  if (!file) return;
+  if (!file.name.match(/\.(xlsx|xls)$/i)) {
+    setStatus('❌ กรุณาเลือกไฟล์ .xlsx หรือ .xls เท่านั้น', 'err');
+    return;
+  }
+  setStatus('⏳ กำลังอ่านไฟล์…', 'info');
+  document.getElementById('drop-icon').textContent = '⏳';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const parsed = parseWorkbook(wb);
+
+      if (!parsed.days.length) {
+        setStatus('⚠️ ไม่พบข้อมูลวันที่ในไฟล์ — โปรดตรวจสอบรูปแบบ Excel', 'err');
+        document.getElementById('drop-icon').textContent = '⚠️';
+        return;
+      }
+
+      reportData = parsed;
+      render();
+
+      const summary = `✅ โหลดสำเร็จ: ${parsed.days.length} วัน, ${parsed.days.map(d => d.date).join(' & ')}`;
+      setStatus(summary, 'ok');
+      document.getElementById('drop-icon').textContent = '✅';
+      document.getElementById('drop-zone').querySelector('p').textContent = file.name;
+    } catch (err) {
+      setStatus('❌ อ่านไฟล์ไม่ได้: ' + err.message, 'err');
+      document.getElementById('drop-icon').textContent = '❌';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function onFileChange(e) { processFile(e.target.files[0]); }
+
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('drag-over');
+}
+function onDragLeave(e) {
+  document.getElementById('drop-zone').classList.remove('drag-over');
+}
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  processFile(e.dataTransfer.files[0]);
+}
+
+// ═══════════════════════════════════════════════════
+//  INITIAL DATA (from screenshot)
+// ═══════════════════════════════════════════════════
+reportData = {
+  title: 'CALORIES KILLER',
+  subtitle: 'รายงานยอดจัดส่ง 24–27 เมษายน 2026',
+  days: [
+    {
+      date: '24/04/2026',
+      zones: [
+        { name: 'BKK Inner',  orders: 213, amount: 16614 },
+        { name: 'BKK Outer',  orders: 17,  amount: 1462  },
+        { name: 'GBKK Inner', orders: 30,  amount: 2970  },
+        { name: 'GBKK Outer', orders: 0,   amount: 0     },
+      ]
+    },
+    {
+      date: '27/04/2026',
+      zones: [
+        { name: 'BKK Inner',  orders: 265, amount: 20592 },
+        { name: 'BKK Outer',  orders: 14,  amount: 1204  },
+        { name: 'GBKK Inner', orders: 40,  amount: 3960  },
+        { name: 'GBKK Outer', orders: 0,   amount: 0     },
+      ]
+    }
+  ]
+};
+render();
+</script>
 </body>
 </html>
