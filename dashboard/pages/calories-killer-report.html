@@ -857,35 +857,43 @@ function onDrop(e) {
 }
 
 // ═══════════════════════════════════════════════════
-//  INITIAL DATA (from screenshot)
+//  INITIAL DATA
 // ═══════════════════════════════════════════════════
-reportData = {
-  title: 'บริษัท ฐยศฟู้ด จำกัด',
-  subtitle: 'รายงานยอดจัดส่ง 24–27 เมษายน 2026',
-  days: [
-    {
-      date: '24/04/2026',
-      zones: [
-        { name: 'BKK Inner',  orders: 213, amount: 16614 },
-        { name: 'BKK Outer',  orders: 17,  amount: 1462  },
-        { name: 'GBKK Inner', orders: 30,  amount: 2970  },
-        { name: 'GBKK Outer', orders: 0,   amount: 0     },
-        { name: 'Cancelled',  orders: 0,   amount: 0     },
-      ]
-    },
-    {
-      date: '27/04/2026',
-      zones: [
-        { name: 'BKK Inner',  orders: 265, amount: 20592 },
-        { name: 'BKK Outer',  orders: 14,  amount: 1204  },
-        { name: 'GBKK Inner', orders: 40,  amount: 3960  },
-        { name: 'GBKK Outer', orders: 0,   amount: 0     },
-        { name: 'Cancelled',  orders: 0,   amount: 0     },
-      ]
-    }
-  ]
-};
-render();
+function makeInitialData() {
+  return {
+    title: 'บริษัท ฐยศฟู้ด จำกัด',
+    subtitle: 'รายงานยอดจัดส่ง 24–27 เมษายน 2026',
+    days: [
+      {
+        date: '24/04/2026',
+        zones: [
+          { name: 'BKK Inner',  orders: 213, amount: 16614 },
+          { name: 'BKK Outer',  orders: 17,  amount: 1462  },
+          { name: 'GBKK Inner', orders: 30,  amount: 2970  },
+          { name: 'GBKK Outer', orders: 0,   amount: 0     },
+          { name: 'Cancelled',  orders: 0,   amount: 0     },
+        ]
+      },
+      {
+        date: '27/04/2026',
+        zones: [
+          { name: 'BKK Inner',  orders: 265, amount: 20592 },
+          { name: 'BKK Outer',  orders: 14,  amount: 1204  },
+          { name: 'GBKK Inner', orders: 40,  amount: 3960  },
+          { name: 'GBKK Outer', orders: 0,   amount: 0     },
+          { name: 'Cancelled',  orders: 0,   amount: 0     },
+        ]
+      }
+    ]
+  };
+}
+
+function loadInitialData() {
+  reportData = makeInitialData();
+  render();
+}
+
+loadInitialData();
 </script>
 </body>
 </html>
