@@ -192,87 +192,164 @@ function zoneTotals() {
 }
 
 // ═══════════════════════════════════════════════════
-//  EXCEL PARSER
+//  EXCEL PARSER  (robust v2)
 // ═══════════════════════════════════════════════════
+
+// Convert Excel serial date → DD/MM/YYYY
+function excelSerialToDate(serial) {
+  if (!serial || isNaN(serial)) return null;
+  const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
+  if (isNaN(d)) return null;
+  const dd = String(d.getUTCDate()).padStart(2,'0');
+  const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+  const yyyy = d.getUTCFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+// Extract DD/MM/YYYY from any string
+function extractDate(str) {
+  // DD/MM/YYYY or DD-MM-YYYY
+  const m1 = str.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (m1) {
+    let [, d, mo, y] = m1;
+    if (parseInt(y) > 2500) y = String(parseInt(y) - 543); // Buddhist → AD
+    return `${d.padStart(2,'0')}/${mo.padStart(2,'0')}/${y}`;
+  }
+  return null;
+}
+
 function parseWorkbook(wb) {
   const sheetName = wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
-  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
 
-  const data = { title: 'CALORIES KILLER', subtitle: '', days: [] };
+  // raw:false → dates become formatted strings; raw:true → serial numbers
+  // We read BOTH and pick the best
+  const aoaRaw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+  const aoaFmt = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
+
+  const data = { title: 'บริษัท ฐยศฟู้ด จำกัด', subtitle: '', days: [] };
   let currentDay = null;
 
-  for (let r = 0; r < aoa.length; r++) {
-    const row = aoa[r] || [];
-    // flatten: find first non-null cell
-    const cells = row.map(c => (c === null || c === undefined) ? '' : String(c).trim());
-    const firstNonEmpty = cells.find(c => c !== '') || '';
+  // Build debug rows for the panel
+  const debugRows = [];
 
-    // ── Title line ──────────────────────────────
-    if (firstNonEmpty.includes('CALORIES KILLER') || firstNonEmpty.toUpperCase().includes('CALORIES') || firstNonEmpty.includes('ฐยศฟู้ด')) {
-      if (firstNonEmpty.includes('|')) {
-        const parts = firstNonEmpty.split('|');
-        data.title = 'บริษัท ฐยศฟู้ด จำกัด';
-        data.subtitle = parts.slice(1).join('|').trim();
-      } else {
-        data.title = 'บริษัท ฐยศฟู้ด จำกัด';
-        // subtitle might be in next cell or next row
+  for (let r = 0; r < aoaRaw.length; r++) {
+    const rowRaw = aoaRaw[r] || [];
+    const rowFmt = aoaFmt[r] || [];
+
+    // String representation of each cell (prefer formatted, fallback raw)
+    const cells = rowRaw.map((raw, ci) => {
+      const fmt = rowFmt[ci];
+      if (fmt !== null && fmt !== undefined && String(fmt).trim() !== '') return String(fmt).trim();
+      if (raw !== null && raw !== undefined && String(raw).trim() !== '') return String(raw).trim();
+      return '';
+    });
+
+    const allText = cells.join(' ').trim();
+    if (!allText) continue; // skip fully empty rows
+
+    debugRows.push(cells.filter(c => c !== '').slice(0, 5));
+
+    // ── Title line ────────────────────────────────────
+    if (allText.includes('CALORIES KILLER') || allText.toUpperCase().includes('CALORIE')
+        || allText.includes('ฐยศฟู้ด')) {
+      const pipe = allText.indexOf('|');
+      if (pipe !== -1) data.subtitle = allText.slice(pipe + 1).trim();
+      else {
+        // subtitle in next non-empty cell
         const rest = cells.slice(1).find(c => c !== '');
         if (rest) data.subtitle = rest;
       }
       continue;
     }
 
-    // ── Date header ─────────────────────────────
-    // Look for "วันที่" text or a date pattern in any cell
-    const dateCell = cells.find(c => /\d{1,2}\/\d{1,2}\/\d{4}/.test(c) || c.includes('วันที่'));
-    if (dateCell) {
-      const match = dateCell.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
-      const dateStr = match ? match[1].padStart(10, '0').replace(/^(\d)\//, '0$1/').replace(/\/(\d)\//, '/0$1/') : dateCell;
-      // Normalize to DD/MM/YYYY
-      const normalized = dateStr.replace(/(\d{1,2})\/(\d{1,2})\/(\d{4})/, (_, d, m, y) =>
-        d.padStart(2,'0') + '/' + m.padStart(2,'0') + '/' + y);
-      currentDay = { date: normalized, zones: [] };
+    // ── Date header ───────────────────────────────────
+    // Strategy 1: look for text date in any cell
+    let foundDate = null;
+    for (const cell of cells) {
+      const d = extractDate(cell);
+      if (d) { foundDate = d; break; }
+    }
+    // Strategy 2: if allText has "วันที่" → also check raw serial in same row
+    if (!foundDate && allText.includes('วันที่')) {
+      for (let ci = 0; ci < rowRaw.length; ci++) {
+        const raw = rowRaw[ci];
+        if (typeof raw === 'number' && raw > 40000 && raw < 60000) {
+          foundDate = excelSerialToDate(raw);
+          if (foundDate) break;
+        }
+      }
+    }
+    // Strategy 3: row has ONLY "วันที่" text (date on next row or embedded)
+    if (!foundDate && allText.includes('วันที่')) {
+      const m = allText.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+      if (m) foundDate = extractDate(m[0]);
+    }
+
+    if (foundDate) {
+      currentDay = { date: foundDate, zones: [] };
       data.days.push(currentDay);
       continue;
     }
 
-    // ── Skip header rows (Zone / จำนวน) ────────
-    if (firstNonEmpty.includes('Zone') || firstNonEmpty.includes('จำนวน')) continue;
+    // ── Skip header rows ──────────────────────────────
+    if (allText.includes('Zone') || allText.includes('จำนวน') || allText.includes('ยอดรวม')) continue;
+    if (allText.includes('รวมทั้งหมด') || allText.includes('จำนวน Order')) continue;
 
-    // ── Zone data rows ───────────────────────────
+    // ── Zone data rows ────────────────────────────────
     if (currentDay) {
-      // Check for Cancelled / Cancel / ยกเลิก first
-      const isCancelledRow = /cancel/i.test(firstNonEmpty) || firstNonEmpty.includes('ยกเลิก');
-      const zoneName = isCancelledRow ? 'Cancelled' : KNOWN_ZONES.find(z => firstNonEmpty.includes(z));
-      if (zoneName) {
-        // Find numeric values in the row (orders count only; amount forced 0 for Cancelled)
+      // Search ALL cells for a zone name (not just first column)
+      let foundZone = null;
+      let zoneCol = -1;
+
+      for (let ci = 0; ci < cells.length; ci++) {
+        const cell = cells[ci];
+        if (/cancel/i.test(cell) || cell.includes('ยกเลิก')) {
+          foundZone = 'Cancelled'; zoneCol = ci; break;
+        }
+        const match = KNOWN_ZONES.filter(z => z !== 'Cancelled').find(z => cell.includes(z));
+        if (match) { foundZone = match; zoneCol = ci; break; }
+      }
+
+      if (foundZone) {
+        // Collect numbers AFTER the zone column
         const nums = [];
-        for (let c = 1; c < row.length; c++) {
-          const v = parseNum(row[c]);
-          if (row[c] !== null && row[c] !== '') nums.push(v);
+        for (let ci = zoneCol + 1; ci < rowRaw.length; ci++) {
+          const raw = rowRaw[ci];
+          const v = parseNum(raw);
+          if (raw !== null && raw !== undefined && raw !== '' && !isNaN(v)) {
+            nums.push(v);
+          }
           if (nums.length === 2) break;
         }
-        currentDay.zones.push({
-          name: zoneName,
-          orders: nums[0] || 0,
-          amount: zoneName === 'Cancelled' ? 0 : (nums[1] || 0), // Cancelled always 0 amount
-        });
+        // Skip if this zone already added (dedup)
+        if (!currentDay.zones.find(z => z.name === foundZone)) {
+          currentDay.zones.push({
+            name: foundZone,
+            orders: nums[0] || 0,
+            amount: foundZone === 'Cancelled' ? 0 : (nums[1] || 0),
+          });
+        }
         continue;
       }
+
+      // ── "รวม" subtotal row (skip) ──────────────
+      if (allText.startsWith('รวม') || cells[0] === 'รวม') continue;
     }
   }
 
-  // Fill missing zones with 0
+  // Fill missing zones
   data.days.forEach(day => {
     KNOWN_ZONES.forEach(zn => {
-      if (!day.zones.find(z => z.name === zn)) {
+      if (!day.zones.find(z => z.name === zn))
         day.zones.push({ name: zn, orders: 0, amount: 0 });
-      }
     });
-    // Sort zones in KNOWN_ZONES order
     day.zones.sort((a, b) => KNOWN_ZONES.indexOf(a.name) - KNOWN_ZONES.indexOf(b.name));
   });
+
+  // Store debug info globally
+  window._debugRows = debugRows;
+  window._debugData = data;
 
   return data;
 }
