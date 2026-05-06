@@ -318,14 +318,24 @@ function render() {
     card.className = 'bg-white rounded-2xl shadow-md overflow-hidden';
     const rows = day.zones.map((z, i) => {
       const cfg = ZONE_CONFIG[z.name] || {};
-      const isZero = z.orders === 0 && z.amount === 0;
+      const isCancelled = !!cfg.isCancelled;
+      const isZero = !isCancelled && z.orders === 0 && z.amount === 0;
+      // Cancelled: always show amount as 0.00 in red; orders show normally
+      const amountDisplay = isCancelled
+        ? `<span class="text-red-400">0.00</span>`
+        : (isZero ? '—' : fmt(z.amount));
+      const ordersDisplay = (isZero && !isCancelled) ? '0' : fmtInt(z.orders);
+      const textClass = isCancelled ? 'text-red-500 font-semibold'
+                      : isZero     ? 'text-gray-400'
+                                   : 'text-gray-700';
       return `
         <tr class="${i % 2 === 0 ? 'row-even' : 'row-odd'}">
-          <td class="px-4 py-3 font-medium ${isZero ? 'text-gray-400' : 'text-gray-700'}">
+          <td class="px-4 py-3 font-medium ${textClass}">
             <span class="inline-block w-2 h-2 rounded-full ${cfg.color || 'bg-gray-300'} mr-2"></span>${z.name}
+            ${isCancelled ? '<span class="ml-1 text-xs bg-red-100 text-red-500 px-1.5 py-0.5 rounded-full font-semibold">ยกเลิก</span>' : ''}
           </td>
-          <td class="px-4 py-3 text-right font-mono ${isZero ? 'text-gray-400' : 'text-gray-700'}">${isZero ? '0' : fmtInt(z.orders)}</td>
-          <td class="px-4 py-3 text-right font-mono ${isZero ? 'text-gray-400' : 'text-gray-700'}">${isZero ? '—' : fmt(z.amount)}</td>
+          <td class="px-4 py-3 text-right font-mono ${textClass}">${ordersDisplay}</td>
+          <td class="px-4 py-3 text-right font-mono">${amountDisplay}</td>
         </tr>`;
     }).join('');
 
