@@ -26,7 +26,8 @@
       "Bash(Get-Content \"D:\\\\MADGA\\\\dashboard\\\\pages\\\\process-commission-payment.html\")",
       "Read(//c/Users/ACC POH/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/f897d354-58ca-4828-9acf-e55d8b3a926e/b44a2408-0949-4760-8a4e-2669ccf53ab4/skills/xlsx/**)",
       "Bash(python -c ' *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(git -C D:/MADGA status --short)"
     ]
   }
 }
