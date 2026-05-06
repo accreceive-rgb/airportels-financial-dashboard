@@ -480,6 +480,7 @@ function render() {
   const numDays = reportData.days.length;
 
   // ── Summary cards ────────────────────────────────
+  const totalCancelled = reportData.days.reduce((s, d) => s + dayCancelled(d), 0);
   const cardsEl = document.getElementById('summary-cards');
   cardsEl.innerHTML = `
     <div class="stat-card text-white rounded-xl p-4 text-center shadow-lg">
@@ -494,9 +495,9 @@ function render() {
       <div class="text-2xl font-bold">${fmtInt(gt.amount)}</div>
       <div class="text-green-200 text-sm mt-1">ยอดรวม (บาท)</div>
     </div>
-    <div class="stat-card text-white rounded-xl p-4 text-center shadow-lg">
-      <div class="text-3xl font-bold">5</div>
-      <div class="text-blue-200 text-sm mt-1">Zone ทั้งหมด</div>
+    <div class="rounded-xl p-4 text-center shadow-lg ${totalCancelled > 0 ? 'bg-red-500' : 'bg-gray-400'} text-white">
+      <div class="text-3xl font-bold">${fmtInt(totalCancelled)}</div>
+      <div class="text-red-100 text-sm mt-1">Cancelled</div>
     </div>
   `;
 
