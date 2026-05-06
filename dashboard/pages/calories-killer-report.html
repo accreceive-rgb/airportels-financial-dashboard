@@ -600,22 +600,39 @@ function processFile(file) {
       const wb = XLSX.read(e.target.result, { type: 'array' });
       const parsed = parseWorkbook(wb);
 
+      // Show debug table always (for diagnosis)
+      showDebug(window._debugRows || []);
+
       if (!parsed.days.length) {
-        setStatus('⚠️ ไม่พบข้อมูลวันที่ในไฟล์ — โปรดตรวจสอบรูปแบบ Excel', 'err');
-        document.getElementById('drop-icon').textContent = '⚠️';
+        setStatus('⚠️ ไม่พบข้อมูลวันที่ — ระบบพยายาม fallback...', 'err');
+        // FALLBACK: ถ้าไม่เจอวันที่ให้สร้าง day เดียวจาก zone ที่เจอทั้งหมด
+        const fallback = tryFallbackParse(wb);
+        if (fallback) {
+          reportData = fallback;
+          render();
+          setStatus(`✅ โหลดสำเร็จ (fallback): ${fallback.days.map(d=>d.date).join(', ')}`, 'ok');
+          document.getElementById('drop-icon').textContent = '✅';
+        } else {
+          setStatus('❌ ไม่สามารถอ่านข้อมูลได้ — ดูตาราง debug ด้านล่างเพื่อตรวจสอบ', 'err');
+          document.getElementById('drop-icon').textContent = '❌';
+          document.getElementById('debug-panel').classList.remove('hidden');
+        }
         return;
       }
 
       reportData = parsed;
       render();
+      document.getElementById('debug-panel').classList.add('hidden');
 
-      const summary = `✅ โหลดสำเร็จ: ${parsed.days.length} วัน, ${parsed.days.map(d => d.date).join(' & ')}`;
+      const summary = `✅ โหลดสำเร็จ: ${parsed.days.length} วัน — ${parsed.days.map(d => d.date).join(', ')}`;
       setStatus(summary, 'ok');
       document.getElementById('drop-icon').textContent = '✅';
       document.getElementById('drop-zone').querySelector('p').textContent = file.name;
     } catch (err) {
       setStatus('❌ อ่านไฟล์ไม่ได้: ' + err.message, 'err');
       document.getElementById('drop-icon').textContent = '❌';
+      showDebug(window._debugRows || []);
+      document.getElementById('debug-panel').classList.remove('hidden');
     }
   };
   reader.readAsArrayBuffer(file);
