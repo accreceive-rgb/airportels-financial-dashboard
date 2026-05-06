@@ -809,48 +809,86 @@ function buildDaySheetHTML(day) {
 }
 
 // ═══════════════════════════════════════════════════
-//  EXCEL EXPORT
+//  EXCEL EXPORT  (same format as input)
 // ═══════════════════════════════════════════════════
 function exportExcel() {
   if (!reportData) return alert('ยังไม่มีข้อมูล — กรุณาโหลดไฟล์ก่อน');
 
   const wb = XLSX.utils.book_new();
-  const numDays = reportData.days.length;
   const gt = grandTotal();
+  const numDays = reportData.days.length;
 
-  // Build array-of-arrays
-  const aoa = [];
+  // ── One sheet per date ─────────────────────────────
+  reportData.days.forEach(day => {
+    const dt = dayTotal(day);
+    const cancelled = dayCancelled(day);
 
-  // Title
-  const title = reportData.title + (reportData.subtitle ? ' | ' + reportData.subtitle : '');
-  aoa.push([title, null, null]);
-  aoa.push([null, null, null]);
+    // Format date as DD.M.YYYY (matching input format e.g. 24.4.2026)
+    const [dd, mm, yyyy] = day.date.split('/');
+    const dateLabel = `${parseInt(dd)}.${parseInt(mm)}.${yyyy}`;
+
+    const aoa = [];
+
+    // Row 1: company name
+    aoa.push([reportData.title, null, null]);
+
+    // Row 2: date
+    aoa.push([dateLabel, null, null]);
+
+    // Row 3: blank
+    aoa.push([null, null, null]);
+
+    // Row 4: column headers
+    aoa.push(['Zone', 'จำนวน (รายการ)', 'ยอดรวม (บาท)']);
+
+    // Zone rows (non-cancelled first)
+    const regularZones = day.zones.filter(z => !ZONE_CONFIG[z.name]?.isCancelled);
+    regularZones.forEach(z => {
+      aoa.push([z.name, z.orders, z.amount]);
+    });
+
+    // Cancelled row — amount always 0
+    const cancelledZone = day.zones.find(z => ZONE_CONFIG[z.name]?.isCancelled);
+    aoa.push(['Cancelled', cancelledZone ? cancelledZone.orders : 0, 0]);
+
+    // รวม row (excluding Cancelled)
+    aoa.push(['รวม', dt.orders, dt.amount]);
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{ wch: 22 }, { wch: 20 }, { wch: 20 }];
+
+    // Sheet tab name: DD-MM-YYYY
+    const sheetName = `${dd}-${mm}-${yyyy}`;
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+
+  // ── Summary sheet ──────────────────────────────────
+  const sumAoa = [];
+  sumAoa.push([reportData.title, null, null]);
+  sumAoa.push(['สรุปทุกวัน', null, null]);
+  sumAoa.push([null, null, null]);
+  sumAoa.push(['วันที่', 'จำนวน (รายการ)', 'ยอดรวม (บาท)']);
 
   reportData.days.forEach(day => {
     const dt = dayTotal(day);
-    aoa.push(['วันที่ ' + day.date, null, null]);
-    aoa.push(['Zone', 'จำนวน (รายการ)', 'ยอดรวม (บาท)']);
-    day.zones.forEach(z => aoa.push([z.name, z.orders, z.amount]));
-    aoa.push(['รวม', dt.orders, dt.amount]);
-    aoa.push([null, null, null]);
+    const [dd, mm, yyyy] = day.date.split('/');
+    sumAoa.push([`${parseInt(dd)}.${parseInt(mm)}.${yyyy}`, dt.orders, dt.amount]);
   });
 
-  aoa.push(['รวมทั้งหมด ' + numDays + ' วัน', null, null]);
-  aoa.push(['จำนวน Order รวม', gt.orders, 'รายการ']);
-  aoa.push(['ยอดเงินรวม', gt.amount, 'บาท']);
+  sumAoa.push([null, null, null]);
+  sumAoa.push(['รวมทั้งหมด', gt.orders, gt.amount]);
+  sumAoa.push(['Cancelled รวม', reportData.days.reduce((s,d)=>s+dayCancelled(d),0), 0]);
 
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [{ wch: 30 }, { wch: 22 }, { wch: 22 }];
+  const sumWs = XLSX.utils.aoa_to_sheet(sumAoa);
+  sumWs['!cols'] = [{ wch: 18 }, { wch: 20 }, { wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, sumWs, 'สรุปรวม');
 
-  // Merge title cell
-  ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }];
-
-  XLSX.utils.book_append_sheet(wb, ws, 'Report');
-
-  // Generate filename with date range
-  const dates = reportData.days.map(d => d.date).join(' & ');
-  const filename = `Calories_Killer_${dates.replace(/\//g, '-')}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  // Filename
+  const dateRange = reportData.days.map(d => {
+    const [dd,mm,yyyy] = d.date.split('/');
+    return `${parseInt(dd)}.${parseInt(mm)}.${yyyy}`;
+  }).join('_');
+  XLSX.writeFile(wb, `Report_${dateRange}.xlsx`);
 }
 
 // ═══════════════════════════════════════════════════
