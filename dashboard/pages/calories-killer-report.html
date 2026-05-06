@@ -694,31 +694,37 @@ function processFile(file) {
       // Show debug table always (for diagnosis)
       showDebug(window._debugRows || []);
 
-      if (!parsed.days.length) {
-        setStatus('⚠️ ไม่พบข้อมูลวันที่ — ระบบพยายาม fallback...', 'err');
-        // FALLBACK: ถ้าไม่เจอวันที่ให้สร้าง day เดียวจาก zone ที่เจอทั้งหมด
-        const fallback = tryFallbackParse(wb);
-        if (fallback) {
-          reportData = fallback;
-          render();
-          setStatus(`✅ โหลดสำเร็จ (fallback): ${fallback.days.map(d=>d.date).join(', ')}`, 'ok');
-          document.getElementById('drop-icon').textContent = '✅';
-        } else {
-          setStatus('❌ ไม่สามารถอ่านข้อมูลได้ — ดูตาราง debug ด้านล่างเพื่อตรวจสอบ', 'err');
+      // FALLBACK if no days found
+      let finalParsed = parsed;
+      if (!finalParsed.days.length) {
+        setStatus('⚠️ ไม่พบวันที่ — ระบบใช้ fallback parser...', 'err');
+        finalParsed = tryFallbackParse(wb);
+        if (!finalParsed) {
+          setStatus('❌ อ่านข้อมูลไม่ได้ — ดูตาราง debug ด้านล่าง', 'err');
           document.getElementById('drop-icon').textContent = '❌';
           document.getElementById('debug-panel').classList.remove('hidden');
+          return;
         }
-        return;
       }
 
-      reportData = parsed;
+      // Apply mode
+      if (importMode === 'append' && reportData) {
+        mergeData(finalParsed);
+      } else {
+        reportData = finalParsed;
+      }
+
       render();
       document.getElementById('debug-panel').classList.add('hidden');
+      addFileLog(file.name, finalParsed.days, importMode);
 
-      const summary = `✅ โหลดสำเร็จ: ${parsed.days.length} วัน — ${parsed.days.map(d => d.date).join(', ')}`;
-      setStatus(summary, 'ok');
+      const totalDays = reportData.days.length;
+      const newDays = finalParsed.days.length;
+      const modeLabel = importMode === 'append' ? `➕ เพิ่ม ${newDays} วัน (รวม ${totalDays} วันทั้งหมด)` : `🔄 แทนที่ด้วย ${newDays} วัน`;
+      setStatus(`✅ ${modeLabel} — ${finalParsed.days.map(d => d.date).join(', ')}`, 'ok');
       document.getElementById('drop-icon').textContent = '✅';
-      document.getElementById('drop-zone').querySelector('p').textContent = file.name;
+      document.getElementById('drop-zone').querySelector('p').textContent =
+        importMode === 'append' ? `${file.name} (+เพิ่มแล้ว)` : file.name;
     } catch (err) {
       setStatus('❌ อ่านไฟล์ไม่ได้: ' + err.message, 'err');
       document.getElementById('drop-icon').textContent = '❌';
