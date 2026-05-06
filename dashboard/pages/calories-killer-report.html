@@ -208,13 +208,13 @@ function parseWorkbook(wb) {
     const firstNonEmpty = cells.find(c => c !== '') || '';
 
     // ── Title line ──────────────────────────────
-    if (firstNonEmpty.includes('CALORIES KILLER') || firstNonEmpty.toUpperCase().includes('CALORIES')) {
+    if (firstNonEmpty.includes('CALORIES KILLER') || firstNonEmpty.toUpperCase().includes('CALORIES') || firstNonEmpty.includes('ฐยศฟู้ด')) {
       if (firstNonEmpty.includes('|')) {
         const parts = firstNonEmpty.split('|');
-        data.title = parts[0].trim();
+        data.title = 'บริษัท ฐยศฟู้ด จำกัด';
         data.subtitle = parts.slice(1).join('|').trim();
       } else {
-        data.title = firstNonEmpty;
+        data.title = 'บริษัท ฐยศฟู้ด จำกัด';
         // subtitle might be in next cell or next row
         const rest = cells.slice(1).find(c => c !== '');
         if (rest) data.subtitle = rest;
