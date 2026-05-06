@@ -120,6 +120,19 @@
   <!-- ───────── SUMMARY CARDS ───────── -->
   <div id="summary-cards" class="grid grid-cols-2 md:grid-cols-4 gap-4 no-print"></div>
 
+  <!-- ───────── VIEW TOGGLE ───────── -->
+  <div class="no-print flex items-center gap-2">
+    <span class="text-sm font-semibold text-gray-500">มุมมอง:</span>
+    <button id="btn-view-daily" onclick="setView('daily')"
+      class="text-sm px-4 py-1.5 rounded-full font-semibold transition-all bg-blue-500 text-white shadow">
+      📋 รายวัน
+    </button>
+    <button id="btn-view-sheet" onclick="setView('sheet')"
+      class="text-sm px-4 py-1.5 rounded-full font-semibold transition-all bg-gray-100 text-gray-500">
+      📊 ชีดสรุป
+    </button>
+  </div>
+
   <!-- ───────── CHART ───────── -->
   <div id="chart-container" class="bg-white rounded-2xl shadow-md p-5 no-print hidden">
     <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">เปรียบเทียบยอดรายวัน (บาท) แยก Zone</h2>
@@ -128,6 +141,9 @@
 
   <!-- ───────── DAILY TABLES (dynamic) ───────── -->
   <div id="daily-tables" class="space-y-6"></div>
+
+  <!-- ───────── SHEET VIEW ───────── -->
+  <div id="sheet-view" class="hidden space-y-4"></div>
 
   <!-- ───────── GRAND TOTAL ───────── -->
   <div id="grand-total-box" class="hidden grand-total rounded-2xl shadow-xl overflow-hidden">
