@@ -242,9 +242,11 @@ function parseWorkbook(wb) {
 
     // ── Zone data rows ───────────────────────────
     if (currentDay) {
-      const zoneName = KNOWN_ZONES.find(z => firstNonEmpty.includes(z));
+      // Check for Cancelled / Cancel / ยกเลิก first
+      const isCancelledRow = /cancel/i.test(firstNonEmpty) || firstNonEmpty.includes('ยกเลิก');
+      const zoneName = isCancelledRow ? 'Cancelled' : KNOWN_ZONES.find(z => firstNonEmpty.includes(z));
       if (zoneName) {
-        // Find two numeric values in the row
+        // Find numeric values in the row (orders count only; amount forced 0 for Cancelled)
         const nums = [];
         for (let c = 1; c < row.length; c++) {
           const v = parseNum(row[c]);
@@ -254,7 +256,7 @@ function parseWorkbook(wb) {
         currentDay.zones.push({
           name: zoneName,
           orders: nums[0] || 0,
-          amount: nums[1] || 0,
+          amount: zoneName === 'Cancelled' ? 0 : (nums[1] || 0), // Cancelled always 0 amount
         });
         continue;
       }
