@@ -343,14 +343,27 @@ function excelSerialToDate(serial) {
   return `${dd}/${mm}/${yyyy}`;
 }
 
-// Extract DD/MM/YYYY from any string
+// Extract DD/MM/YYYY from any string — supports / . - separators
 function extractDate(str) {
-  // DD/MM/YYYY or DD-MM-YYYY
-  const m1 = str.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  // DD/MM/YYYY  DD-MM-YYYY  DD.MM.YYYY  (also single-digit day/month)
+  const m1 = str.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/);
   if (m1) {
     let [, d, mo, y] = m1;
     if (parseInt(y) > 2500) y = String(parseInt(y) - 543); // Buddhist → AD
     return `${d.padStart(2,'0')}/${mo.padStart(2,'0')}/${y}`;
+  }
+  // Thai month names: "24 เมษายน 2026"
+  const THAI_MONTHS = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                       'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const m2 = str.match(/(\d{1,2})\s+([฀-๿]+)\s+(\d{4})/);
+  if (m2) {
+    const [, d, monthTh, y] = m2;
+    const mo = THAI_MONTHS.indexOf(monthTh);
+    if (mo > 0) {
+      let year = parseInt(y);
+      if (year > 2500) year -= 543;
+      return `${d.padStart(2,'0')}/${String(mo).padStart(2,'0')}/${year}`;
+    }
   }
   return null;
 }
