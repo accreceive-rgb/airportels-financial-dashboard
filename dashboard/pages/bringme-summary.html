@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bringme Summary Calculator</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Sarabun', Arial, sans-serif; background: #f0f2f5; padding: 24px; }
+    h1 { text-align: center; color: #1a1a2e; margin-bottom: 20px; font-size: 22px; }
+
+    .card {
+      background: #fff; border-radius: 12px; padding: 24px;
+      max-width: 700px; margin: 0 auto 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    /* Upload */
+    .upload-zone {
+      border: 2px dashed #6c63ff; border-radius: 10px; padding: 28px 20px;
+      text-align: center; background: #fafaff; transition: background 0.2s, border-color 0.2s;
+    }
+    .upload-zone.drag-over { background: #ede9ff; border-color: #4c44c9; }
+    .upload-icon { font-size: 40px; margin-bottom: 8px; pointer-events: none; }
+    .upload-text { color: #555; font-size: 15px; margin-bottom: 14px; pointer-events: none; }
+    .btn-browse {
+      display: inline-block; background: #6c63ff; color: #fff;
+      padding: 8px 22px; border-radius: 8px; border: none;
+      font-size: 14px; cursor: pointer; font-family: inherit;
+    }
+    .btn-browse:hover { background: #5548e0; }
+    #csvInput { display: none; }
+    .filename { font-size: 13px; color: #22aa55; margin-top: 10px; font-weight: bold; }
+
+    /* Rates */
+    .rate-row { display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+    .rate-row label { font-size: 14px; color: #444; white-space: nowrap; }
+    .rate-row input {
+      border: 1px solid #ccc; border-radius: 6px;
+      padding: 6px 10px; font-size: 14px; width: 80px;
+    }
+    .btn-calc {
+      background: #6c63ff; color: #fff; border: none;
+      padding: 8px 20px; border-radius: 8px;
+      font-size: 14px; cursor: pointer; font-family: inherit;
+    }
+    .btn-calc:hover { background: #5548e0; }
+    .hint { font-size: 12px; color: #999; margin-top: 8px; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th { background: #1a1a2e; color: #fff; padding: 10px 14px; text-align: left; }
+    th:nth-child(2), td:nth-child(2),
+    th:nth-child(3), td:nth-child(3) { text-align: right; }
+    td { padding: 9px 14px; border-bottom: 1px solid #eee; }
+
+    tr.row-total   td { background: #1a1a2e; color: #fff; font-weight: bold; }
+    tr.row-bkk     td { background: #fff9c4; color: #333; }
+    tr.row-province td { background: #fffde0; color: #333; }
+    tr.row-bringme td { background: #e3f2fd; color: #1565c0; font-weight: bold; }
+    tr.row-delay   td { background: #fce4ec; color: #c62828; }
+    tr.row-cancel  td { background: #ffebee; color: #b71c1c; }
+    tr.row-net     td { background: #e8f5e9; color: #1b5e20; font-weight: bold; font-size: 16px; }
+
+    .hidden { display: none; }
+    .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .result-header h2 { font-size: 17px; color: #1a1a2e; }
+    .btn-group { display: flex; gap: 8px; }
+    .btn-sm {
+      padding: 6px 14px; border-radius: 6px; border: 1px solid #ccc;
+      font-size: 13px; cursor: pointer; font-family: inherit; background: #f5f5f5;
+    }
+    .btn-sm:hover { background: #e8e8e8; }
+    .btn-excel { background: #1d6f42; color: #fff; border-color: #1d6f42; }
+    .btn-excel:hover { background: #155a35; }
+    .note { font-size: 12px; color: #888; margin-top: 12px; }
+  </style>
+</head>
+<body>
+
+<h1>🚚 Bringme Summary Calculator</h1>
+
+<div class="card">
+  <!-- Upload Zone -->
+  <div class="upload-zone" id="uploadZone">
+    <div class="upload-icon">📂</div>
+    <div class="upload-text">ลาก CSV มาวางที่นี่</div>
+    <button class="btn-browse" onclick="document.getElementById('csvInput').click()">เลือกไฟล์ CSV</button>
+    <input type="file" id="csvInput" accept=".csv">
+  </div>
+  <div class="filename" id="filename"></div>
+
+  <!-- Rates -->
+  <div class="rate-row">
+    <label>อัตราปกติ:</label>
+    <input type="number" id="rateDefault" value="40"> บาท/ชิ้น
+    <label>ชลบุรี:</label>
+    <input type="number" id="rateChonburi" value="75"> บาท/ชิ้น
+  </div>
+  <div class="rate-row">
+    <label>ต้นทุน Bring me:</label>
+    <input type="number" id="rateBringme" value="100"> บาท/ชิ้น
+    <button class="btn-calc" onclick="recalculate()">คำนวณใหม่</button>
+  </div>
+  <div class="hint">💡 กทม./ปริมณฑล = 40 | ชลบุรี = 75 &nbsp;|&nbsp; Bring me = ที่อยู่ปลายทางมี "ไพลินปาร์ค" × 100 บาท</div>
+</div>
+
+<!-- Result -->
+<div class="card hidden" id="resultCard">
+  <div class="result-header">
+    <h2 id="resultTitle">สรุป Bringme</h2>
+    <div class="btn-group">
+      <button class="btn-sm" onclick="copyTable()">📋 คัดลอก</button>
+      <button class="btn-sm btn-excel" onclick="exportExcel()">📥 Export Excel</button>
+    </div>
+  </div>
+
+  <table id="summaryTable">
+    <thead>
+      <tr>
+        <th>รายการ</th>
+        <th>จำนวน (ชิ้น)</th>
+        <th>จำนวนเงิน (บาท)</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div class="note" id="noteArea"></div>
+</div>
+
+<script>
+// Bring me = ที่อยู่ปลายทางมี "ไพลินปาร์ค" → คิด 100/ออเดอร์
+function isBringme(addr) {
+  return addr.includes('ไพลินปาร์ค');
+}
+let parsedRows = [];
+let lastTableData = [];
+
+/* ── Upload Zone ── */
+const uploadZone = document.getElementById('uploadZone');
+
+uploadZone.addEventListener('dragenter', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', e => { if (!uploadZone.contains(e.relatedTarget)) uploadZone.classList.remove('drag-over'); });
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+
+document.getElementById('csvInput').addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+  document.getElementById('filename').textContent = '✅ ' + file.name;
+  const reader = new FileReader();
+  reader.onload = e => { parseCSV(e.target.result); recalculate(); };
+  reader.readAsText(file, 'UTF-8');
+}
+
+/* ── Parse CSV ── */
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  if (lines.length < 2) return;
+
+  const header       = parseLine(lines[0]);
+  const colDate       = header.indexOf('วันที่ชำระ');
+  const colProvince   = header.indexOf('จังหวัดผู้รับ');
+  const colStatus     = header.indexOf('สถานะขนส่ง');
+  const colAmount     = header.indexOf('จำนวนเงิน');
+  const colDestAddr = header.indexOf('ที่อยู่ปลายทาง');
+
+  parsedRows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const p = parseLine(lines[i]);
+    if (p.length < 5) continue;
+    parsedRows.push({
+      date:     (p[colDate]     || '').trim(),
+      province: (p[colProvince] || '').trim(),
+      status:   (p[colStatus]   || '').trim(),
+      amount:   parseInt(p[colAmount]) || 0,
+      destAddr: (p[colDestAddr] || '').trim()
+    });
+  }
+}
+
+function parseLine(line) {
+  const out = []; let cur = '', inQ = false;
+  for (const c of line) {
+    if (c === '"') inQ = !inQ;
+    else if (c === ',' && !inQ) { out.push(cur.trim()); cur = ''; }
+    else cur += c;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+/* ── Calculate ── */
+const CANCEL_STATUSES = new Set(['Cancelled', 'In hub']);
+
+function recalculate() {
+  if (!parsedRows.length) return;
+
+  const rDef  = +document.getElementById('rateDefault').value  || 40;
+  const rChon = +document.getElementById('rateChonburi').value || 75;
+  const rBm   = +document.getElementById('rateBringme').value  || 100;
+
+  let delivNorm=0, delivChon=0, delayNorm=0, delayChon=0,
+      cancelNorm=0, cancelChon=0, bringmeCount=0;
+
+  for (const r of parsedRows) {
+    const isChon = r.province === 'ชลบุรี';
+    if (isBringme(r.destAddr)) bringmeCount++;
+
+    if (CANCEL_STATUSES.has(r.status))      { isChon ? cancelChon++ : cancelNorm++; }
+    else if (r.status.includes('Delay'))    { isChon ? delayChon++  : delayNorm++;  }
+    else if (r.status === 'Delivered')      { isChon ? delivChon++  : delivNorm++;  }
+  }
+
+  // Delivered + Delivered(Delay) = charged normally
+  const chargedNorm = delivNorm + delayNorm;
+  const chargedChon = delivChon + delayChon;
+  const cancelCount = cancelNorm + cancelChon;
+  const totalAll    = chargedNorm + chargedChon + cancelCount;
+  const revenueAmt  = chargedNorm * rDef + chargedChon * rChon;
+
+  const netCount = chargedNorm + chargedChon;
+  const netAmt   = chargedNorm * rDef + chargedChon * rChon;
+
+  lastTableData = [
+    { cls:'row-total',    label:'Total',                                count: totalAll,     amt: revenueAmt },
+    { cls:'row-bkk',      label:`กทม./ปริมณฑล ${rDef}/PCS`,           count: chargedNorm,  amt: chargedNorm * rDef },
+    { cls:'row-province', label:`ตจว`,                                  count: chargedChon,  amt: chargedChon * rChon },
+    { cls:'row-bringme',  label:`Bring me (${rBm}/PCS)`,               count: bringmeCount, amt: bringmeCount * rBm },
+    { cls:'row-delay',    label:'Refund delay',                         count: 0,            amt: 0 },
+    { cls:'row-cancel',   label:`ยกเลิก กทม./ปริมณฑล ${rDef}/PCS`,   count: cancelNorm,   amt: cancelNorm * rDef },
+    { cls:'row-cancel',   label:`ยกเลิก ชลบุรี ${rChon}/PCS`,         count: cancelChon,   amt: cancelChon * rChon },
+    { cls:'row-net',      label:'คงเหลือเรียกเก็บ',                    count: netCount,     amt: netAmt },
+  ];
+
+  // Render table
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  for (const r of lastTableData) {
+    const tr = document.createElement('tr');
+    tr.className = r.cls;
+    tr.innerHTML = `<td>${r.label}</td><td>${r.count.toLocaleString()}</td><td>${r.amt.toLocaleString()}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  // Date range title — sort by actual date value
+  const MONTHS = {'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,
+                  'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12};
+  function thaiDateVal(d) {
+    const m = d.match(/(\d+)\s+(\S+)\s+(\d+)/);
+    if (!m) return 0;
+    return parseInt(m[3]) * 10000 + (MONTHS[m[2]] || 0) * 100 + parseInt(m[1]);
+  }
+  const dates = [...new Set(parsedRows.map(r => r.date).filter(Boolean))]
+                  .sort((a, b) => thaiDateVal(a) - thaiDateVal(b));
+  const range  = dates.length ? (dates[0] === dates.at(-1) ? dates[0] : `${dates[0]} – ${dates.at(-1)}`) : '';
+  document.getElementById('resultTitle').textContent = `สรุป Bringme${range ? ' (' + range + ')' : ''}`;
+
+  // Notes
+  const cancelTotal = cancelNorm + cancelChon;
+  const notes = [];
+  if (cancelTotal) {
+    const byS = {};
+    parsedRows.filter(r => CANCEL_STATUSES.has(r.status)).forEach(r => byS[r.status] = (byS[r.status]||0)+1);
+    notes.push('ยกเลิก: ' + Object.entries(byS).map(([k,v]) => `${k} ${v} ชิ้น`).join(', '));
+  }
+  if (delayCount) notes.push(`Refund delay: ${delayCount} ชิ้น`);
+  document.getElementById('noteArea').innerHTML = notes.length ? '📌 ' + notes.join(' | ') : '';
+
+  document.getElementById('resultCard').classList.remove('hidden');
+}
+
+/* ── Copy ── */
+function copyTable() {
+  const rows = [...document.querySelectorAll('#summaryTable tr')];
+  const text = rows.map(r => [...r.querySelectorAll('th,td')].map(c => c.textContent.trim()).join('\t')).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target; btn.textContent = '✅ คัดลอกแล้ว';
+    setTimeout(() => btn.textContent = '📋 คัดลอก', 2000);
+  });
+}
+
+/* ── Export Excel ── */
+function exportExcel() {
+  if (!lastTableData.length) return;
+
+  const title  = document.getElementById('resultTitle').textContent;
+  const wsData = [
+    [title],
+    [],
+    ['รายการ', 'จำนวน (ชิ้น)', 'จำนวนเงิน (บาท)'],
+    ...lastTableData.map(r => [r.label, r.count, r.amt])
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Column widths
+  ws['!cols'] = [{ wch: 36 }, { wch: 16 }, { wch: 20 }];
+
+  // Merge title row
+  ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:2} }];
+
+  // Style header row (row index 2)
+  const headerStyle = { font:{bold:true}, fill:{fgColor:{rgb:'1A1A2E'}}, font:{color:{rgb:'FFFFFF'},bold:true} };
+  ['A3','B3','C3'].forEach(cell => {
+    if (!ws[cell]) ws[cell] = { t:'s', v:'' };
+    ws[cell].s = { font:{bold:true,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'1A1A2E'}}, alignment:{horizontal:'center'} };
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Bringme Summary');
+
+  // Filename with date
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb, `Bringme_Summary_${dateStr}.xlsx`);
+}
+</script>
+</body>
+</html>
