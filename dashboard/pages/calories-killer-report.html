@@ -638,6 +638,112 @@ function processFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
+// ── Debug table renderer ──────────────────────────────
+function showDebug(rows) {
+  const tbody = document.getElementById('debug-tbody');
+  tbody.innerHTML = rows.slice(0, 30).map((row, i) =>
+    `<tr class="${i%2===0?'bg-yellow-50':'bg-white'}">
+      <td class="border border-yellow-200 px-2 py-1 text-yellow-600 w-6">${i+1}</td>
+      ${row.map(c => `<td class="border border-yellow-200 px-2 py-1">${c}</td>`).join('')}
+    </tr>`
+  ).join('');
+}
+
+// ── Fallback: parse without date rows ────────────────
+// If Excel has ONLY one table per sheet (single date), infer date from title/filename
+function tryFallbackParse(wb) {
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const aoaRaw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+  const aoaFmt = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
+
+  const data = { title: 'บริษัท ฐยศฟู้ด จำกัด', subtitle: '', days: [] };
+
+  // Group zones by section: look for repeating zone-name patterns
+  // Build sections: each section is a block of zone rows between two "รวม" rows
+  let sections = [];
+  let currentSection = { dateHint: '', zones: [] };
+  let lastDateHint = '';
+
+  for (let r = 0; r < aoaRaw.length; r++) {
+    const rowRaw = aoaRaw[r] || [];
+    const rowFmt = aoaFmt[r] || [];
+    const cells = rowRaw.map((raw, ci) => {
+      const fmt = rowFmt[ci];
+      const fs = fmt !== null && fmt !== undefined ? String(fmt).trim() : '';
+      const rs = raw !== null && raw !== undefined ? String(raw).trim() : '';
+      return fs || rs;
+    });
+    const allText = cells.join(' ').trim();
+    if (!allText) continue;
+
+    // Try to extract date from any row
+    for (const cell of cells) {
+      const d = extractDate(cell);
+      if (d) { lastDateHint = d; break; }
+    }
+    // Serial date
+    if (!lastDateHint) {
+      for (let ci = 0; ci < rowRaw.length; ci++) {
+        const raw = rowRaw[ci];
+        if (typeof raw === 'number' && raw > 40000 && raw < 60000) {
+          const d = excelSerialToDate(raw);
+          if (d) { lastDateHint = d; break; }
+        }
+      }
+    }
+
+    // Zone row detection (search ALL columns)
+    let foundZone = null, zoneCol = -1;
+    for (let ci = 0; ci < cells.length; ci++) {
+      const cell = cells[ci];
+      if (/cancel/i.test(cell) || cell.includes('ยกเลิก')) { foundZone = 'Cancelled'; zoneCol = ci; break; }
+      const m = KNOWN_ZONES.filter(z => z !== 'Cancelled').find(z => cell.includes(z));
+      if (m) { foundZone = m; zoneCol = ci; break; }
+    }
+
+    if (foundZone) {
+      const nums = [];
+      for (let ci = zoneCol + 1; ci < rowRaw.length; ci++) {
+        const v = parseNum(rowRaw[ci]);
+        if (rowRaw[ci] !== null && rowRaw[ci] !== undefined && rowRaw[ci] !== '' && !isNaN(v)) nums.push(v);
+        if (nums.length === 2) break;
+      }
+      currentSection.zones.push({
+        name: foundZone,
+        orders: nums[0] || 0,
+        amount: foundZone === 'Cancelled' ? 0 : (nums[1] || 0),
+      });
+      continue;
+    }
+
+    // "รวม" row = end of a section
+    if ((cells[0] === 'รวม' || allText.startsWith('รวม')) && currentSection.zones.length > 0) {
+      currentSection.dateHint = lastDateHint || `รอบที่ ${sections.length + 1}`;
+      sections.push(currentSection);
+      currentSection = { dateHint: '', zones: [] };
+      lastDateHint = '';
+    }
+  }
+  // Push last section if not ended by รวม
+  if (currentSection.zones.length > 0) {
+    currentSection.dateHint = lastDateHint || `รอบที่ ${sections.length + 1}`;
+    sections.push(currentSection);
+  }
+
+  if (!sections.length) return null;
+
+  data.days = sections.map(s => {
+    const zones = [...s.zones];
+    KNOWN_ZONES.forEach(zn => {
+      if (!zones.find(z => z.name === zn)) zones.push({ name: zn, orders: 0, amount: 0 });
+    });
+    zones.sort((a, b) => KNOWN_ZONES.indexOf(a.name) - KNOWN_ZONES.indexOf(b.name));
+    return { date: s.dateHint, zones };
+  });
+
+  return data;
+}
+
 function onFileChange(e) { processFile(e.target.files[0]); }
 
 function onDragOver(e) {
