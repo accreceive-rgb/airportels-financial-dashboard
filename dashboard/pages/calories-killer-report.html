@@ -654,6 +654,146 @@ function renderChart() {
 }
 
 // ═══════════════════════════════════════════════════
+//  VIEW TOGGLE
+// ═══════════════════════════════════════════════════
+let currentView = 'daily';
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('btn-view-daily').className =
+    'text-sm px-4 py-1.5 rounded-full font-semibold transition-all ' +
+    (v === 'daily' ? 'bg-blue-500 text-white shadow' : 'bg-gray-100 text-gray-500');
+  document.getElementById('btn-view-sheet').className =
+    'text-sm px-4 py-1.5 rounded-full font-semibold transition-all ' +
+    (v === 'sheet' ? 'bg-blue-500 text-white shadow' : 'bg-gray-100 text-gray-500');
+
+  document.getElementById('daily-tables').classList.toggle('hidden', v !== 'daily');
+  document.getElementById('chart-container').classList.toggle('hidden', v !== 'daily');
+  document.getElementById('sheet-view').classList.toggle('hidden', v !== 'sheet');
+
+  if (v === 'sheet') renderSheet();
+}
+
+// ═══════════════════════════════════════════════════
+//  SHEET VIEW RENDERER
+// ═══════════════════════════════════════════════════
+function renderSheet() {
+  if (!reportData) return;
+  const container = document.getElementById('sheet-view');
+  const days = reportData.days;
+
+  // ── จำนวน (รายการ) sheet ──────────────────────────
+  const ordersSheet = buildSheetHTML(days, 'จำนวน (รายการ)', z => z.orders, fmtInt, false);
+  // ── ยอดรวม (บาท) sheet ────────────────────────────
+  const amountSheet = buildSheetHTML(days, 'ยอดรวม (บาท)', z => z.amount, fmt, true);
+
+  container.innerHTML = ordersSheet + amountSheet;
+}
+
+function buildSheetHTML(days, label, valFn, fmtFn, isAmount) {
+  const zones = KNOWN_ZONES;
+  const dates = days.map(d => d.date);
+
+  // Row totals per date (excluding Cancelled for amount, included for orders)
+  const dateOrders = days.map(d => dayTotal(d).orders);
+  const dateAmounts = days.map(d => dayTotal(d).amount);
+  const dateCancelled = days.map(d => dayCancelled(d));
+
+  // Grand totals
+  const gt = grandTotal();
+  const totalCancelled = days.reduce((s,d) => s + dayCancelled(d), 0);
+
+  // Column header
+  const headCols = dates.map(d => `
+    <th class="sheet-th text-center min-w-[110px]">
+      <div class="font-bold">${d}</div>
+      <div class="text-blue-200 font-normal text-xs">${getDayName(d)}</div>
+    </th>`).join('');
+
+  // Zone rows (exclude Cancelled, show separately)
+  const regularZones = zones.filter(zn => !ZONE_CONFIG[zn]?.isCancelled);
+  const zoneRows = regularZones.map((zn, ri) => {
+    const cfg = ZONE_CONFIG[zn] || {};
+    const cells = days.map(day => {
+      const z = day.zones.find(z => z.name === zn) || { orders: 0, amount: 0 };
+      const val = valFn(z);
+      const isEmpty = val === 0;
+      return `<td class="sheet-td text-right font-mono ${isEmpty ? 'text-gray-300' : 'text-gray-700'}">
+        ${isEmpty ? (isAmount ? '—' : '0') : fmtFn(val)}
+      </td>`;
+    }).join('');
+
+    const rowTotal = days.reduce((s, day) => {
+      const z = day.zones.find(z => z.name === zn) || { orders: 0, amount: 0 };
+      return s + valFn(z);
+    }, 0);
+
+    return `<tr class="${ri%2===0?'bg-white':'bg-gray-50'} hover:bg-blue-50 transition-colors">
+      <td class="sheet-td font-medium text-gray-700 sticky left-0 bg-inherit z-10 border-r border-gray-200">
+        <span class="inline-block w-2 h-2 rounded-full ${cfg.color||'bg-gray-300'} mr-2"></span>${zn}
+      </td>
+      ${cells}
+      <td class="sheet-td text-right font-mono font-bold text-blue-700 border-l border-blue-100">
+        ${rowTotal === 0 ? '—' : fmtFn(rowTotal)}
+      </td>
+    </tr>`;
+  }).join('');
+
+  // รวม row
+  const totalCells = days.map((_, i) => {
+    const v = isAmount ? dateAmounts[i] : dateOrders[i];
+    return `<td class="sheet-td-total text-right font-bold font-mono">${fmtFn(v)}</td>`;
+  }).join('');
+  const grandV = isAmount ? gt.amount : gt.orders;
+
+  // Cancelled row (only for orders sheet)
+  const cancelledRow = !isAmount ? `
+    <tr class="bg-red-50 border-t-2 border-red-200">
+      <td class="sheet-td font-semibold text-red-500 sticky left-0 bg-red-50 z-10 border-r border-red-200">
+        <span class="inline-block w-2 h-2 rounded-full bg-red-400 mr-2"></span>Cancelled
+        <span class="ml-1 text-xs bg-red-100 px-1.5 py-0.5 rounded-full">ยกเลิก</span>
+      </td>
+      ${days.map((d,i) => `<td class="sheet-td text-right font-mono text-red-500 font-bold">
+        ${dateCancelled[i] > 0 ? fmtFn(dateCancelled[i]) : '<span class="text-red-200">0</span>'}
+      </td>`).join('')}
+      <td class="sheet-td text-right font-mono font-bold text-red-600 border-l border-red-200">
+        ${totalCancelled > 0 ? fmtFn(totalCancelled) : '0'}
+      </td>
+    </tr>` : '';
+
+  return `
+  <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+    <div class="zone-header text-white px-5 py-3 flex items-center gap-3">
+      <span>${isAmount ? '💰' : '📦'}</span>
+      <span class="font-bold">${label}</span>
+      <span class="ml-auto text-blue-200 text-xs">${dates.length} วัน</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="zone-header text-white">
+            <th class="sheet-th text-left sticky left-0 z-20 bg-blue-900 min-w-[140px]">Zone</th>
+            ${headCols}
+            <th class="sheet-th text-center min-w-[110px] bg-blue-950">รวมทุกวัน</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${zoneRows}
+          ${cancelledRow}
+        </tbody>
+        <tfoot>
+          <tr class="total-row text-white">
+            <td class="sheet-td-total font-bold sticky left-0 z-10 bg-blue-900">รวม</td>
+            ${totalCells}
+            <td class="sheet-td-total text-right font-bold font-mono border-l border-blue-400">${fmtFn(grandV)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
 //  EXCEL EXPORT
 // ═══════════════════════════════════════════════════
 function exportExcel() {
