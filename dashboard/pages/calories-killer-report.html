@@ -180,6 +180,73 @@ const KNOWN_ZONES = Object.keys(ZONE_CONFIG);
 
 let reportData = null;
 let barChartInst = null;
+let importMode = 'replace';   // 'replace' | 'append'
+let loadedFiles = [];          // history of loaded files
+
+// ─── Mode control ────────────────────────────────────────
+function setMode(mode) {
+  importMode = mode;
+  document.getElementById('btn-replace').className =
+    'mode-btn text-sm px-4 py-1.5 rounded-full font-semibold transition-all ' +
+    (mode === 'replace' ? 'bg-blue-500 text-white shadow' : 'bg-gray-100 text-gray-500');
+  document.getElementById('btn-append').className =
+    'mode-btn text-sm px-4 py-1.5 rounded-full font-semibold transition-all ' +
+    (mode === 'append' ? 'bg-green-500 text-white shadow' : 'bg-gray-100 text-gray-500');
+  document.getElementById('mode-hint').textContent =
+    mode === 'replace'
+      ? 'โยนไฟล์ใหม่จะแทนที่ข้อมูลทั้งหมด'
+      : 'โยนไฟล์ใหม่จะ เพิ่มวันใหม่ เข้ากับข้อมูลเดิม';
+}
+
+// ─── Merge incoming days into existing reportData ────────
+function mergeData(incoming) {
+  if (!reportData) { reportData = incoming; return; }
+  // Carry over title/subtitle if blank
+  if (!reportData.subtitle && incoming.subtitle) reportData.subtitle = incoming.subtitle;
+  incoming.days.forEach(newDay => {
+    const existing = reportData.days.find(d => d.date === newDay.date);
+    if (existing) {
+      // Replace zones for that date with new data
+      existing.zones = newDay.zones;
+    } else {
+      reportData.days.push(newDay);
+    }
+  });
+  // Sort days chronologically
+  reportData.days.sort((a, b) => {
+    const toMs = s => { const [d,m,y] = s.split('/'); return new Date(y,m-1,d).getTime(); };
+    return toMs(a.date) - toMs(b.date);
+  });
+}
+
+// ─── Files log ───────────────────────────────────────────
+function addFileLog(filename, days, mode) {
+  loadedFiles.push({ filename, dates: days.map(d => d.date), mode, time: new Date().toLocaleTimeString('th-TH') });
+  const log = document.getElementById('files-log');
+  log.classList.remove('hidden');
+  log.innerHTML = loadedFiles.map((f, i) => `
+    <div class="flex items-center gap-3 px-5 py-2.5 ${i%2===0?'bg-white':'bg-gray-50'}">
+      <span class="text-lg">${f.mode==='append'?'➕':'🔄'}</span>
+      <div class="flex-1 min-w-0">
+        <span class="font-medium text-gray-700">${f.filename}</span>
+        <span class="ml-2 text-xs text-gray-400">${f.dates.join(', ')}</span>
+      </div>
+      <span class="text-xs text-gray-400 shrink-0">${f.time}</span>
+      <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${f.mode==='append'?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700'}">${f.mode==='append'?'เพิ่ม':'แทนที่'}</span>
+    </div>`).join('');
+}
+
+// ─── Clear all ───────────────────────────────────────────
+function clearAllData() {
+  if (!confirm('ล้างข้อมูลทั้งหมดและกลับเป็นข้อมูลตัวอย่าง?')) return;
+  loadedFiles = [];
+  document.getElementById('files-log').classList.add('hidden');
+  document.getElementById('files-log').innerHTML = '';
+  document.getElementById('drop-icon').textContent = '📂';
+  document.getElementById('drop-zone').querySelector('p').textContent = 'วางไฟล์ Excel ที่นี่ หรือคลิกเพื่อเลือกไฟล์';
+  document.getElementById('upload-status').classList.add('hidden');
+  loadInitialData();
+}
 
 // ─── Thai day names ─────────────────────────────────────
 function getDayName(dateStr) {
