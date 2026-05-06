@@ -275,8 +275,15 @@ function parseNum(v) {
 }
 
 // ─── Derived totals ───────────────────────────────────────
+// dayTotal excludes Cancelled (Cancelled is shown separately, not in รวม)
 function dayTotal(day) {
-  return day.zones.reduce((a, z) => ({ orders: a.orders + z.orders, amount: a.amount + z.amount }), { orders: 0, amount: 0 });
+  return day.zones
+    .filter(z => !ZONE_CONFIG[z.name]?.isCancelled)
+    .reduce((a, z) => ({ orders: a.orders + z.orders, amount: a.amount + z.amount }), { orders: 0, amount: 0 });
+}
+function dayCancelled(day) {
+  const c = day.zones.find(z => ZONE_CONFIG[z.name]?.isCancelled);
+  return c ? c.orders : 0;
 }
 function grandTotal() {
   return reportData.days.reduce((a, d) => {
