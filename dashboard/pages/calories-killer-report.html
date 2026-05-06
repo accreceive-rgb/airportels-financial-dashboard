@@ -69,14 +69,38 @@
 <div class="max-w-4xl mx-auto px-4 py-8 space-y-6">
 
   <!-- ───────── UPLOAD ZONE ───────── -->
-  <div id="drop-zone" class="no-print bg-white rounded-2xl px-6 py-8 text-center shadow-md"
-       onclick="document.getElementById('file-input').click()"
-       ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
-    <input type="file" id="file-input" accept=".xlsx,.xls" class="hidden" onchange="onFileChange(event)" />
-    <div id="drop-icon" class="text-5xl mb-3">📂</div>
-    <p class="font-semibold text-gray-700 text-base">วางไฟล์ Excel ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
-    <p class="text-gray-400 text-xs mt-1">รองรับ .xlsx / .xls — ระบบจะอ่านข้อมูลและอัพเดทหน้าให้อัตโนมัติ</p>
-    <div id="upload-status" class="mt-3 text-sm font-medium hidden"></div>
+  <div class="no-print bg-white rounded-2xl shadow-md overflow-hidden">
+
+    <!-- Mode toggle bar -->
+    <div class="flex items-center gap-2 px-5 py-3 bg-gray-50 border-b">
+      <span class="text-sm font-semibold text-gray-600 mr-2">โหมดนำเข้า:</span>
+      <button id="btn-replace" onclick="setMode('replace')"
+        class="mode-btn text-sm px-4 py-1.5 rounded-full font-semibold transition-all bg-blue-500 text-white shadow">
+        🔄 แทนที่ข้อมูล
+      </button>
+      <button id="btn-append" onclick="setMode('append')"
+        class="mode-btn text-sm px-4 py-1.5 rounded-full font-semibold transition-all bg-gray-100 text-gray-500">
+        ➕ เพิ่มข้อมูล
+      </button>
+      <span id="mode-hint" class="text-xs text-gray-400 ml-2">โยนไฟล์ใหม่จะแทนที่ข้อมูลทั้งหมด</span>
+      <button onclick="clearAllData()" class="ml-auto text-xs text-red-400 hover:text-red-600 font-medium transition-all">
+        🗑 ล้างทั้งหมด
+      </button>
+    </div>
+
+    <!-- Drop area -->
+    <div id="drop-zone" class="px-6 py-7 text-center cursor-pointer"
+         onclick="document.getElementById('file-input').click()"
+         ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+      <input type="file" id="file-input" accept=".xlsx,.xls" class="hidden" onchange="onFileChange(event)" />
+      <div id="drop-icon" class="text-4xl mb-2">📂</div>
+      <p class="font-semibold text-gray-700 text-sm">วางไฟล์ Excel ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+      <p class="text-gray-400 text-xs mt-1">รองรับ .xlsx / .xls</p>
+      <div id="upload-status" class="mt-2 text-sm font-medium hidden"></div>
+    </div>
+
+    <!-- Loaded files log -->
+    <div id="files-log" class="hidden border-t divide-y divide-gray-100 text-sm"></div>
   </div>
 
   <!-- ───────── DEBUG PANEL (hidden by default) ───────── -->
