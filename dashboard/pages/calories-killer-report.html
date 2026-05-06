@@ -697,122 +697,115 @@ function setView(v) {
 }
 
 // ═══════════════════════════════════════════════════
-//  SHEET VIEW RENDERER
+//  SHEET VIEW RENDERER  (tab-per-date)
 // ═══════════════════════════════════════════════════
+let activeSheetTab = 0;
+
 function renderSheet() {
   if (!reportData) return;
   const container = document.getElementById('sheet-view');
   const days = reportData.days;
+  if (!days.length) { container.innerHTML = '<p class="text-gray-400 text-center py-8">ยังไม่มีข้อมูล</p>'; return; }
 
-  // ── จำนวน (รายการ) sheet ──────────────────────────
-  const ordersSheet = buildSheetHTML(days, 'จำนวน (รายการ)', z => z.orders, fmtInt, false);
-  // ── ยอดรวม (บาท) sheet ────────────────────────────
-  const amountSheet = buildSheetHTML(days, 'ยอดรวม (บาท)', z => z.amount, fmt, true);
+  // Clamp activeSheetTab
+  if (activeSheetTab >= days.length) activeSheetTab = 0;
 
-  container.innerHTML = ordersSheet + amountSheet;
+  // ── Tab bar ───────────────────────────────────────
+  const tabs = days.map((day, i) => `
+    <button onclick="switchSheetTab(${i})" id="sheet-tab-${i}"
+      class="date-tab px-4 py-2.5 text-sm font-medium text-gray-600 whitespace-nowrap ${i === activeSheetTab ? 'active' : ''}">
+      📅 ${day.date}
+      <span class="ml-1 text-xs text-gray-400">${getDayName(day.date)}</span>
+    </button>`).join('');
+
+  // ── Active day table ──────────────────────────────
+  const dayHTML = buildDaySheetHTML(days[activeSheetTab]);
+
+  container.innerHTML = `
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+      <!-- Tab bar -->
+      <div class="flex items-end gap-0.5 px-3 pt-3 overflow-x-auto border-b border-gray-200 bg-gray-50">
+        ${tabs}
+      </div>
+      <!-- Day content -->
+      <div id="sheet-day-content">${dayHTML}</div>
+    </div>`;
 }
 
-function buildSheetHTML(days, label, valFn, fmtFn, isAmount) {
-  const zones = KNOWN_ZONES;
-  const dates = days.map(d => d.date);
+function switchSheetTab(i) {
+  activeSheetTab = i;
+  // Update tab active state without full re-render
+  document.querySelectorAll('[id^="sheet-tab-"]').forEach((btn, idx) => {
+    btn.classList.toggle('active', idx === i);
+  });
+  document.getElementById('sheet-day-content').innerHTML =
+    buildDaySheetHTML(reportData.days[i]);
+}
 
-  // Row totals per date (excluding Cancelled for amount, included for orders)
-  const dateOrders = days.map(d => dayTotal(d).orders);
-  const dateAmounts = days.map(d => dayTotal(d).amount);
-  const dateCancelled = days.map(d => dayCancelled(d));
+function buildDaySheetHTML(day) {
+  const dt = dayTotal(day);
+  const cancelled = dayCancelled(day);
 
-  // Grand totals
-  const gt = grandTotal();
-  const totalCancelled = days.reduce((s,d) => s + dayCancelled(d), 0);
-
-  // Column header
-  const headCols = dates.map(d => `
-    <th class="sheet-th text-center min-w-[110px]">
-      <div class="font-bold">${d}</div>
-      <div class="text-blue-200 font-normal text-xs">${getDayName(d)}</div>
-    </th>`).join('');
-
-  // Zone rows (exclude Cancelled, show separately)
-  const regularZones = zones.filter(zn => !ZONE_CONFIG[zn]?.isCancelled);
-  const zoneRows = regularZones.map((zn, ri) => {
-    const cfg = ZONE_CONFIG[zn] || {};
-    const cells = days.map(day => {
-      const z = day.zones.find(z => z.name === zn) || { orders: 0, amount: 0 };
-      const val = valFn(z);
-      const isEmpty = val === 0;
-      return `<td class="sheet-td text-right font-mono ${isEmpty ? 'text-gray-300' : 'text-gray-700'}">
-        ${isEmpty ? (isAmount ? '—' : '0') : fmtFn(val)}
-      </td>`;
-    }).join('');
-
-    const rowTotal = days.reduce((s, day) => {
-      const z = day.zones.find(z => z.name === zn) || { orders: 0, amount: 0 };
-      return s + valFn(z);
-    }, 0);
-
-    return `<tr class="${ri%2===0?'bg-white':'bg-gray-50'} hover:bg-blue-50 transition-colors">
-      <td class="sheet-td font-medium text-gray-700 sticky left-0 bg-inherit z-10 border-r border-gray-200">
-        <span class="inline-block w-2 h-2 rounded-full ${cfg.color||'bg-gray-300'} mr-2"></span>${zn}
-      </td>
-      ${cells}
-      <td class="sheet-td text-right font-mono font-bold text-blue-700 border-l border-blue-100">
-        ${rowTotal === 0 ? '—' : fmtFn(rowTotal)}
-      </td>
-    </tr>`;
+  const rows = day.zones.map((z, ri) => {
+    const cfg = ZONE_CONFIG[z.name] || {};
+    if (cfg.isCancelled) return ''; // render Cancelled separately
+    const isZero = z.orders === 0 && z.amount === 0;
+    const textClass = isZero ? 'text-gray-400' : 'text-gray-700';
+    return `
+      <tr class="${ri % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors">
+        <td class="sheet-td font-medium ${textClass}">
+          <span class="inline-block w-2.5 h-2.5 rounded-full ${cfg.color || 'bg-gray-300'} mr-2"></span>${z.name}
+        </td>
+        <td class="sheet-td text-right font-mono ${textClass}">${isZero ? '0' : fmtInt(z.orders)}</td>
+        <td class="sheet-td text-right font-mono ${isZero ? 'text-gray-300' : 'text-gray-700'}">${isZero ? '—' : fmt(z.amount)}</td>
+      </tr>`;
   }).join('');
 
-  // รวม row
-  const totalCells = days.map((_, i) => {
-    const v = isAmount ? dateAmounts[i] : dateOrders[i];
-    return `<td class="sheet-td-total text-right font-bold font-mono">${fmtFn(v)}</td>`;
-  }).join('');
-  const grandV = isAmount ? gt.amount : gt.orders;
-
-  // Cancelled row (only for orders sheet)
-  const cancelledRow = !isAmount ? `
+  const cancelledRow = `
     <tr class="bg-red-50 border-t-2 border-red-200">
-      <td class="sheet-td font-semibold text-red-500 sticky left-0 bg-red-50 z-10 border-r border-red-200">
-        <span class="inline-block w-2 h-2 rounded-full bg-red-400 mr-2"></span>Cancelled
-        <span class="ml-1 text-xs bg-red-100 px-1.5 py-0.5 rounded-full">ยกเลิก</span>
+      <td class="sheet-td font-semibold text-red-500">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-400 mr-2"></span>Cancelled
+        <span class="ml-1 text-xs bg-red-100 text-red-500 px-1.5 py-0.5 rounded-full font-semibold">ยกเลิก</span>
       </td>
-      ${days.map((d,i) => `<td class="sheet-td text-right font-mono text-red-500 font-bold">
-        ${dateCancelled[i] > 0 ? fmtFn(dateCancelled[i]) : '<span class="text-red-200">0</span>'}
-      </td>`).join('')}
-      <td class="sheet-td text-right font-mono font-bold text-red-600 border-l border-red-200">
-        ${totalCancelled > 0 ? fmtFn(totalCancelled) : '0'}
-      </td>
-    </tr>` : '';
+      <td class="sheet-td text-right font-mono font-bold ${cancelled > 0 ? 'text-red-500' : 'text-red-300'}">${fmtInt(cancelled)}</td>
+      <td class="sheet-td text-right font-mono text-red-300">0.00</td>
+    </tr>`;
 
   return `
-  <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-    <div class="zone-header text-white px-5 py-3 flex items-center gap-3">
-      <span>${isAmount ? '💰' : '📦'}</span>
-      <span class="font-bold">${label}</span>
-      <span class="ml-auto text-blue-200 text-xs">${dates.length} วัน</span>
+    <div class="px-5 py-4">
+      <div class="flex items-center gap-3 mb-3">
+        <div>
+          <div class="font-bold text-gray-800 text-base">วันที่ ${day.date} — ${getDayName(day.date)}</div>
+          <div class="text-xs text-gray-400 mt-0.5">ชีดสรุปรายวัน</div>
+        </div>
+        <div class="ml-auto text-right">
+          <div class="text-xs text-gray-400">ยอดวัน</div>
+          <div class="text-lg font-bold text-blue-700">${fmt(dt.amount)} ฿</div>
+        </div>
+      </div>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="zone-header text-white">
-            <th class="sheet-th text-left sticky left-0 z-20 bg-blue-900 min-w-[140px]">Zone</th>
-            ${headCols}
-            <th class="sheet-th text-center min-w-[110px] bg-blue-950">รวมทุกวัน</th>
+            <th class="sheet-th text-left min-w-[160px]">Zone</th>
+            <th class="sheet-th text-right min-w-[130px]">จำนวน (รายการ)</th>
+            <th class="sheet-th text-right min-w-[140px]">ยอดรวม (บาท)</th>
           </tr>
         </thead>
         <tbody>
-          ${zoneRows}
+          ${rows}
           ${cancelledRow}
         </tbody>
         <tfoot>
           <tr class="total-row text-white">
-            <td class="sheet-td-total font-bold sticky left-0 z-10 bg-blue-900">รวม</td>
-            ${totalCells}
-            <td class="sheet-td-total text-right font-bold font-mono border-l border-blue-400">${fmtFn(grandV)}</td>
+            <td class="sheet-td-total font-bold">รวม <span class="text-blue-200 font-normal text-xs">(ไม่รวม Cancelled)</span></td>
+            <td class="sheet-td-total text-right font-bold font-mono">${fmtInt(dt.orders)}</td>
+            <td class="sheet-td-total text-right font-bold font-mono">${fmt(dt.amount)}</td>
           </tr>
         </tfoot>
       </table>
-    </div>
-  </div>`;
+    </div>`;
 }
 
 // ═══════════════════════════════════════════════════
