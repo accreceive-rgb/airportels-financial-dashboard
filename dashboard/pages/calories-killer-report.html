@@ -557,6 +557,14 @@ function render() {
             <td class="px-4 py-3 text-right font-bold font-mono">${fmtInt(dt.orders)}</td>
             <td class="px-4 py-3 text-right font-bold font-mono">${fmt(dt.amount)}</td>
           </tr>
+          ${dayCancelled(day) > 0 ? `
+          <tr class="bg-red-50 border-t-2 border-red-200">
+            <td class="px-4 py-2 text-sm text-red-500 font-semibold">
+              <span class="inline-block w-2 h-2 rounded-full bg-red-400 mr-2"></span>Cancelled (ไม่นับใน รวม)
+            </td>
+            <td class="px-4 py-2 text-right font-mono text-red-500 font-bold">${fmtInt(dayCancelled(day))}</td>
+            <td class="px-4 py-2 text-right font-mono text-red-400">0.00</td>
+          </tr>` : ''}
         </tfoot>
       </table>`;
     tablesEl.appendChild(card);
