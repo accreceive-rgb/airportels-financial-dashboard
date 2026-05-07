@@ -502,7 +502,7 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
       <button class="filter-btn" style="border-color:#22c55e;color:#86efac;margin-left:auto" onclick="roaExport()">📤 Export Excel</button>
     </div>
     <div id="roa-summary" class="hidden grid gap-3 mb-4" style="grid-template-columns:repeat(5,1fr)">
-      <div class="stat-card" style="border-color:#475569"><p class="stat-label">Omise ทั้งหมด</p><p class="stat-value text-white" id="roa-total">0</p><p class="stat-sub text-slate-400" id="roa-total-b" title="ยอดรวม gross (amount column)">gross ฿0</p><p class="stat-sub" style="color:#34d399;font-size:11px" id="roa-total-fa" title="funding_amount — ยอดโอนเข้าบัญชี Airportels หลังหักค่าธรรมเนียม Omise">net ฿0</p></div>
+      <div class="stat-card" style="border-color:#475569"><p class="stat-label">Omise ทั้งหมด</p><p class="stat-value text-white" id="roa-total">0</p><p class="stat-sub text-slate-400" id="roa-total-b" title="ยอดรวม gross = amount column (ยอดที่เรียกเก็บจากลูกค้า)">gross ฿0</p><p class="stat-sub" style="color:#34d399;font-size:11px" id="roa-total-fa" title="net = amount − fee − fee_vat (ยอดที่ Omise โอนเข้าบัญชี)">net ฿0</p></div>
       <div class="stat-card" style="border-color:#16a34a"><p class="stat-label text-emerald-400">🚚 ค่าขนส่ง</p><p class="stat-value text-emerald-400" id="roa-transport">0</p><p class="stat-sub text-emerald-600" id="roa-transport-b">฿0</p></div>
       <div class="stat-card" style="border-color:#0284c7"><p class="stat-label text-sky-400">💰 เติมเงิน</p><p class="stat-value text-sky-400" id="roa-topup-cnt">0</p><p class="stat-sub text-sky-600" id="roa-topup-b">฿0</p></div>
       <div class="stat-card" style="border-color:#7c3aed"><p class="stat-label text-purple-400">🏢 ต้องออกใบกำกับ</p><p class="stat-value text-purple-400" id="roa-invoice">0</p><p class="stat-sub text-purple-600" id="roa-invoice-b">฿0</p></div>
@@ -2173,9 +2173,9 @@ function roaLoadOmise(file) {
         var mx   = desc.match(/Bill ID\s*(\d+)/i);
         var pf   = function(v){ return parseFloat(String(v||'0').replace(/,/g,''))||0; };
         var grossAmt = pf(r[colAmt]);
-        // funding_amount = net settlement to Airportels; fallback to net col, then calc
-        var fundAmt  = colFundingAmt>=0 ? pf(r[colFundingAmt])
-                     : colNet>=0        ? pf(r[colNet])
+        // net = ยอดโอนเข้าบัญชีจริง (amount - fee - fee_vat)
+        // สำหรับ THB: funding_amount = amount (เท่ากัน ไม่มี FX), ใช้ net column แทน
+        var fundAmt  = colNet>=0 ? pf(r[colNet])
                      : grossAmt - pf(r[colFee]) - pf(r[colFeeVat]);
         roaOmiseRaw.push({
           chargeId:   id,
@@ -2195,8 +2195,8 @@ function roaLoadOmise(file) {
       var fmtB2 = function(n){return '฿'+(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});};
       lbl.innerHTML = '<span style="color:#86efac">✅ '+escHtml(file.name)+'</span><br>'
         +'<span style="color:#4ade80;font-size:11px">'+roaOmiseRaw.length.toLocaleString()+' charges'
-        +' | gross '+fmtB2(totalGross)
-        +(colFundingAmt>=0 ? ' | net (funding_amount) '+fmtB2(totalFA) : ' | net (calc) '+fmtB2(totalFA))
+        +' | gross ฿'+totalGross.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})
+        +' | net (หลังหัก fee) ฿'+totalFA.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})
         +'</span>';
     } catch(ex) { lbl.textContent = '❌ อ่านไฟล์ไม่ได้: '+ex.message; }
   };
