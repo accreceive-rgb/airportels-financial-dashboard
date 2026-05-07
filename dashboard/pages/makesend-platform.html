@@ -18,6 +18,10 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0}
 .filter-btn.active{background:#3b82f6;color:#fff;border-color:#3b82f6}
 th{position:sticky;top:0;background:#1e293b;z-index:2;padding:6px 8px;text-align:left;font-size:11px;color:#94a3b8;white-space:nowrap}
 td{padding:4px 8px;font-size:12px;border-top:1px solid #1e293b}
+.col-fi{background:#0f172a;border:1px solid #334155;color:#cbd5e1;border-radius:4px;padding:2px 5px;font-size:10px;outline:none;transition:border-color .15s}
+.col-fi:focus{border-color:#3b82f6}
+#roa-col-filter-row td{padding:3px 4px;position:sticky;top:28px;background:#0d1929;z-index:2;border-top:none}
+#roa-col-filter-row .col-fi-active{border-color:#3b82f6;background:#0c1f3f}
 .sum-card{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:14px}
 .step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#3b82f6;color:#fff;font-size:11px;font-weight:700;margin-right:6px;flex-shrink:0}
 .run-btn{background:#2563eb;color:#fff;padding:10px 28px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;border:none}
@@ -555,12 +559,44 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
     </div>
     <div id="roa-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:55vh;overflow-y:auto">
       <table class="w-full" style="border-collapse:collapse">
-        <thead><tr>
-          <th>#</th><th>วันที่</th><th>Charge ID</th><th>Bill ID</th><th>System ID</th><th>ชื่อลูกค้า</th>
-          <th class="text-right">amount (฿)</th><th class="text-right">Fee (฿)</th><th class="text-right">Net Omise (฿)</th>
-          <th class="text-right">Income / Topup (฿)</th><th class="text-right">ค่าธรรมเนียม Income (฿)</th><th class="text-right">Diff (฿)</th>
-          <th>ประเภท</th><th>อ้างอิง</th><th style="min-width:140px">📝 Note</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>#</th><th>วันที่</th><th>Charge ID</th><th>Bill ID</th><th>System ID</th><th>ชื่อลูกค้า</th>
+            <th class="text-right">amount (฿)</th><th class="text-right">Fee (฿)</th><th class="text-right">Net Omise (฿)</th>
+            <th class="text-right">Income / Topup (฿)</th><th class="text-right">ค่าธรรมเนียม Income (฿)</th><th class="text-right">Diff (฿)</th>
+            <th>ประเภท</th><th>อ้างอิง</th><th style="min-width:140px">📝 Note</th>
+          </tr>
+          <tr id="roa-col-filter-row" style="background:#0d1929">
+            <td></td>
+            <td><input type="text" placeholder="วันที่…" oninput="roaColFilter('date',this.value)" style="width:80px" class="col-fi"></td>
+            <td><input type="text" placeholder="Charge…" oninput="roaColFilter('chargeId',this.value)" style="width:110px" class="col-fi"></td>
+            <td><input type="text" placeholder="Bill ID…" oninput="roaColFilter('billId',this.value)" style="width:74px" class="col-fi"></td>
+            <td><input type="text" placeholder="Sys ID…" oninput="roaColFilter('sysId',this.value)" style="width:68px" class="col-fi"></td>
+            <td><input type="text" placeholder="ชื่อ…" oninput="roaColFilter('custName',this.value)" style="width:100px" class="col-fi"></td>
+            <td colspan="3"></td>
+            <td colspan="2"></td>
+            <td>
+              <select onchange="roaColFilter('diff',this.value)" class="col-fi" style="width:80px">
+                <option value="">ทั้งหมด</option>
+                <option value="match">✅ ตรง</option>
+                <option value="over">🔴 เกิน</option>
+                <option value="under">🟡 ขาด</option>
+                <option value="nodiff">— ไม่มีข้อมูล</option>
+              </select>
+            </td>
+            <td>
+              <select onchange="roaColFilter('type',this.value)" class="col-fi" style="width:90px">
+                <option value="">ทั้งหมด</option>
+                <option value="transport">🚚 ค่าขนส่ง</option>
+                <option value="topup">💰 เติมเงิน</option>
+                <option value="invoice">🏢 ต้องออก</option>
+                <option value="unknown">❓ ไม่ระบุ</option>
+              </select>
+            </td>
+            <td><input type="text" placeholder="อ้างอิง…" oninput="roaColFilter('ref',this.value)" style="width:80px" class="col-fi"></td>
+            <td></td>
+          </tr>
+        </thead>
         <tbody id="roa-tbody"></tbody>
       </table>
     </div>
@@ -2106,6 +2142,7 @@ var roaOmiseAllRaw = [];        // all rows before filter (for re-filter on Refr
 var roaTopupMap  = new Map();   // billId → {amount, userId, channel, name}  (shared with rbt)
 var roaRows      = [];          // classified Omise breakdown rows
 var roaFilter    = 'all';
+var roaColFilters = { date:'', chargeId:'', billId:'', sysId:'', custName:'', type:'', ref:'', diff:'' };
 var roaNotes     = {};          // chargeId → note text (persisted in localStorage)
 var ROA_NOTES_KEY = 'ms_roa_notes_v1';
 
@@ -2358,6 +2395,7 @@ function roaRun() {
     roaFilter='all';
     var _si=document.getElementById('roa-search'); if(_si) _si.value='';
     var _sc=document.getElementById('roa-search-clear'); if(_sc) _sc.style.display='none';
+    roaResetColFilters();
     ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
     var all=document.getElementById('roaf-all'); if(all) all.classList.add('active');
     roaUpdateSummary(); roaRenderComparison(); roaRender();
@@ -2448,6 +2486,25 @@ function roaClearSearch() {
   roaRender();
 }
 
+function roaColFilter(key, val) {
+  roaColFilters[key] = val.trim().toLowerCase();
+  // highlight active col-fi inputs
+  var row = document.getElementById('roa-col-filter-row');
+  if (row) row.querySelectorAll('.col-fi').forEach(function(el){
+    el.classList.toggle('col-fi-active', !!(el.value && el.value.trim()));
+  });
+  roaRender();
+}
+
+function roaResetColFilters() {
+  roaColFilters = { date:'', chargeId:'', billId:'', sysId:'', custName:'', type:'', ref:'', diff:'' };
+  var row = document.getElementById('roa-col-filter-row');
+  if (row) row.querySelectorAll('.col-fi').forEach(function(el){
+    if (el.tagName==='SELECT') el.selectedIndex=0; else el.value='';
+    el.classList.remove('col-fi-active');
+  });
+}
+
 function roaRender() {
   roaLoadNotes();
   // update noted badge count
@@ -2473,10 +2530,34 @@ function roaRender() {
           || note.includes(q);
     });
   }
+  // Apply column-level filters
+  var cf = roaColFilters;
+  var hasColFilter = Object.keys(cf).some(function(k){ return !!cf[k]; });
+  if (hasColFilter) {
+    rows = rows.filter(function(r) {
+      var diff = (r.incomeAmt!==null && r.incomeAmt!==undefined) ? r.amount - r.incomeAmt : null;
+      if (cf.date     && !(r.dateStr  && r.dateStr.toLowerCase().includes(cf.date)))     return false;
+      if (cf.chargeId && !(r.chargeId && r.chargeId.toLowerCase().includes(cf.chargeId))) return false;
+      if (cf.billId   && !(r.billId   && r.billId.toLowerCase().includes(cf.billId)))   return false;
+      if (cf.sysId    && !(r.sysId    && r.sysId.toLowerCase().includes(cf.sysId)))     return false;
+      if (cf.custName && !(r.custName && r.custName.toLowerCase().includes(cf.custName))) return false;
+      if (cf.ref      && !(r.ref      && r.ref.toLowerCase().includes(cf.ref)))          return false;
+      if (cf.type     && r.type !== cf.type) return false;
+      if (cf.diff) {
+        if (cf.diff === 'nodiff'  && diff !== null) return false;
+        if (cf.diff !== 'nodiff'  && diff === null) return false;
+        if (cf.diff === 'match'   && Math.abs(diff) >= 0.01) return false;
+        if (cf.diff === 'over'    && !(diff > 0.005)) return false;
+        if (cf.diff === 'under'   && !(diff < -0.005)) return false;
+      }
+      return true;
+    });
+  }
   var tbody=document.getElementById('roa-tbody'), wrap=document.getElementById('roa-table-wrap'), empty=document.getElementById('roa-empty');
   var cnt=document.getElementById('roa-row-count');
-  if(cnt) cnt.textContent = q
-    ? rows.length.toLocaleString()+' / '+roaRows.length.toLocaleString()+' รายการ'
+  var totalBase = roaRows.length;
+  if(cnt) cnt.textContent = (q || hasColFilter)
+    ? rows.length.toLocaleString()+' / '+totalBase.toLocaleString()+' รายการ'
     : rows.length.toLocaleString()+' รายการ';
   if (!rows.length) { tbody.innerHTML=''; wrap.classList.add('hidden'); empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden'); wrap.classList.remove('hidden');
