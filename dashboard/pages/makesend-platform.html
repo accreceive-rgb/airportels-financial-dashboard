@@ -498,6 +498,7 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
         <span id="roa-income-lbl" class="text-slate-500 ml-2">ยังไม่มีข้อมูล</span>
       </div>
       <button class="run-btn" onclick="roaRun()" id="roa-run-btn" style="background:#1d4ed8;padding:10px 24px;font-size:14px">🔍 Run Breakdown</button>
+      <button class="run-btn" onclick="roaRefresh()" id="roa-refresh-btn" style="background:#7c3aed;padding:10px 20px;font-size:14px" title="ประมวลผลใหม่จากไฟล์ที่โหลดอยู่แล้ว ไม่ต้องแนบไฟล์ซ้ำ">🔄 Refresh</button>
       <button class="filter-btn" style="border-color:#22c55e;color:#86efac;margin-left:auto" onclick="roaExport()">📤 Export Excel</button>
     </div>
     <div id="roa-summary" class="hidden grid gap-3 mb-4" style="grid-template-columns:repeat(5,1fr)">
@@ -2298,6 +2299,11 @@ function roaUpdateSummary() {
   document.getElementById('roa-invoice-b').textContent  = fmtB(sum(inv));
   document.getElementById('roa-unknown').textContent    = unk.length.toLocaleString();
   document.getElementById('roa-unknown-b').textContent  = fmtB(sum(unk));
+}
+
+function roaRefresh() {
+  if (!roaOmiseRaw.length) { alert('ยังไม่มีข้อมูล — กรุณาอัปโหลด Omise Charges ก่อน'); return; }
+  roaRun();
 }
 
 function roaRenderComparison() {
