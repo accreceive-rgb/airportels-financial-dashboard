@@ -547,7 +547,7 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
         <thead><tr>
           <th>#</th><th>วันที่</th><th>Charge ID</th><th>Bill ID</th><th>System ID</th><th>ชื่อลูกค้า</th>
           <th class="text-right">amount (฿)</th><th class="text-right">Fee (฿)</th><th class="text-right">Net Omise (฿)</th>
-          <th class="text-right">Income / Topup (฿)</th><th class="text-right">Diff (฿)</th>
+          <th class="text-right">Income / Topup (฿)</th><th class="text-right">ค่าธรรมเนียม Income (฿)</th><th class="text-right">Diff (฿)</th>
           <th>ประเภท</th><th>อ้างอิง</th>
         </tr></thead>
         <tbody id="roa-tbody"></tbody>
@@ -2268,15 +2268,17 @@ function roaRun() {
       return String(raw).substring(0,10);
     };
     roaRows = roaOmiseRaw.map(function(o) {
-      var type='unknown', sysId='', custName='', ref='', incomeAmt=null;
+      var type='unknown', sysId='', custName='', ref='', incomeAmt=null, incomeFee=null;
       if (o.billId && roaTopupMap.has(o.billId)) {
         var td = roaTopupMap.get(o.billId);
         type='topup'; sysId=td.userId; custName=td.name; ref='topup / '+td.channel;
-        incomeAmt=td.amount; // topup stmt amount
+        incomeAmt=td.amount;
+        incomeFee=null; // topup ไม่มีค่าธรรมเนียมการชำระ
       } else if (o.billId) {
         var inc = incomeMap.get(o.billId);
         if (inc) {
           sysId=inc.sysId||''; custName=inc.name||'';
+          incomeFee = (inc.fee!==undefined && inc.fee!==null) ? inc.fee : null;
           if (scIsSpecial(sysId)) {
             type='invoice'; ref='บริษัท: '+scGetName(sysId);
             incomeAmt=inc.delivery||null;
@@ -2292,7 +2294,7 @@ function roaRun() {
       return { chargeId:o.chargeId, billId:o.billId, amount:o.amount, fundingAmt:o.fundingAmt,
                fee:o.fee, feeVat:o.feeVat, net:o.net,
                dateStr:fmtDate(o.dateRaw), sysId:sysId, custName:custName,
-               type:type, ref:ref, incomeAmt:incomeAmt };
+               type:type, ref:ref, incomeAmt:incomeAmt, incomeFee:incomeFee };
     });
     roaFilter='all';
     ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
@@ -2409,6 +2411,7 @@ function roaRender() {
       +'<td class="text-right font-mono text-xs text-orange-400">'+fN(r.fee)+'</td>'
       +'<td class="text-right font-mono text-xs text-sky-300">'+fN(netVal)+'</td>'
       +'<td class="text-right font-mono text-xs" style="'+incLabel+'">'+(r.incomeAmt!==null&&r.incomeAmt!==undefined ? fN(r.incomeAmt) : '—')+'</td>'
+      +'<td class="text-right font-mono text-xs" style="color:#fcd34d">'+(r.incomeFee!==null&&r.incomeFee!==undefined ? fN(r.incomeFee) : '—')+'</td>'
       +'<td class="text-right font-mono text-xs font-bold" style="'+diffColor+'">'+(diff!==null ? (diff>0?'+':'')+fN(diff) : '—')+'</td>'
       +'<td>'+badge(r.type)+'</td>'
       +'<td class="font-mono text-slate-500 text-xs" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(r.ref||'')+'</td>'
@@ -2419,11 +2422,12 @@ function roaRender() {
 function roaExport() {
   if (!roaRows.length) { alert('ยังไม่มีข้อมูล — กรุณา Run Breakdown ก่อน'); return; }
   var wb=XLSX.utils.book_new(), tMap={transport:'ค่าขนส่ง',topup:'เติมเงิน',invoice:'ต้องออกใบกำกับ',unknown:'ไม่ระบุ'};
-  var head=['#','วันที่','Charge ID','Bill ID','System ID','ชื่อลูกค้า','ยอด Omise (฿)','Fee (฿)','Fee VAT (฿)','Net Omise (฿)','Income หรือ Topup (฿)','Diff (฿)','ประเภท','อ้างอิง'];
+  var head=['#','วันที่','Charge ID','Bill ID','System ID','ชื่อลูกค้า','ยอด Omise (฿)','Fee Omise (฿)','Fee VAT Omise (฿)','Net Omise (฿)','Income หรือ Topup (฿)','ค่าธรรมเนียม Income (฿)','Diff (฿)','ประเภท','อ้างอิง'];
   var toRow=function(r,i) {
     var diff=r.incomeAmt!==null&&r.incomeAmt!==undefined ? r.amount-r.incomeAmt : '';
     var net=r.net||(r.amount-r.fee-r.feeVat);
-    return [i+1,r.dateStr,r.chargeId,r.billId,r.sysId,r.custName,r.amount,r.fee,r.feeVat,net,r.incomeAmt!==null&&r.incomeAmt!==undefined?r.incomeAmt:'',diff,tMap[r.type]||r.type,r.ref];
+    var iF=r.incomeFee!==null&&r.incomeFee!==undefined ? r.incomeFee : '';
+    return [i+1,r.dateStr,r.chargeId,r.billId,r.sysId,r.custName,r.amount,r.fee,r.feeVat,net,r.incomeAmt!==null&&r.incomeAmt!==undefined?r.incomeAmt:'',iF,diff,tMap[r.type]||r.type,r.ref];
   };
   var ws=XLSX.utils.aoa_to_sheet([head].concat(roaRows.map(toRow)));
   ws['!cols']=[4,12,26,12,10,24,14,12,12,14,16,12,14,20].map(function(w){ return {wch:w}; });
