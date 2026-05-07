@@ -540,6 +540,7 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
       <button class="filter-btn" id="roaf-topup" onclick="roaSetFilter('topup',this)" style="border-color:#0284c7;color:#7dd3fc">💰 เติมเงิน</button>
       <button class="filter-btn" id="roaf-invoice" onclick="roaSetFilter('invoice',this)" style="border-color:#7c3aed;color:#c4b5fd">🏢 ต้องออกใบกำกับ</button>
       <button class="filter-btn" id="roaf-unknown" onclick="roaSetFilter('unknown',this)" style="border-color:#ca8a04;color:#fde68a">❓ ไม่ระบุ</button>
+      <button class="filter-btn" id="roaf-noted" onclick="roaSetFilter('noted',this)" style="border-color:#3b82f6;color:#93c5fd">📝 มี Note <span id="roaf-noted-cnt" style="background:#1d4ed8;color:#fff;border-radius:10px;padding:0 6px;font-size:10px;margin-left:3px">0</span></button>
       <span class="text-slate-500 text-xs ml-auto" id="roa-row-count"></span>
     </div>
     <div id="roa-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:55vh;overflow-y:auto">
@@ -548,7 +549,7 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
           <th>#</th><th>วันที่</th><th>Charge ID</th><th>Bill ID</th><th>System ID</th><th>ชื่อลูกค้า</th>
           <th class="text-right">amount (฿)</th><th class="text-right">Fee (฿)</th><th class="text-right">Net Omise (฿)</th>
           <th class="text-right">Income / Topup (฿)</th><th class="text-right">ค่าธรรมเนียม Income (฿)</th><th class="text-right">Diff (฿)</th>
-          <th>ประเภท</th><th>อ้างอิง</th>
+          <th>ประเภท</th><th>อ้างอิง</th><th style="min-width:140px">📝 Note</th>
         </tr></thead>
         <tbody id="roa-tbody"></tbody>
       </table>
@@ -2091,6 +2092,34 @@ var roaOmiseAllRaw = [];        // all rows before filter (for re-filter on Refr
 var roaTopupMap  = new Map();   // billId → {amount, userId, channel, name}  (shared with rbt)
 var roaRows      = [];          // classified Omise breakdown rows
 var roaFilter    = 'all';
+var roaNotes     = {};          // chargeId → note text (persisted in localStorage)
+var ROA_NOTES_KEY = 'ms_roa_notes_v1';
+
+function roaLoadNotes()  { try { roaNotes = JSON.parse(localStorage.getItem(ROA_NOTES_KEY)||'{}'); } catch(e) { roaNotes={}; } }
+function roaSaveNote(cid, txt) {
+  roaLoadNotes();
+  if (txt && txt.trim()) roaNotes[cid] = txt.trim(); else delete roaNotes[cid];
+  localStorage.setItem(ROA_NOTES_KEY, JSON.stringify(roaNotes));
+}
+function roaGetNote(cid)  { return (roaNotes[cid]||''); }
+function roaEditNote(cid, el) {
+  var cur = roaGetNote(cid);
+  var cell = el.closest('td');
+  cell.innerHTML = '<textarea rows="2" style="width:200px;background:#0f172a;border:1px solid #3b82f6;color:#e2e8f0;border-radius:4px;padding:4px 6px;font-size:11px;resize:vertical">'
+    + cur.replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    + '</textarea><div style="margin-top:3px;display:flex;gap:4px">'
+    + '<button onclick="roaNoteSave(\''+cid+'\',this)" style="background:#1d4ed8;color:#fff;border:none;border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer">💾 บันทึก</button>'
+    + '<button onclick="roaRender()" style="background:#374151;color:#9ca3af;border:none;border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer">ยกเลิก</button>'
+    + '</div>';
+  cell.querySelector('textarea').focus();
+  cell.querySelector('textarea').select();
+}
+function roaNoteSave(cid, btn) {
+  var ta = btn.closest('td').querySelector('textarea');
+  roaSaveNote(cid, ta ? ta.value : '');
+  roaRender();
+}
+roaLoadNotes();
 
 var rbtCheckMap  = new Map();   // billId → {userId,amount,bank,...}
 var rbtTotalMap  = new Map();   // billId → {userId,amount,...} TotalWalletStatement fallback
@@ -2377,12 +2406,18 @@ function roaRenderComparison() {
 
 function roaSetFilter(f, btn) {
   roaFilter=f;
-  ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown','roaf-noted'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
   btn.classList.add('active'); roaRender();
 }
 
 function roaRender() {
-  var rows = roaFilter==='all' ? roaRows : roaRows.filter(function(r){ return r.type===roaFilter; });
+  roaLoadNotes();
+  // update noted badge count
+  var notedCount = roaRows.filter(function(r){ return !!roaGetNote(r.chargeId); }).length;
+  var nc = document.getElementById('roaf-noted-cnt'); if(nc) nc.textContent = notedCount;
+  var rows = roaFilter==='all'   ? roaRows
+           : roaFilter==='noted' ? roaRows.filter(function(r){ return !!roaGetNote(r.chargeId); })
+           : roaRows.filter(function(r){ return r.type===roaFilter; });
   var tbody=document.getElementById('roa-tbody'), wrap=document.getElementById('roa-table-wrap'), empty=document.getElementById('roa-empty');
   var cnt=document.getElementById('roa-row-count'); if(cnt) cnt.textContent=rows.length.toLocaleString()+' รายการ';
   if (!rows.length) { tbody.innerHTML=''; wrap.classList.add('hidden'); empty.classList.remove('hidden'); return; }
@@ -2415,6 +2450,15 @@ function roaRender() {
       +'<td class="text-right font-mono text-xs font-bold" style="'+diffColor+'">'+(diff!==null ? (diff>0?'+':'')+fN(diff) : '—')+'</td>'
       +'<td>'+badge(r.type)+'</td>'
       +'<td class="font-mono text-slate-500 text-xs" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(r.ref||'')+'</td>'
+      +(function(){
+          var note = roaGetNote(r.chargeId);
+          if (note) return '<td style="min-width:140px;vertical-align:top">'
+            +'<span style="color:#93c5fd;font-size:11px;cursor:pointer;display:block;white-space:pre-wrap;max-width:200px;word-break:break-word" onclick="roaEditNote(\''+r.chargeId+'\',this)" title="คลิกเพื่อแก้ไข">📝 '+escHtml(note)+'</span>'
+            +'</td>';
+          return '<td style="min-width:140px">'
+            +'<span style="color:#334155;font-size:11px;cursor:pointer" onclick="roaEditNote(\''+r.chargeId+'\',this)">+ เพิ่ม note</span>'
+            +'</td>';
+        })()
       +'</tr>';
   }).join('');
 }
@@ -2422,12 +2466,13 @@ function roaRender() {
 function roaExport() {
   if (!roaRows.length) { alert('ยังไม่มีข้อมูล — กรุณา Run Breakdown ก่อน'); return; }
   var wb=XLSX.utils.book_new(), tMap={transport:'ค่าขนส่ง',topup:'เติมเงิน',invoice:'ต้องออกใบกำกับ',unknown:'ไม่ระบุ'};
-  var head=['#','วันที่','Charge ID','Bill ID','System ID','ชื่อลูกค้า','ยอด Omise (฿)','Fee Omise (฿)','Fee VAT Omise (฿)','Net Omise (฿)','Income หรือ Topup (฿)','ค่าธรรมเนียม Income (฿)','Diff (฿)','ประเภท','อ้างอิง'];
+  roaLoadNotes();
+  var head=['#','วันที่','Charge ID','Bill ID','System ID','ชื่อลูกค้า','ยอด Omise (฿)','Fee Omise (฿)','Fee VAT Omise (฿)','Net Omise (฿)','Income หรือ Topup (฿)','ค่าธรรมเนียม Income (฿)','Diff (฿)','ประเภท','อ้างอิง','Note'];
   var toRow=function(r,i) {
     var diff=r.incomeAmt!==null&&r.incomeAmt!==undefined ? r.amount-r.incomeAmt : '';
     var net=r.net||(r.amount-r.fee-r.feeVat);
     var iF=r.incomeFee!==null&&r.incomeFee!==undefined ? r.incomeFee : '';
-    return [i+1,r.dateStr,r.chargeId,r.billId,r.sysId,r.custName,r.amount,r.fee,r.feeVat,net,r.incomeAmt!==null&&r.incomeAmt!==undefined?r.incomeAmt:'',iF,diff,tMap[r.type]||r.type,r.ref];
+    return [i+1,r.dateStr,r.chargeId,r.billId,r.sysId,r.custName,r.amount,r.fee,r.feeVat,net,r.incomeAmt!==null&&r.incomeAmt!==undefined?r.incomeAmt:'',iF,diff,tMap[r.type]||r.type,r.ref,roaGetNote(r.chargeId)];
   };
   var ws=XLSX.utils.aoa_to_sheet([head].concat(roaRows.map(toRow)));
   ws['!cols']=[4,12,26,12,10,24,14,12,12,14,16,12,14,20].map(function(w){ return {wch:w}; });
