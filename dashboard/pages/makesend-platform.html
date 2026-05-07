@@ -1,0 +1,3062 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makesend Reconciliation Platform — Airportels Financial MADGA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0}
+.upload-zone{border:2px dashed #334155;border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;transition:all .2s;min-height:90px;display:flex;align-items:center;justify-content:center}
+.upload-zone:hover,.upload-zone.drag-over{border-color:#3b82f6;background:#1e3a5f}
+.upload-zone.done{border-color:#22c55e;background:#052e16}
+.tab-btn{padding:8px 24px;border-radius:8px 8px 0 0;font-weight:600;cursor:pointer;border:1px solid #334155;border-bottom:none;font-size:14px}
+.tab-btn.active{background:#1e293b;color:#60a5fa;border-color:#3b82f6}
+.tab-btn:not(.active){background:#0f172a;color:#64748b}
+.filter-btn{padding:3px 11px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid #475569;background:#1e293b;color:#94a3b8;transition:all .15s}
+.filter-btn.active{background:#3b82f6;color:#fff;border-color:#3b82f6}
+th{position:sticky;top:0;background:#1e293b;z-index:2;padding:6px 8px;text-align:left;font-size:11px;color:#94a3b8;white-space:nowrap}
+td{padding:4px 8px;font-size:12px;border-top:1px solid #1e293b}
+.sum-card{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:14px}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#3b82f6;color:#fff;font-size:11px;font-weight:700;margin-right:6px;flex-shrink:0}
+.run-btn{background:#2563eb;color:#fff;padding:10px 28px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;border:none}
+.run-btn:hover{background:#1d4ed8}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flash-green{0%,100%{background:#374151}50%{background:#166534}}
+.btn-spinning{animation:spin .6s linear infinite;display:inline-block}
+.btn-flash{animation:flash-green .4s ease}
+.badge-tip{background:#1e3a5f;color:#93c5fd;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-reg{background:#1e293b;color:#64748b;padding:2px 7px;border-radius:4px;font-size:11px;white-space:nowrap}
+.badge-credit{background:#052e16;color:#86efac;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-revoke{background:#450a0a;color:#fca5a5;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-refund{background:#451a03;color:#fdba74;padding:2px 7px;border-radius:4px;font-size:11px;white-space:nowrap}
+.row-tip td{background:#0f1f38}
+.row-credit td{background:#011a0d}
+.row-revoke td{background:#1c0404}
+.row-refund td{background:#1c1105}
+input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#3b82f6}
+.form-input{background:#1e293b;border:1px solid #334155;border-radius:6px;color:#e2e8f0;padding:6px 10px;font-size:13px;width:100%}
+.form-input:focus{outline:none;border-color:#3b82f6}
+.del-btn{background:#7f1d1d;color:#fca5a5;border:none;padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer}
+.del-btn:hover{background:#991b1b}
+.edit-btn{background:#1e3a5f;color:#93c5fd;border:none;padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer}
+.edit-btn:hover{background:#1d4ed8;color:#fff}
+/* Monthly Report tab styles */
+.export-btn{background:#059669;color:#fff;padding:12px 36px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;border:none;transition:background .2s}
+.export-btn:hover{background:#047857}
+.export-btn:disabled{background:#374151;cursor:not-allowed}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.badge-g{background:#166534;color:#bbf7d0}
+.badge-y{background:#713f12;color:#fef08a}
+.badge-r{background:#7f1d1d;color:#fecaca}
+input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;color:#e2e8f0;border-radius:6px;padding:8px 12px;font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div style="background:#020617;border-bottom:1px solid #1e293b" class="px-6 py-3 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <a href="../index.html" class="text-slate-400 text-sm hover:text-white">← Dashboard</a>
+    <span class="text-slate-700">|</span>
+    <span class="text-white font-bold text-lg">Makesend Reconciliation Platform</span>
+    <span class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">MADGA</span>
+  </div>
+  <span class="text-slate-600 text-xs">อัปโหลด Wallet Statement ได้ทุกเดือน</span>
+</div>
+
+<!-- Tabs -->
+<div class="px-6 pt-4 flex gap-0" style="border-bottom:1px solid #334155">
+  <button class="tab-btn active" onclick="switchTab('adjust',this)">📊 Wallet Adjust Reconcile</button>
+  <button class="tab-btn" onclick="switchTab('users',this)">👥 Wallet ทิพย์ Users</button>
+  <button class="tab-btn" onclick="switchTab('income',this)">📈 Income Breakdown</button>
+  <button class="tab-btn" onclick="switchTab('recon',this)">🔍 Income Reconcile</button>
+  <button class="tab-btn" onclick="switchTab('monthly',this)">📋 Monthly Report Generator</button>
+</div>
+
+<!-- ======= TAB 1: WALLET ADJUST RECONCILE ======= -->
+<div id="tab-adjust" class="p-6">
+  <p class="text-slate-400 text-sm mb-4">อัปโหลด Wallet Statement (.xlsx) จาก Makesend แล้วระบบจะแยก Wallet ทิพย์ ออกจากยอดปกติให้อัตโนมัติ</p>
+
+  <!-- Upload -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+    <div>
+      <div class="flex items-center mb-2">
+        <span class="step-num">1</span>
+        <span class="text-slate-200 text-sm font-semibold">Makesend Wallet Statement (.xlsx)</span>
+      </div>
+      <div class="upload-zone" id="adj-oz" onclick="document.getElementById('adj-oi').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+           ondrop="dropFile(event,'adj-oz',processStatement)">
+        <div>
+          <div class="text-3xl mb-2">📂</div>
+          <div class="text-slate-400 text-sm" id="adj-ol">คลิกหรือลากไฟล์ Makesend Wallet Statement มาวาง</div>
+          <div class="text-slate-600 text-xs mt-1">รองรับ .xlsx .xls</div>
+        </div>
+        <input type="file" id="adj-oi" accept=".xlsx,.xls" class="hidden" onchange="processStatement(this.files[0])">
+      </div>
+    </div>
+    <div>
+      <div class="flex items-center mb-2">
+        <span class="step-num">2</span>
+        <span class="text-slate-200 text-sm font-semibold">เลือก Sheet ที่มีข้อมูล Statement</span>
+      </div>
+      <div id="adj-sheet-wrap" class="hidden">
+        <select id="adj-sheet" class="form-input mb-3" onchange="loadSheet()">
+        </select>
+        <div class="text-slate-500 text-xs">ระบบจะหา Sheet แรกที่มีคอลัมน์ User ID และจำนวนอัตโนมัติ</div>
+      </div>
+      <div id="adj-sheet-placeholder" class="text-slate-600 text-sm pt-4">อัปโหลดไฟล์ก่อนเพื่อเลือก Sheet</div>
+
+      <div id="adj-run-wrap" class="hidden mt-4 flex gap-2">
+        <button class="run-btn flex-1" onclick="runReconcile()">⚡ Run Reconcile</button>
+        <button id="btn-refresh-reconcile" class="run-btn" onclick="refreshReconcile()" title="Reconcile ใหม่โดยไม่ต้องแนบไฟล์ใหม่"
+                style="background:#374151;padding:10px 16px;font-size:16px">🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary cards (hidden until run) -->
+  <div id="adj-summary" class="hidden mb-4">
+
+    <!-- Row 1: ยอดรวม -->
+    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-3">
+      <div class="sum-card" style="border-color:#475569">
+        <div class="text-slate-400 text-xs mb-1">รายการทั้งหมด</div>
+        <div class="text-white text-2xl font-bold" id="s-total-count">0</div>
+        <div class="text-slate-400 text-sm font-semibold mt-1" id="s-total-amt">฿0.00</div>
+      </div>
+      <div class="sum-card" style="border-color:#3b82f6">
+        <div class="text-blue-400 text-xs mb-1">💙 Wallet ทิพย์</div>
+        <div class="text-blue-300 text-2xl font-bold" id="s-tip-count">0</div>
+        <div class="text-blue-300 text-sm font-semibold mt-1" id="s-tip-amt">฿0.00</div>
+        <div class="text-blue-600 text-xs mt-0.5" id="s-tip-pct"></div>
+      </div>
+      <div class="sum-card" style="border-color:#64748b">
+        <div class="text-slate-400 text-xs mb-1">Regular (ลูกค้าทั่วไป)</div>
+        <div class="text-slate-200 text-2xl font-bold" id="s-reg-count">0</div>
+        <div class="text-slate-300 text-sm font-semibold mt-1" id="s-reg-amt">฿0.00</div>
+        <div class="text-slate-600 text-xs mt-0.5" id="s-reg-pct"></div>
+      </div>
+      <div class="sum-card" style="border-color:#22c55e">
+        <div class="text-green-400 text-xs mb-1">Credit Apply</div>
+        <div class="text-green-300 text-2xl font-bold" id="s-credit-count">0</div>
+        <div class="text-green-300 text-sm font-semibold mt-1" id="s-credit-amt">฿0.00</div>
+      </div>
+      <div class="sum-card" style="border-color:#ef4444">
+        <div class="text-red-400 text-xs mb-1">Credit Revoke</div>
+        <div class="text-red-300 text-2xl font-bold" id="s-revoke-count">0</div>
+        <div class="text-red-300 text-sm font-semibold mt-1" id="s-revoke-amt">฿0.00</div>
+      </div>
+    </div>
+
+    <!-- Duplicate warning -->
+    <div id="dup-warn" class="hidden mb-3 p-4 rounded-lg" style="background:#1c0a00;border:1px solid #c2410c">
+      <div class="flex items-center gap-2 mb-2">
+        <span style="font-size:16px">⚠️</span>
+        <span class="text-orange-300 text-sm font-bold">พบเลขอ้างอิงซ้ำ — ต้องตรวจสอบ</span>
+        <span class="text-orange-600 text-xs ml-1" id="dup-count-label"></span>
+      </div>
+      <div id="dup-list" class="grid grid-cols-1 lg:grid-cols-2 gap-2"></div>
+    </div>
+
+    <!-- Wallet ทิพย์ breakdown -->
+  </div>
+
+  <!-- Filters (hidden until run) -->
+  <div id="adj-filters" class="hidden mb-3 flex flex-wrap gap-2 items-center">
+    <span class="text-slate-500 text-xs">แสดง:</span>
+    <button class="filter-btn active" onclick="setFilter('all',this)">ทั้งหมด</button>
+    <button class="filter-btn" onclick="setFilter('tip',this)">💙 Wallet ทิพย์</button>
+    <button class="filter-btn" onclick="setFilter('reg',this)">Regular</button>
+    <button class="filter-btn" onclick="setFilter('credit',this)">Credit Apply</button>
+    <button class="filter-btn" onclick="setFilter('revoke',this)">Credit Revoke</button>
+    <button class="filter-btn" onclick="setFilter('refund',this)">คืนเงิน</button>
+    <button class="filter-btn" onclick="setFilter('other',this)">อื่นๆ</button>
+    <button id="filter-btn-dup" class="filter-btn hidden" onclick="setFilter('dup',this)"
+            style="border-color:#f87171;color:#fca5a5;background:#1c0a0a">⚠️ EX ซ้ำ <span id="dup-tab-count"></span></button>
+    <span class="ml-auto flex items-center gap-2">
+      <span class="text-slate-500 text-xs" id="adj-row-count"></span>
+      <button class="filter-btn" style="border-color:#6366f1;color:#a5b4fc" onclick="refreshReconcile()" title="Reconcile ใหม่โดยไม่ต้องแนบไฟล์ใหม่">🔄 Refresh</button>
+      <button class="filter-btn" style="border-color:#22c55e;color:#86efac" onclick="exportReconcileExcel()">📤 Export Excel</button>
+    </span>
+  </div>
+
+  <!-- Table -->
+  <div id="adj-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:60vh;overflow-y:auto">
+    <table class="w-full" style="border-collapse:collapse">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>วันที่/เวลา</th>
+          <th>เลขที่รายการ</th>
+          <th>User ID</th>
+          <th>ชื่อเจ้าของบัญชี</th>
+          <th>จำนวน (฿)</th>
+          <th>อ้างอิง</th>
+          <th>ประเภทรายการ</th>
+          <th>Wallet ทิพย์</th>
+          <th style="min-width:90px">ตรวจแล้ว</th>
+          <th style="min-width:180px">Note</th>
+        </tr>
+      </thead>
+      <tbody id="adj-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="adj-empty" class="hidden text-center py-12 text-slate-600 text-sm">ไม่มีรายการที่ตรงกับตัวกรองที่เลือก</div>
+</div>
+
+<!-- ======= TAB 2: WALLET ทิพย์ USERS ======= -->
+<div id="tab-users" class="p-6 hidden">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-white font-bold text-lg">👥 จัดการ User ID Wallet ทิพย์</h2>
+      <p class="text-slate-400 text-sm mt-1">User ID เหล่านี้คือลูกค้าเครดิต ที่เราเติม Credit เข้า Wallet และวางบิลตามรอบสัญญา — จะถูกแยกออกจากยอดบัญชีปกติในการ Reconcile</p>
+    </div>
+    <div class="text-right">
+      <div class="text-slate-500 text-xs">บันทึกใน Browser (localStorage)</div>
+      <div class="text-blue-400 text-xs mt-0.5" id="users-count-badge">0 users</div>
+    </div>
+  </div>
+
+  <!-- Add / Edit form -->
+  <div class="p-4 rounded-lg mb-5" style="background:#1e293b;border:1px solid #334155">
+    <div class="text-slate-300 text-sm font-semibold mb-3" id="form-title">➕ เพิ่ม User ID ใหม่</div>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-3">
+      <div>
+        <label class="text-slate-400 text-xs block mb-1">User ID <span class="text-red-400">*</span></label>
+        <input type="text" id="f-uid" class="form-input" placeholder="เช่น 13700" oninput="this.value=this.value.replace(/\D/g,'')">
+      </div>
+      <div>
+        <label class="text-slate-400 text-xs block mb-1">ชื่อ User / ชื่อบริษัท <span class="text-red-400">*</span></label>
+        <input type="text" id="f-name" class="form-input" placeholder="เช่น ABC Company">
+      </div>
+      <div>
+        <label class="text-slate-400 text-xs block mb-1">หมายเหตุ (เช่น วันที่เริ่มสัญญา)</label>
+        <input type="text" id="f-notes" class="form-input" placeholder="เช่น สัญญาเริ่ม 01/01/2026">
+      </div>
+      <div class="flex items-end gap-2">
+        <button class="run-btn flex-1" onclick="saveUser()" id="save-btn">บันทึก</button>
+        <button class="filter-btn" onclick="cancelEdit()" id="cancel-btn" style="display:none;padding:8px 14px">ยกเลิก</button>
+      </div>
+    </div>
+    <div class="text-red-400 text-xs" id="form-err" style="display:none"></div>
+  </div>
+
+  <!-- Import hint -->
+  <div class="mb-3 flex gap-3 flex-wrap items-center">
+    <button class="filter-btn" onclick="exportUsers()">⬇ Export JSON</button>
+    <label class="filter-btn cursor-pointer">⬆ Import JSON <input type="file" class="hidden" accept=".json" onchange="importUsers(this)"></label>
+    <label class="filter-btn cursor-pointer" style="border-color:#22c55e;color:#86efac">📥 Import Excel (.xlsx)
+      <input type="file" class="hidden" accept=".xlsx,.xls" onchange="importUsersFromExcel(this)">
+    </label>
+    <button class="filter-btn" style="border-color:#22c55e;color:#86efac" onclick="exportUsersExcel()">📤 Export Excel</button>
+    <button class="filter-btn" style="border-color:#6366f1;color:#a5b4fc" onclick="refreshUsersTable()" title="รีเฟรชตารางหลังแก้ไข">🔄 Refresh</button>
+    <span class="relative ml-1">
+      <input type="text" id="users-search" class="form-input" placeholder="🔍 ค้นหา User ID / ชื่อ / หมายเหตุ"
+             oninput="renderUsersTable()" style="width:240px;padding-left:10px;font-size:12px">
+    </span>
+  </div>
+
+  <!-- Excel import sheet selector modal -->
+  <div id="xl-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.7)">
+    <div class="rounded-xl p-6 w-full max-w-md" style="background:#1e293b;border:1px solid #334155">
+      <div class="text-white font-bold text-base mb-1">📥 Import จาก Excel</div>
+      <div class="text-slate-400 text-sm mb-4">เลือก Sheet ที่มี User ID และชื่อ</div>
+      <div class="mb-3">
+        <label class="text-slate-400 text-xs block mb-1">Sheet</label>
+        <select id="xl-sheet" class="form-input"></select>
+      </div>
+      <div class="mb-3 grid grid-cols-3 gap-2">
+        <div>
+          <label class="text-slate-400 text-xs block mb-1">คอลัมน์ User ID</label>
+          <select id="xl-col-uid" class="form-input"></select>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs block mb-1">คอลัมน์ ชื่อ</label>
+          <select id="xl-col-name" class="form-input"></select>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs block mb-1">คอลัมน์ หมายเหตุ (ถ้ามี)</label>
+          <select id="xl-col-notes" class="form-input"></select>
+        </div>
+      </div>
+      <div class="text-slate-500 text-xs mb-4" id="xl-preview-info">—</div>
+      <div class="flex gap-2 justify-end">
+        <button class="filter-btn" onclick="closeXlModal()">ยกเลิก</button>
+        <button class="run-btn" style="padding:8px 20px;font-size:13px" onclick="confirmImportExcel()">นำเข้า</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users table -->
+  <div class="overflow-x-auto rounded-lg" style="max-height:55vh;overflow-y:auto">
+    <table class="w-full" style="border-collapse:collapse">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User ID</th>
+          <th>ชื่อ User / บริษัท</th>
+          <th>หมายเหตุ</th>
+          <th>เพิ่มเมื่อ</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="users-tbody"></tbody>
+    </table>
+  </div>
+  <div id="users-empty" class="text-center py-12 text-slate-600 text-sm">ยังไม่มี User ID Wallet ทิพย์ — เพิ่มจากฟอร์มด้านบน</div>
+</div>
+
+<!-- ======= TAB 3: INCOME BREAKDOWN ======= -->
+<div id="tab-income" class="p-6 hidden">
+  <p class="text-slate-400 text-sm mb-4">อัปโหลด <strong class="text-white">MAKESEND Business Performance (.xlsx)</strong> — ระบบดึงข้อมูลจากชีท <strong class="text-white">Income Record</strong> กรองเฉพาะเดือนที่เลือก และแยก <span class="text-blue-400 font-semibold">ลูกค้าเครดิต (Wallet ทิพย์)</span> ออกอัตโนมัติจากรายการที่บันทึกในแท็บ Wallet ทิพย์ Users</p>
+
+  <!-- Upload + Month Select -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+    <div>
+      <div class="flex items-center mb-2">
+        <span class="step-num">1</span>
+        <span class="text-slate-200 text-sm font-semibold">MAKESEND Business Performance (.xlsx)</span>
+      </div>
+      <div class="upload-zone" id="inc-oz" onclick="document.getElementById('inc-oi').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+           ondrop="dropFile(event,'inc-oz',processIncomeFile)">
+        <div>
+          <div class="text-3xl mb-2">📂</div>
+          <div class="text-slate-400 text-sm" id="inc-ol">คลิกหรือลากไฟล์ MAKESEND Business Performance มาวาง</div>
+          <div class="text-slate-600 text-xs mt-1">รองรับ .xlsx .xls — ระบบอ่านชีท Income Record อัตโนมัติ</div>
+        </div>
+        <input type="file" id="inc-oi" accept=".xlsx,.xls" class="hidden" onchange="processIncomeFile(this.files[0])">
+      </div>
+    </div>
+    <div>
+      <div class="flex items-center mb-2">
+        <span class="step-num">2</span>
+        <span class="text-slate-200 text-sm font-semibold">เลือกเดือนที่ต้องการ</span>
+      </div>
+      <div id="inc-month-wrap" class="hidden">
+        <select id="inc-month" class="form-input mb-3" onchange="runIncomeBreakdown()"></select>
+        <div class="text-slate-500 text-xs">ระบบกรองเฉพาะเดือนที่เลือก — ตัดเดือนอื่น ปีอื่น ออกทั้งหมด</div>
+      </div>
+      <div id="inc-month-placeholder" class="text-slate-600 text-sm pt-4">อัปโหลดไฟล์ก่อนเพื่อเลือกเดือน</div>
+      <div id="inc-run-wrap" class="hidden mt-4">
+        <button id="btn-refresh-income" class="run-btn" onclick="refreshIncome(this)" title="คำนวณใหม่โดยไม่ต้องแนบไฟล์ใหม่"
+                style="background:#374151;padding:10px 16px;font-size:16px">🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div id="inc-summary" class="hidden mb-4">
+    <!-- Row 1: customer type -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+      <div class="sum-card" style="border-color:#475569">
+        <div class="text-slate-400 text-xs mb-1">รายการทั้งหมด</div>
+        <div class="text-white text-2xl font-bold" id="is-total-count">0</div>
+        <div class="text-slate-300 text-sm font-semibold mt-1" id="is-total-income">฿0.00</div>
+        <div class="text-slate-600 text-xs mt-0.5">ค่าส่ง + COD Fee</div>
+      </div>
+      <div class="sum-card" style="border-color:#64748b">
+        <div class="text-slate-400 text-xs mb-1">ลูกค้าทั่วไป (non-invoice)</div>
+        <div class="text-slate-200 text-2xl font-bold" id="is-reg-count">0</div>
+        <div class="text-slate-300 text-sm font-semibold mt-1" id="is-reg-income">฿0.00</div>
+        <div class="text-slate-600 text-xs mt-0.5" id="is-reg-pct"></div>
+      </div>
+      <div class="sum-card" style="border-color:#3b82f6">
+        <div class="text-blue-400 text-xs mb-1">💙 ลูกค้าเครดิต — Invoice (Wallet ทิพย์)</div>
+        <div class="text-blue-300 text-2xl font-bold" id="is-cred-count">0</div>
+        <div class="text-blue-300 text-sm font-semibold mt-1" id="is-cred-income">฿0.00</div>
+        <div class="text-blue-600 text-xs mt-0.5" id="is-cred-pct"></div>
+      </div>
+    </div>
+    <!-- Row 2: payment method breakdown -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="sum-card" style="border-color:#7c3aed">
+        <div class="text-violet-400 text-xs mb-1">Promptpay</div>
+        <div class="text-violet-300 text-xl font-bold" id="is-pp-count">0</div>
+        <div class="text-violet-300 text-sm font-semibold mt-1" id="is-pp-income">฿0.00</div>
+      </div>
+      <div class="sum-card" style="border-color:#dc2626">
+        <div class="text-red-400 text-xs mb-1">Credit Card (บัตรเครดิต)</div>
+        <div class="text-red-300 text-xl font-bold" id="is-cc-count">0</div>
+        <div class="text-red-300 text-sm font-semibold mt-1" id="is-cc-income">฿0.00</div>
+      </div>
+      <div class="sum-card" style="border-color:#0284c7">
+        <div class="text-sky-400 text-xs mb-1">Wallet (เติมเงิน)</div>
+        <div class="text-sky-300 text-xl font-bold" id="is-wl-count">0</div>
+        <div class="text-sky-300 text-sm font-semibold mt-1" id="is-wl-income">฿0.00</div>
+      </div>
+      <div class="sum-card" style="border-color:#059669">
+        <div class="text-emerald-400 text-xs mb-1">Transfer (โอนธนาคาร)</div>
+        <div class="text-emerald-300 text-xl font-bold" id="is-tr-count">0</div>
+        <div class="text-emerald-300 text-sm font-semibold mt-1" id="is-tr-income">฿0.00</div>
+      </div>
+      <div class="sum-card" style="border-color:#b45309">
+        <div class="text-amber-400 text-xs mb-1">ค่าธรรมเนียมรวม</div>
+        <div class="text-amber-300 text-sm font-semibold mt-1" id="is-fee-total">฿0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter tabs + Export -->
+  <div id="inc-filters" class="hidden mb-3">
+    <!-- Row 1: type + status filters -->
+    <div class="flex flex-wrap gap-2 items-center mb-2">
+      <span class="text-slate-500 text-xs">ประเภท:</span>
+      <button class="filter-btn active" id="inc-type-all"    onclick="setIncomeFilter('all',this)">ทั้งหมด</button>
+      <button class="filter-btn"        id="inc-type-reg"    onclick="setIncomeFilter('reg',this)">ลูกค้าทั่วไป</button>
+      <button class="filter-btn"        id="inc-type-credit" onclick="setIncomeFilter('credit',this)">💙 Invoice (ทิพย์)</button>
+      <span class="text-slate-700 mx-1">|</span>
+      <span class="text-slate-500 text-xs">Status:</span>
+      <button class="filter-btn active" id="inc-st-all"   onclick="setIncomeStatus('all',this)">ทั้งหมด</button>
+      <button class="filter-btn"        id="inc-st-pp"    onclick="setIncomeStatus('promptpay',this)" style="border-color:#7c3aed;color:#c4b5fd">Promptpay</button>
+      <button class="filter-btn"        id="inc-st-cc"    onclick="setIncomeStatus('credit',this)"    style="border-color:#dc2626;color:#fca5a5">Credit Card</button>
+      <button class="filter-btn"        id="inc-st-wl"    onclick="setIncomeStatus('wallet',this)"    style="border-color:#0284c7;color:#7dd3fc">Wallet</button>
+      <button class="filter-btn"        id="inc-st-tr"    onclick="setIncomeStatus('transfer',this)"  style="border-color:#059669;color:#6ee7b7">Transfer</button>
+      <button class="filter-btn"        id="inc-st-inv"   onclick="setIncomeStatus('invoice',this)"   style="border-color:#3b82f6;color:#93c5fd">Invoice</button>
+    </div>
+    <!-- Row 2: search + count + buttons -->
+    <div class="flex flex-wrap gap-2 items-center">
+      <input type="text" id="inc-search" class="form-input" placeholder="🔍 ค้นหา System ID / ชื่อ / Invoice / Bill ID"
+             oninput="incomeSearch=this.value;renderIncomeTable()" style="width:320px;font-size:12px">
+      <span class="text-slate-500 text-xs" id="inc-row-count"></span>
+      <span class="ml-auto flex gap-2">
+        <button id="btn-refresh-income-bar" class="filter-btn" style="border-color:#6366f1;color:#a5b4fc" onclick="refreshIncome(this)">🔄 Refresh</button>
+        <button class="filter-btn" style="border-color:#22c55e;color:#86efac" onclick="exportIncomeExcel()">📤 Export Excel</button>
+      </span>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div id="inc-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:60vh;overflow-y:auto">
+    <table class="w-full" style="border-collapse:collapse">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>วันที่</th>
+          <th>Invoice / Reciept.</th>
+          <th>เลขที่ใบเสร็จ</th>
+          <th>Bill ID</th>
+          <th>System ID</th>
+          <th>ชื่อลูกค้า</th>
+          <th class="text-right">ค่าส่ง (฿)</th>
+          <th class="text-right">ค่าธรรมเนียม (฿)</th>
+          <th class="text-right">COD (฿)</th>
+          <th class="text-right">COD Fee (฿)</th>
+          <th class="text-right">รวม (฿)</th>
+          <th>Status</th>
+          <th>ประเภท</th>
+        </tr>
+      </thead>
+      <tbody id="inc-tbody"></tbody>
+    </table>
+  </div>
+  <div id="inc-empty" class="hidden text-center py-12 text-slate-600 text-sm">ไม่พบข้อมูลสำหรับเดือนที่เลือก</div>
+</div>
+
+<!-- ======= TAB 4: INCOME RECONCILE ======= -->
+<div id="tab-recon" class="hidden">
+  <!-- Sub-tab bar -->
+  <div id="recon-subtab-bar" class="px-6 pt-4 flex gap-0 flex-wrap" style="border-bottom:1px solid #334155;background:#0c1523">
+    <button class="tab-btn active" id="recon-btn-omise" onclick="reconSwitchTab('omise',this)">🔄 Omise Breakdown</button>
+    <button class="tab-btn" id="recon-btn-topup" onclick="reconSwitchTab('topup',this)">💳 Topup Reconcile</button>
+    <button class="tab-btn" id="recon-btn-walbal" onclick="reconSwitchTab('walbal',this)">🏦 Wallet Balance</button>
+    <button class="tab-btn" id="recon-btn-invoice" onclick="reconSwitchTab('invoice',this)">🏢 ต้องออกใบกำกับ</button>
+  </div>
+
+  <!-- ── SUB A: OMISE BREAKDOWN ── -->
+  <div id="recon-tab-omise" class="p-6">
+    <p class="text-slate-400 text-sm mb-4">จำแนก Omise Charges แต่ละรายการ → <span class="text-emerald-400">🚚 ค่าขนส่ง</span> / <span class="text-sky-400">💰 เติมเงิน</span> / <span class="text-purple-400">🏢 ต้องออกใบกำกับ</span></p>
+    <div class="grid gap-4 mb-4" style="grid-template-columns:1fr 1fr">
+      <div>
+        <p class="text-xs text-slate-400 mb-2 font-semibold">① Omise Charges (.xlsx)</p>
+        <label id="roa-omise-zone" class="upload-zone block cursor-pointer" style="min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="event.preventDefault();this.classList.remove('drag-over');roaLoadOmise(event.dataTransfer.files[0])">
+          <span id="roa-omise-lbl" class="text-slate-500 text-sm">📂 คลิกหรือลากไฟล์มาวาง</span>
+          <input type="file" class="hidden" accept=".xlsx,.xls" onchange="roaLoadOmise(this.files[0])">
+        </label>
+      </div>
+      <div>
+        <p class="text-xs text-slate-400 mb-2 font-semibold">② ข้อมูลการชำระเงินเติมเงิน (.xlsx)</p>
+        <label id="roa-topup-zone" class="upload-zone block cursor-pointer" style="min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="event.preventDefault();this.classList.remove('drag-over');roaLoadTopup(event.dataTransfer.files[0])">
+          <span id="roa-topup-lbl" class="text-slate-500 text-sm">📂 คลิกหรือลากไฟล์มาวาง</span>
+          <input type="file" class="hidden" accept=".xlsx,.xls" onchange="roaLoadTopup(this.files[0])">
+        </label>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 mb-4 flex-wrap">
+      <div class="text-sm px-4 py-2 rounded-lg" style="background:#1e293b;border:1px solid #334155">
+        <span class="text-slate-400">📈 Income Breakdown:</span>
+        <span id="roa-income-lbl" class="text-slate-500 ml-2">ยังไม่มีข้อมูล</span>
+      </div>
+      <button class="run-btn" onclick="roaRun()" id="roa-run-btn" style="background:#1d4ed8;padding:10px 24px;font-size:14px">🔍 Run Breakdown</button>
+      <button class="filter-btn" style="border-color:#22c55e;color:#86efac;margin-left:auto" onclick="roaExport()">📤 Export Excel</button>
+    </div>
+    <div id="roa-summary" class="hidden grid gap-3 mb-4" style="grid-template-columns:repeat(5,1fr)">
+      <div class="stat-card" style="border-color:#475569"><p class="stat-label">Omise ทั้งหมด</p><p class="stat-value text-white" id="roa-total">0</p><p class="stat-sub text-slate-400" id="roa-total-b">฿0</p></div>
+      <div class="stat-card" style="border-color:#16a34a"><p class="stat-label text-emerald-400">🚚 ค่าขนส่ง</p><p class="stat-value text-emerald-400" id="roa-transport">0</p><p class="stat-sub text-emerald-600" id="roa-transport-b">฿0</p></div>
+      <div class="stat-card" style="border-color:#0284c7"><p class="stat-label text-sky-400">💰 เติมเงิน</p><p class="stat-value text-sky-400" id="roa-topup-cnt">0</p><p class="stat-sub text-sky-600" id="roa-topup-b">฿0</p></div>
+      <div class="stat-card" style="border-color:#7c3aed"><p class="stat-label text-purple-400">🏢 ต้องออกใบกำกับ</p><p class="stat-value text-purple-400" id="roa-invoice">0</p><p class="stat-sub text-purple-600" id="roa-invoice-b">฿0</p></div>
+      <div class="stat-card" style="border-color:#ca8a04"><p class="stat-label text-amber-400">❓ ไม่ระบุ</p><p class="stat-value text-amber-400" id="roa-unknown">0</p><p class="stat-sub text-amber-600" id="roa-unknown-b">฿0</p></div>
+    </div>
+    <div id="roa-filters" class="hidden flex flex-wrap gap-2 items-center mb-3">
+      <button class="filter-btn active" id="roaf-all" onclick="roaSetFilter('all',this)">ทั้งหมด</button>
+      <button class="filter-btn" id="roaf-transport" onclick="roaSetFilter('transport',this)" style="border-color:#16a34a;color:#86efac">🚚 ค่าขนส่ง</button>
+      <button class="filter-btn" id="roaf-topup" onclick="roaSetFilter('topup',this)" style="border-color:#0284c7;color:#7dd3fc">💰 เติมเงิน</button>
+      <button class="filter-btn" id="roaf-invoice" onclick="roaSetFilter('invoice',this)" style="border-color:#7c3aed;color:#c4b5fd">🏢 ต้องออกใบกำกับ</button>
+      <button class="filter-btn" id="roaf-unknown" onclick="roaSetFilter('unknown',this)" style="border-color:#ca8a04;color:#fde68a">❓ ไม่ระบุ</button>
+      <span class="text-slate-500 text-xs ml-auto" id="roa-row-count"></span>
+    </div>
+    <div id="roa-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:55vh;overflow-y:auto">
+      <table class="w-full" style="border-collapse:collapse">
+        <thead><tr><th>#</th><th>วันที่</th><th>Charge ID</th><th>Bill ID</th><th>System ID</th><th>ชื่อลูกค้า</th><th class="text-right">ยอด (฿)</th><th>ประเภท</th><th>อ้างอิง</th></tr></thead>
+        <tbody id="roa-tbody"></tbody>
+      </table>
+    </div>
+    <div id="roa-empty" class="hidden text-center py-12 text-slate-600 text-sm">ไม่พบข้อมูล</div>
+  </div>
+
+  <!-- ── SUB B: TOPUP RECONCILE ── -->
+  <div id="recon-tab-topup" class="hidden p-6">
+    <p class="text-slate-400 text-sm mb-4">Reconcile ยอดเติมเงิน: <span class="text-sky-400">check_payment</span> กับ <span class="text-emerald-400">ข้อมูลการชำระเงินเติมเงิน</span></p>
+    <div class="grid gap-4 mb-4" style="grid-template-columns:1fr 1fr 1fr">
+      <div>
+        <p class="text-xs text-slate-400 mb-2 font-semibold">① check_payment (.xlsx)</p>
+        <label id="rbt-check-zone" class="upload-zone block cursor-pointer" style="min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="event.preventDefault();this.classList.remove('drag-over');rbtLoadCheck(event.dataTransfer.files[0])">
+          <span id="rbt-check-lbl" class="text-slate-500 text-sm">📂 คลิกหรือลากไฟล์มาวาง</span>
+          <input type="file" class="hidden" accept=".xlsx,.xls" onchange="rbtLoadCheck(this.files[0])">
+        </label>
+      </div>
+      <div>
+        <p class="text-xs text-slate-400 mb-2 font-semibold">② ข้อมูลการชำระเงินเติมเงิน (.xlsx)</p>
+        <label id="rbt-topup-zone" class="upload-zone block cursor-pointer" style="min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="event.preventDefault();this.classList.remove('drag-over');rbtLoadTopup(event.dataTransfer.files[0])">
+          <span id="rbt-topup-lbl" class="text-slate-500 text-sm">📂 คลิกหรือลากไฟล์มาวาง</span>
+          <input type="file" class="hidden" accept=".xlsx,.xls" onchange="rbtLoadTopup(this.files[0])">
+        </label>
+      </div>
+      <div>
+        <p class="text-xs text-slate-400 mb-2 font-semibold">③ TotalWalletStatement (.xlsx) <span class="text-slate-600">— optional fallback</span></p>
+        <label id="rbt-total-zone" class="upload-zone block cursor-pointer" style="min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="event.preventDefault();this.classList.remove('drag-over');rbtLoadTotal(event.dataTransfer.files[0])">
+          <span id="rbt-total-lbl" class="text-slate-500 text-sm">📂 คลิกหรือลากไฟล์มาวาง</span>
+          <input type="file" class="hidden" accept=".xlsx,.xls" onchange="rbtLoadTotal(this.files[0])">
+        </label>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 mb-4">
+      <button class="run-btn" onclick="rbtRun()" id="rbt-run-btn" style="background:#0369a1;padding:10px 24px;font-size:14px">🔍 Run Topup Reconcile</button>
+      <button class="filter-btn" style="border-color:#22c55e;color:#86efac;margin-left:auto" onclick="rbtExport()">📤 Export Excel</button>
+    </div>
+    <div id="rbt-summary" class="hidden grid gap-3 mb-4" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card" style="border-color:#475569"><p class="stat-label">check_payment ทั้งหมด</p><p class="stat-value text-white" id="rbt-total">0</p><p class="stat-sub text-slate-400" id="rbt-total-b">฿0</p></div>
+      <div class="stat-card" style="border-color:#16a34a"><p class="stat-label text-emerald-400">✅ Match</p><p class="stat-value text-emerald-400" id="rbt-match">0</p><p class="stat-sub text-emerald-600" id="rbt-match-b">฿0</p></div>
+      <div class="stat-card" style="border-color:#ca8a04"><p class="stat-label text-amber-400">⚠️ ไม่พบ</p><p class="stat-value text-amber-400" id="rbt-nf">0</p><p class="stat-sub text-amber-600" id="rbt-nf-b">฿0</p></div>
+      <div class="stat-card" style="border-color:#7c3aed"><p class="stat-label text-purple-400">💜 Wallet ทิพย์</p><p class="stat-value text-purple-400" id="rbt-tip">0</p><p class="stat-sub text-purple-600" id="rbt-tip-b">฿0</p></div>
+    </div>
+    <div id="rbt-filters" class="hidden flex flex-wrap gap-2 items-center mb-3">
+      <button class="filter-btn active" id="rbtf-all" onclick="rbtSetFilter('all',this)">ทั้งหมด</button>
+      <button class="filter-btn" id="rbtf-match" onclick="rbtSetFilter('match',this)" style="border-color:#16a34a;color:#86efac">✅ Match</button>
+      <button class="filter-btn" id="rbtf-nf" onclick="rbtSetFilter('nf',this)" style="border-color:#ca8a04;color:#fde68a">⚠️ ไม่พบ</button>
+      <button class="filter-btn" id="rbtf-tip" onclick="rbtSetFilter('tip',this)" style="border-color:#7c3aed;color:#c4b5fd">💜 Wallet ทิพย์</button>
+      <span class="text-slate-500 text-xs ml-auto" id="rbt-row-count"></span>
+    </div>
+    <div id="rbt-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:55vh;overflow-y:auto">
+      <table class="w-full" style="border-collapse:collapse">
+        <thead><tr><th>#</th><th>วันที่</th><th>Bill ID</th><th>User ID</th><th>ชื่อ</th><th>ธนาคาร</th><th class="text-right">ยอด check_payment (฿)</th><th>สถานะ Recon</th><th>แหล่ง Match</th></tr></thead>
+        <tbody id="rbt-tbody"></tbody>
+      </table>
+    </div>
+    <div id="rbt-empty" class="hidden text-center py-12 text-slate-600 text-sm">ไม่พบข้อมูล</div>
+  </div>
+
+  <!-- ── SUB C: WALLET BALANCE ── -->
+  <div id="recon-tab-walbal" class="hidden p-6">
+    <p class="text-slate-400 text-sm mb-4">แสดง Wallet Balance ของ Users ทั้งหมด จากไฟล์ <span class="text-white">WalletBalance.xlsx</span></p>
+    <div class="mb-4" style="max-width:380px">
+      <p class="text-xs text-slate-400 mb-2 font-semibold">① WalletBalance (.xlsx)</p>
+      <label id="rwb-zone" class="upload-zone block cursor-pointer" style="min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="event.preventDefault();this.classList.remove('drag-over');rwbLoad(event.dataTransfer.files[0])">
+        <span id="rwb-lbl" class="text-slate-500 text-sm">📂 คลิกหรือลากไฟล์มาวาง</span>
+        <input type="file" class="hidden" accept=".xlsx,.xls" onchange="rwbLoad(this.files[0])">
+      </label>
+    </div>
+    <div id="rwb-summary" class="hidden grid gap-3 mb-4" style="grid-template-columns:repeat(3,1fr);max-width:640px">
+      <div class="stat-card" style="border-color:#475569"><p class="stat-label">Users ทั้งหมด</p><p class="stat-value text-white" id="rwb-total">0</p></div>
+      <div class="stat-card" style="border-color:#0284c7"><p class="stat-label text-sky-400">Wallet รวม</p><p class="stat-value text-sky-400" id="rwb-bal">฿0</p></div>
+      <div class="stat-card" style="border-color:#7c3aed"><p class="stat-label text-purple-400">💜 Wallet ทิพย์</p><p class="stat-value text-purple-400" id="rwb-tip">0</p><p class="stat-sub text-purple-600" id="rwb-tip-b">฿0</p></div>
+    </div>
+    <div id="rwb-filters" class="hidden flex flex-wrap gap-2 items-center mb-3">
+      <button class="filter-btn active" id="rwbf-all" onclick="rwbSetFilter('all',this)">ทั้งหมด</button>
+      <button class="filter-btn" id="rwbf-tip" onclick="rwbSetFilter('tip',this)" style="border-color:#7c3aed;color:#c4b5fd">💜 Wallet ทิพย์</button>
+      <button class="filter-btn" id="rwbf-pos" onclick="rwbSetFilter('pos',this)" style="border-color:#16a34a;color:#86efac">มียอด &gt; 0</button>
+      <button class="filter-btn" id="rwbf-zero" onclick="rwbSetFilter('zero',this)" style="border-color:#475569;color:#94a3b8">ยอด = 0</button>
+      <span class="text-slate-500 text-xs ml-auto" id="rwb-row-count"></span>
+    </div>
+    <div id="rwb-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:60vh;overflow-y:auto">
+      <table class="w-full" style="border-collapse:collapse">
+        <thead><tr><th>#</th><th>User ID</th><th>ชื่อ</th><th class="text-right">Wallet Balance (฿)</th><th>Last Updated</th><th>หมายเหตุ</th></tr></thead>
+        <tbody id="rwb-tbody"></tbody>
+      </table>
+    </div>
+    <div id="rwb-empty" class="hidden text-center py-12 text-slate-600 text-sm">ไม่พบข้อมูล</div>
+  </div>
+
+  <!-- ── SUB D: ต้องออกใบกำกับ ── -->
+  <div id="recon-tab-invoice" class="hidden p-6">
+    <p class="text-slate-400 text-sm mb-4">รายชื่อบริษัทที่ต้องออกใบกำกับภาษี — Omise Charges จะดึงจาก Sub-tab Omise Breakdown</p>
+    <div class="mb-5 p-4 rounded-lg" style="background:#1e293b;border:1px solid #334155">
+      <p class="text-sm font-semibold text-slate-200 mb-3">⚙️ จัดการรายชื่อบริษัท</p>
+      <div class="flex gap-2 mb-3 flex-wrap">
+        <input type="text" id="sc-new-userid" placeholder="User ID (เช่น 7598)" class="text-sm px-3 py-2 rounded" style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;width:180px">
+        <input type="text" id="sc-new-name" placeholder="ชื่อบริษัท (เช่น แคร๊บเฮ้าส์ กรุ๊ป)" class="text-sm px-3 py-2 rounded" style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;flex:1;min-width:200px">
+        <button class="run-btn" onclick="scAdd()" style="background:#6d28d9;padding:8px 18px;font-size:13px">+ เพิ่ม</button>
+      </div>
+      <div id="sc-list-wrap" class="flex flex-wrap gap-2"></div>
+    </div>
+    <p class="text-sm text-slate-400 mb-3">Omise Charges จำแนกเป็น <span class="text-purple-400 font-semibold">ต้องออกใบกำกับ</span> (จาก Sub-tab Omise Breakdown)</p>
+    <div id="sc-charges-empty" class="text-center py-8 text-slate-600 text-sm">ยังไม่มีข้อมูล — Run Omise Breakdown ก่อน</div>
+    <div id="sc-charges-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:55vh;overflow-y:auto">
+      <table class="w-full" style="border-collapse:collapse">
+        <thead><tr><th>#</th><th>วันที่</th><th>Charge ID</th><th>Bill ID</th><th>User ID</th><th>ชื่อบริษัท</th><th class="text-right">ยอด Omise (฿)</th></tr></thead>
+        <tbody id="sc-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY REPORT TAB -->
+<div id="tab-monthly" class="hidden">
+  <div class="px-6 pt-4 flex gap-0 flex-wrap" style="border-bottom:1px solid #334155;background:#0c1523">
+    <button class="tab-btn active" onclick="mrSwitchTab('upload',this)">📤 อัปโหลด</button>
+    <button class="tab-btn" onclick="mrSwitchTab('charge',this)" id="mr-tab-btn-charge">💳 การรับชำระ</button>
+    <button class="tab-btn" onclick="mrSwitchTab('transfer',this)" id="mr-tab-btn-transfer">🏦 โอนมา Kbank</button>
+    <button class="tab-btn" onclick="mrSwitchTab('receipt',this)" id="mr-tab-btn-receipt">🧾 Receipt</button>
+    <button class="tab-btn" onclick="mrSwitchTab('refund',this)" id="mr-tab-btn-refund">↩ Refund</button>
+    <button class="tab-btn" onclick="mrSwitchTab('balance',this)" id="mr-tab-btn-balance">📊 Balance</button>
+    <button class="tab-btn" onclick="mrSwitchTab('summary',this)" id="mr-tab-btn-summary">📋 ยอดคงเหลือ</button>
+  </div>
+
+  <div id="mr-tab-upload" class="p-6">
+    <p class="text-slate-400 text-sm mb-5">อัปโหลดไฟล์ Omise Excel ทั้ง 5 ไฟล์ กรอกยอดยกมา แล้วกด <strong class="text-white">Generate Report</strong></p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+      <div>
+        <div class="text-slate-300 text-sm font-semibold mb-2">💳 Charge (การรับชำระ)</div>
+        <div class="upload-zone" id="mr-uz-charge" onclick="document.getElementById('mr-fi-charge').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+             ondrop="mrDropFile(event,'charge')">
+          <div><div class="text-xl mb-1">📂</div><div class="text-slate-400 text-xs" id="mr-lbl-charge">makesend-charge-created-*.xlsx</div></div>
+          <input type="file" id="mr-fi-charge" accept=".xlsx,.xls" class="hidden" onchange="mrLoadFile('charge',this.files[0])">
+        </div>
+      </div>
+      <div>
+        <div class="text-slate-300 text-sm font-semibold mb-2">🏦 Transfer (โอนมา Kbank)</div>
+        <div class="upload-zone" id="mr-uz-transfer" onclick="document.getElementById('mr-fi-transfer').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+             ondrop="mrDropFile(event,'transfer')">
+          <div><div class="text-xl mb-1">📂</div><div class="text-slate-400 text-xs" id="mr-lbl-transfer">makesend-transfer-created-*.xlsx</div></div>
+          <input type="file" id="mr-fi-transfer" accept=".xlsx,.xls" class="hidden" onchange="mrLoadFile('transfer',this.files[0])">
+        </div>
+      </div>
+      <div>
+        <div class="text-slate-300 text-sm font-semibold mb-2">🧾 Receipt</div>
+        <div class="upload-zone" id="mr-uz-receipt" onclick="document.getElementById('mr-fi-receipt').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+             ondrop="mrDropFile(event,'receipt')">
+          <div><div class="text-xl mb-1">📂</div><div class="text-slate-400 text-xs" id="mr-lbl-receipt">makesend-receipt-created-*.xlsx</div></div>
+          <input type="file" id="mr-fi-receipt" accept=".xlsx,.xls" class="hidden" onchange="mrLoadFile('receipt',this.files[0])">
+        </div>
+      </div>
+      <div>
+        <div class="text-slate-300 text-sm font-semibold mb-2">↩ Refund</div>
+        <div class="upload-zone" id="mr-uz-refund" onclick="document.getElementById('mr-fi-refund').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+             ondrop="mrDropFile(event,'refund')">
+          <div><div class="text-xl mb-1">📂</div><div class="text-slate-400 text-xs" id="mr-lbl-refund">makesend-refund-created-*.xlsx</div></div>
+          <input type="file" id="mr-fi-refund" accept=".xlsx,.xls" class="hidden" onchange="mrLoadFile('refund',this.files[0])">
+        </div>
+      </div>
+      <div>
+        <div class="text-slate-300 text-sm font-semibold mb-2">📊 Balance Transaction</div>
+        <div class="upload-zone" id="mr-uz-balance" onclick="document.getElementById('mr-fi-balance').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')"
+             ondrop="mrDropFile(event,'balance')">
+          <div><div class="text-xl mb-1">📂</div><div class="text-slate-400 text-xs" id="mr-lbl-balance">makesend-balancetransaction-*.xlsx</div></div>
+          <input type="file" id="mr-fi-balance" accept=".xlsx,.xls" class="hidden" onchange="mrLoadFile('balance',this.files[0])">
+        </div>
+      </div>
+      <div class="flex flex-col gap-3 justify-center">
+        <div>
+          <label class="text-slate-300 text-sm font-semibold block mb-1">เดือน / ปี (ชื่อรายงาน)</label>
+          <input type="text" id="mr-inp-month" placeholder="เมษายน 2026" class="w-full" value="">
+        </div>
+        <div>
+          <label class="text-slate-300 text-sm font-semibold block mb-1">⚠ ยอดยกมาจากเดือนที่แล้ว (฿) <span class="text-red-400">*</span></label>
+          <input type="number" id="mr-inp-prevbal" placeholder="300546.61" class="w-full" step="0.01" value="" style="border-color:#f59e0b">
+        </div>
+        <div>
+          <label class="text-slate-300 text-sm font-semibold block mb-1">✅ ยอดยืนยันจาก Omise PDF (Balance Confirmation)</label>
+          <input type="number" id="mr-inp-confirmed" placeholder="299842.61" class="w-full" step="0.01" value="" style="border-color:#22c55e">
+          <div class="text-slate-500 text-xs mt-1">ใส่ยอดจาก Balance Confirmation Letter เพื่อ reconcile</div>
+        </div>
+        <div>
+          <label class="text-slate-300 text-sm font-semibold block mb-1">ชื่อไฟล์ Output</label>
+          <input type="text" id="mr-inp-fname" placeholder="makesend-report-apr2026" class="w-full" value="makesend-report-apr2026">
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 mt-2">
+      <button class="run-btn" onclick="mrGenerate()">▶ Generate Report</button>
+      <button class="run-btn" onclick="mrReprocess()" style="background:#7c3aed" title="ประมวลผลไฟล์ที่โหลดไว้แล้วใหม่ โดยไม่ต้องอัปโหลดซ้ำ">🔄 Refresh</button>
+      <span id="mr-gen-status" class="text-slate-400 text-sm"></span>
+    </div>
+    <div id="mr-upload-progress" class="mt-4 hidden">
+      <div class="text-slate-400 text-xs mb-2">ไฟล์ที่โหลดแล้ว:</div>
+      <div id="mr-upload-list" class="flex flex-wrap gap-2"></div>
+    </div>
+  </div>
+
+  <div id="mr-tab-charge"   class="p-6 hidden"><div id="mr-ct-charge"></div></div>
+  <div id="mr-tab-transfer" class="p-6 hidden"><div id="mr-ct-transfer"></div></div>
+  <div id="mr-tab-receipt"  class="p-6 hidden"><div id="mr-ct-receipt"></div></div>
+  <div id="mr-tab-refund"   class="p-6 hidden"><div id="mr-ct-refund"></div></div>
+  <div id="mr-tab-balance"  class="p-6 hidden"><div id="mr-ct-balance"></div></div>
+  <div id="mr-tab-summary" class="p-6 hidden">
+    <div id="mr-ct-summary"><p class="text-slate-500 text-sm">กรุณา Generate Report ก่อน</p></div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let workbook = null;
+let allRows = [];
+let currentFilter = 'all';
+let editingIndex = -1;
+let dupExKeys = new Set();
+
+// ===== TAB SWITCHING =====
+function switchTab(tab, btn) {
+  // Scope to outer tab bar only so inner MR sub-tabs are not affected
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-adjust').classList.toggle('hidden', tab !== 'adjust');
+  document.getElementById('tab-users').classList.toggle('hidden', tab !== 'users');
+  document.getElementById('tab-income').classList.toggle('hidden', tab !== 'income');
+  document.getElementById('tab-recon').classList.toggle('hidden', tab !== 'recon');
+  document.getElementById('tab-monthly').classList.toggle('hidden', tab !== 'monthly');
+  if (tab === 'users') renderUsersTable();
+  if (tab === 'recon') updateReconIncomeStatus();
+}
+
+// ===== DRAG & DROP =====
+function dropFile(evt, zoneId, handler) {
+  evt.preventDefault();
+  document.getElementById(zoneId).classList.remove('drag-over');
+  const file = evt.dataTransfer.files[0];
+  if (file) handler(file);
+}
+
+// ===== WALLET ทิพย์ USER LIST (localStorage) =====
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem('ms_wallet_tip_users') || '[]'); } catch(e) { return []; }
+}
+function saveUsers(arr) {
+  localStorage.setItem('ms_wallet_tip_users', JSON.stringify(arr));
+}
+function isWalletTip(userId) {
+  const uid = String(userId).trim();
+  return getUsers().some(u => String(u.userId).trim() === uid);
+}
+function getWalletTipName(userId) {
+  const uid = String(userId).trim();
+  const u = getUsers().find(u => String(u.userId).trim() === uid);
+  return u ? u.name : null;
+}
+
+function renderUsersTable() {
+  const users = getUsers();
+  const tbody = document.getElementById('users-tbody');
+  const empty = document.getElementById('users-empty');
+  const q = (document.getElementById('users-search')?.value || '').toLowerCase().trim();
+
+  document.getElementById('users-count-badge').textContent = users.length + ' users';
+
+  if (users.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    empty.textContent = 'ยังไม่มี User ID Wallet ทิพย์ — เพิ่มจากฟอร์มด้านบน';
+    return;
+  }
+
+  const filtered = users.map((u, i) => ({u, i})).filter(({u}) =>
+    !q ||
+    u.userId.includes(q) ||
+    u.name.toLowerCase().includes(q) ||
+    (u.notes || '').toLowerCase().includes(q)
+  );
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    empty.textContent = `ไม่พบรายการที่ตรงกับ "${q}"`;
+    return;
+  }
+
+  empty.classList.add('hidden');
+  tbody.innerHTML = filtered.map(({u, i}) => `
+    <tr>
+      <td class="text-slate-500">${i+1}</td>
+      <td><span class="font-mono text-blue-300">${escHtml(u.userId)}</span></td>
+      <td class="text-slate-200 font-medium">${escHtml(u.name)}</td>
+      <td class="text-slate-400">${escHtml(u.notes || '—')}</td>
+      <td class="text-slate-500">${u.addedAt || '—'}</td>
+      <td class="whitespace-nowrap">
+        <button class="edit-btn mr-1" onclick="startEdit(${i})">แก้ไข</button>
+        <button class="del-btn" onclick="deleteUser(${i})">ลบ</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function saveUser() {
+  const uid = document.getElementById('f-uid').value.trim();
+  const name = document.getElementById('f-name').value.trim();
+  const notes = document.getElementById('f-notes').value.trim();
+  const errEl = document.getElementById('form-err');
+
+  if (!uid) { errEl.textContent = 'กรุณาระบุ User ID'; errEl.style.display='block'; return; }
+  if (!name) { errEl.textContent = 'กรุณาระบุชื่อ User'; errEl.style.display='block'; return; }
+  errEl.style.display = 'none';
+
+  const users = getUsers();
+
+  if (editingIndex >= 0) {
+    users[editingIndex] = { userId: uid, name, notes, addedAt: users[editingIndex].addedAt };
+    editingIndex = -1;
+  } else {
+    if (users.some(u => String(u.userId).trim() === uid)) {
+      errEl.textContent = 'User ID นี้มีอยู่แล้ว'; errEl.style.display='block'; return;
+    }
+    const now = new Date();
+    const addedAt = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
+    users.push({ userId: uid, name, notes, addedAt });
+  }
+
+  saveUsers(users);
+  cancelEdit();
+  renderUsersTable();
+  if (allRows.length > 0) runReconcile();
+}
+
+function startEdit(i) {
+  const u = getUsers()[i];
+  document.getElementById('f-uid').value = u.userId;
+  document.getElementById('f-name').value = u.name;
+  document.getElementById('f-notes').value = u.notes || '';
+  document.getElementById('form-title').textContent = '✏️ แก้ไข User ID ' + u.userId;
+  document.getElementById('save-btn').textContent = 'บันทึกการแก้ไข';
+  document.getElementById('cancel-btn').style.display = '';
+  editingIndex = i;
+}
+
+function cancelEdit() {
+  document.getElementById('f-uid').value = '';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('form-title').textContent = '➕ เพิ่ม User ID ใหม่';
+  document.getElementById('save-btn').textContent = 'บันทึก';
+  document.getElementById('cancel-btn').style.display = 'none';
+  document.getElementById('form-err').style.display = 'none';
+  editingIndex = -1;
+}
+
+function deleteUser(i) {
+  const users = getUsers();
+  const u = users[i];
+  if (!confirm('ลบ User ID ' + u.userId + ' (' + u.name + ') ออกจากรายการ Wallet ทิพย์?')) return;
+  users.splice(i, 1);
+  saveUsers(users);
+  renderUsersTable();
+  if (allRows.length > 0) runReconcile();
+}
+
+function clearAllUsers() {
+  if (!confirm('ล้าง User ID Wallet ทิพย์ทั้งหมด? ไม่สามารถย้อนกลับได้')) return;
+  saveUsers([]);
+  renderUsersTable();
+  if (allRows.length > 0) runReconcile();
+}
+
+function exportUsers() {
+  const data = JSON.stringify(getUsers(), null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ms_wallet_tip_users.json';
+  a.click();
+}
+
+function importUsers(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const arr = JSON.parse(e.target.result);
+      if (!Array.isArray(arr)) throw new Error('invalid');
+      const existing = getUsers();
+      let added = 0;
+      arr.forEach(u => {
+        if (u.userId && u.name && !existing.some(x => String(x.userId) === String(u.userId))) {
+          existing.push({ userId: String(u.userId), name: u.name, notes: u.notes || '', addedAt: u.addedAt || '—' });
+          added++;
+        }
+      });
+      saveUsers(existing);
+      renderUsersTable();
+      if (allRows.length > 0) runReconcile();
+      alert('นำเข้าสำเร็จ: เพิ่ม ' + added + ' รายการ');
+    } catch(err) {
+      alert('ไฟล์ JSON ไม่ถูกต้อง');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ===== IMPORT USERS FROM EXCEL =====
+let xlWorkbook = null;
+
+function importUsersFromExcel(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      xlWorkbook = XLSX.read(e.target.result, {type:'array'});
+      openXlModal();
+    } catch(err) {
+      alert('อ่านไฟล์ Excel ไม่ได้: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function openXlModal() {
+  const sheetSel = document.getElementById('xl-sheet');
+  sheetSel.innerHTML = xlWorkbook.SheetNames.map((n,i) => `<option value="${i}">${n}</option>`).join('');
+
+  // Auto-select sheet with "wallet" or "ID" in name
+  const autoIdx = xlWorkbook.SheetNames.findIndex(n => /wallet|id/i.test(n));
+  if (autoIdx >= 0) sheetSel.value = autoIdx;
+
+  updateXlColOptions();
+  sheetSel.onchange = updateXlColOptions;
+  document.getElementById('xl-modal').classList.remove('hidden');
+}
+
+function updateXlColOptions() {
+  const sheetIdx = parseInt(document.getElementById('xl-sheet').value);
+  const sheet = xlWorkbook.Sheets[xlWorkbook.SheetNames[sheetIdx]];
+  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', blankrows:false});
+
+  // Find header row (first row with content)
+  let headerRow = rows[0] || [];
+  const colLetters = headerRow.map((h, i) => {
+    const letter = String.fromCharCode(65 + i);
+    return `<option value="${i}">${letter}: ${String(h).substring(0,20) || '(ว่าง)'}</option>`;
+  });
+  const noneOpt = '<option value="-1">— ไม่มี —</option>';
+
+  ['xl-col-uid','xl-col-name','xl-col-notes'].forEach(id => {
+    document.getElementById(id).innerHTML = (id === 'xl-col-notes' ? noneOpt : '') + colLetters.join('');
+  });
+  // default หมายเหตุ = ไม่มี
+  document.getElementById('xl-col-notes').value = '-1';
+
+  // Auto-detect columns
+  headerRow.forEach((h, i) => {
+    const hh = String(h).toLowerCase();
+    if (/user\s*id/i.test(h) || hh === 'user id') document.getElementById('xl-col-uid').value = i;
+    if (/ชื่อ|name/i.test(hh)) document.getElementById('xl-col-name').value = i;
+    if (/หมายเหตุ|note|remark/i.test(hh)) document.getElementById('xl-col-notes').value = i;
+  });
+
+  // Preview count
+  const dataRows = rows.slice(1).filter(r => r.some(c => c !== ''));
+  document.getElementById('xl-preview-info').textContent = `พบข้อมูล ${dataRows.length} แถว (ไม่นับ header)`;
+}
+
+function closeXlModal() {
+  document.getElementById('xl-modal').classList.add('hidden');
+  xlWorkbook = null;
+}
+
+function confirmImportExcel() {
+  const sheetIdx = parseInt(document.getElementById('xl-sheet').value);
+  const colUid = parseInt(document.getElementById('xl-col-uid').value);
+  const colName = parseInt(document.getElementById('xl-col-name').value);
+  const colNotes = parseInt(document.getElementById('xl-col-notes').value);
+
+  if (isNaN(colUid) || isNaN(colName)) { alert('กรุณาเลือกคอลัมน์ User ID และชื่อ'); return; }
+
+  const sheet = xlWorkbook.Sheets[xlWorkbook.SheetNames[sheetIdx]];
+  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', blankrows:false});
+
+  const existing = getUsers();
+  let added = 0, skipped = 0;
+  const now = new Date();
+  const addedAt = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
+
+  rows.slice(1).forEach(row => {
+    const uid = String(row[colUid] ?? '').trim();
+    const name = String(row[colName] ?? '').trim();
+    if (!uid || !name || !/^\d+$/.test(uid)) return;
+    if (existing.some(x => String(x.userId).trim() === uid)) { skipped++; return; }
+    const notes = colNotes >= 0 ? String(row[colNotes] ?? '').trim() : '';
+    existing.push({ userId: uid, name, notes, addedAt });
+    added++;
+  });
+
+  saveUsers(existing);
+  closeXlModal();
+  renderUsersTable();
+  if (allRows.length > 0) runReconcile();
+  alert(`นำเข้าสำเร็จ!\nเพิ่มใหม่: ${added} รายการ\nข้ามซ้ำ: ${skipped} รายการ`);
+}
+
+// ===== EXCEL PROCESSING =====
+function processStatement(file) {
+  const zone = document.getElementById('adj-oz');
+  const label = document.getElementById('adj-ol');
+  label.textContent = 'กำลังอ่านไฟล์...';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      workbook = XLSX.read(e.target.result, {type:'array', cellDates:true});
+      zone.classList.add('done');
+      label.textContent = '✓ ' + file.name;
+
+      const sheetSel = document.getElementById('adj-sheet');
+      sheetSel.innerHTML = workbook.SheetNames.map((n,i) => `<option value="${i}">${n}</option>`).join('');
+      document.getElementById('adj-sheet-wrap').classList.remove('hidden');
+      document.getElementById('adj-sheet-placeholder').classList.add('hidden');
+      document.getElementById('adj-run-wrap').classList.remove('hidden');
+
+      autoSelectSheet();
+    } catch(err) {
+      label.textContent = '❌ อ่านไฟล์ไม่ได้: ' + err.message;
+      zone.classList.remove('done');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function autoSelectSheet() {
+  if (!workbook) return;
+  const sel = document.getElementById('adj-sheet');
+  const idx = workbook.SheetNames.findIndex(n => /statement/i.test(n));
+  if (idx >= 0) sel.value = idx;
+}
+
+function loadSheet() {}
+
+function runReconcile() {
+  if (!workbook) { alert('กรุณาอัปโหลดไฟล์ก่อน'); return; }
+  const sheetIdx = parseInt(document.getElementById('adj-sheet').value);
+  const sheetName = workbook.SheetNames[sheetIdx];
+  const sheet = workbook.Sheets[sheetName];
+  const rawData = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
+
+  if (rawData.length < 2) { alert('Sheet นี้ไม่มีข้อมูล'); return; }
+
+  let headerRowIdx = 0;
+  let headers = [];
+  for (let r = 0; r < Math.min(5, rawData.length); r++) {
+    const row = rawData[r].map(c => String(c).trim());
+    if (row.some(c => /user\s*id/i.test(c) || c === 'User ID')) {
+      headerRowIdx = r;
+      headers = row;
+      break;
+    }
+  }
+  if (headers.length === 0) headers = rawData[0].map(c => String(c).trim());
+
+  const colMap = {};
+  headers.forEach((h, i) => {
+    const hh = String(h).toLowerCase().trim();
+    if (/วันที่|date|time/.test(hh)) colMap.date = i;
+    else if (/เลขที่รายการ|transaction|txn/.test(hh)) colMap.txnNo = i;
+    else if (/ประเภท|type/.test(hh)) colMap.type = i;
+    else if (/ช่องทาง|channel/.test(hh)) colMap.channel = i;
+    else if (/user\s*id/i.test(h)) colMap.userId = i;
+    else if (/ชื่อ|name|account/.test(hh)) colMap.name = i;
+    else if (/จำนวน|amount/.test(hh)) colMap.amount = i;
+    else if (/อ้างอิง|reference|ref/.test(hh)) colMap.ref = i;
+    else if (/เลขที่บิล|bill/.test(hh)) colMap.bill = i;
+  });
+
+  allRows = [];
+  for (let r = headerRowIdx + 1; r < rawData.length; r++) {
+    const row = rawData[r];
+    if (!row || row.every(c => c === '' || c === null || c === undefined)) continue;
+
+    const userId = String(row[colMap.userId] ?? '').trim();
+    const amount = parseFloat(String(row[colMap.amount] ?? '0').replace(/,/g, '')) || 0;
+    const ref = String(row[colMap.ref] ?? '').trim();
+    const refType = classifyRef(ref, amount);
+    const tip = isWalletTip(userId);
+    const tipName = getWalletTipName(userId);
+
+    allRows.push({
+      date: formatCellDate(row[colMap.date ?? 0]),
+      txnNo: String(row[colMap.txnNo] ?? '').trim(),
+      type: String(row[colMap.type] ?? '').trim(),
+      channel: String(row[colMap.channel] ?? '').trim(),
+      userId,
+      name: String(row[colMap.name] ?? '').trim(),
+      amount,
+      ref,
+      bill: String(row[colMap.bill] ?? '').trim(),
+      refType,
+      isTip: tip,
+      tipName,
+    });
+  }
+
+  updateSummary();
+  renderTable();
+}
+
+function classifyRef(ref, amount) {
+  if (/credit\s*revoke/i.test(ref) || amount < 0) return 'revoke';
+  if (/credit\s*apply/i.test(ref)) return 'credit';
+  if (/คืนเงิน|คืนค่า|คืนส่วนต่าง|refund/i.test(ref)) return 'refund';
+  return 'other';
+}
+
+function formatCellDate(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    const d = val.getDate().toString().padStart(2,'0');
+    const m = (val.getMonth()+1).toString().padStart(2,'0');
+    const y = val.getFullYear();
+    const hh = val.getHours().toString().padStart(2,'0');
+    const mm = val.getMinutes().toString().padStart(2,'0');
+    return `${d}/${m}/${y} ${hh}:${mm}`;
+  }
+  return String(val).trim();
+}
+
+function fmt(n) {
+  return n.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function updateSummary() {
+  const tipRows    = allRows.filter(r => r.isTip);
+  const regRows    = allRows.filter(r => !r.isTip && r.refType !== 'credit' && r.refType !== 'revoke');
+  const creditRows = allRows.filter(r => r.refType === 'credit');
+  const revokeRows = allRows.filter(r => r.refType === 'revoke');
+  const refundRows = allRows.filter(r => r.refType === 'refund');
+  const sum = rows => rows.reduce((a,r) => a + r.amount, 0);
+
+  const totalAmt  = sum(allRows);
+  const tipAmt    = sum(tipRows);
+  const regAmt    = sum(regRows);
+  const pct = (n, d) => d ? (n/d*100).toFixed(1) + '%' : '0%';
+
+  // Cards
+  document.getElementById('s-total-count').textContent = allRows.length;
+  document.getElementById('s-total-amt').textContent   = '฿' + fmt(totalAmt);
+  document.getElementById('s-tip-count').textContent   = tipRows.length;
+  document.getElementById('s-tip-amt').textContent     = '฿' + fmt(tipAmt);
+  document.getElementById('s-tip-pct').textContent     = pct(tipAmt, totalAmt) + ' ของยอดรวม';
+  document.getElementById('s-reg-count').textContent   = regRows.length;
+  document.getElementById('s-reg-amt').textContent     = '฿' + fmt(regAmt);
+  document.getElementById('s-reg-pct').textContent     = pct(regAmt, totalAmt) + ' ของยอดรวม';
+  document.getElementById('s-credit-count').textContent = creditRows.length;
+  document.getElementById('s-credit-amt').textContent   = '฿' + fmt(sum(creditRows));
+  document.getElementById('s-revoke-count').textContent = revokeRows.length;
+  document.getElementById('s-revoke-amt').textContent   = '฿' + fmt(sum(revokeRows));
+
+  // ===== DUPLICATE REFERENCE DETECTION (EX... anywhere in ref) =====
+  const refMap = {};
+  allRows.forEach((r, idx) => {
+    const ref = r.ref.trim();
+    // extract EX... code from anywhere in string e.g. "คืนเงิน EXSS2604061025183"
+    const m = ref.match(/\b(EX[A-Z0-9]{6,})/i);
+    if (m) {
+      const exKey = m[1].toUpperCase();
+      if (!refMap[exKey]) refMap[exKey] = [];
+      refMap[exKey].push(idx);
+    }
+  });
+  const dups = Object.entries(refMap).filter(([,idxs]) => idxs.length > 1);
+
+  // update global dupExKeys for filter tab
+  dupExKeys = new Set(dups.map(([key]) => key));
+  const dupBtn = document.getElementById('filter-btn-dup');
+  const dupTabCount = document.getElementById('dup-tab-count');
+  if (dups.length > 0) {
+    const dupRowTotal = dups.reduce((a,[,v]) => a + v.length, 0);
+    dupTabCount.textContent = `(${dupRowTotal})`;
+    dupBtn.classList.remove('hidden');
+  } else {
+    dupBtn.classList.add('hidden');
+    dupTabCount.textContent = '';
+    if (currentFilter === 'dup') { currentFilter = 'all'; }
+  }
+
+  const dupWrap = document.getElementById('dup-warn');
+  const dupList = document.getElementById('dup-list');
+  if (dups.length > 0) {
+    const totalDupRows = dups.reduce((a,[,v]) => a + v.length, 0);
+    const totalDupAmt  = dups.reduce((a,[,idxs]) => a + idxs.reduce((s,i) => s + allRows[i].amount, 0), 0);
+    document.getElementById('dup-count-label').textContent =
+      `${dups.length} เลขอ้างอิง | ${totalDupRows} รายการ | ยอดรวมซ้ำ ฿${fmt(totalDupAmt)}`;
+
+    dupList.innerHTML = dups.map(([ref, idxs]) => {
+      const rows = idxs.map(i => allRows[i]);
+      const dupTotalAmt = rows.reduce((s,r) => s + r.amount, 0);
+      const rowSummary = rows.map(r =>
+        `<div style="background:#2a0e00;border:1px solid #7c2d12;border-radius:4px;padding:4px 8px;font-size:11px">
+          <span style="color:#94a3b8">${escHtml(r.date)}</span>
+          <span style="color:#64748b;margin:0 4px">|</span>
+          <span style="color:#cbd5e1">ID ${escHtml(r.userId)}</span>
+          <span style="color:#64748b;margin:0 4px">|</span>
+          <span style="color:#f97316;font-weight:600">${escHtml(r.name)}</span>
+          <span style="color:#64748b;margin:0 4px">|</span>
+          <span style="color:#fcd34d;font-weight:700">฿${fmt(r.amount)}</span>
+        </div>`
+      ).join('');
+      return `<div style="background:#1c0a00;border:1px solid #7c2d12;border-radius:8px;padding:10px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div>
+            <span style="color:#fb923c;font-size:12px;font-weight:700">📋 ${escHtml(ref)}</span>
+            <span style="color:#9a3412;font-size:11px;margin-left:6px">${idxs.length} รายการซ้ำ</span>
+          </div>
+          <div style="text-align:right">
+            <div style="color:#fbbf24;font-size:13px;font-weight:700">฿${fmt(dupTotalAmt)}</div>
+            <div style="color:#92400e;font-size:10px">ยอดรวม ${idxs.length} รายการ</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px">${rowSummary}</div>
+      </div>`;
+    }).join('');
+    dupWrap.classList.remove('hidden');
+  } else {
+    dupWrap.classList.add('hidden');
+  }
+
+
+  document.getElementById('adj-summary').classList.remove('hidden');
+  document.getElementById('adj-filters').classList.remove('hidden');
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function getFilteredRows() {
+  switch(currentFilter) {
+    case 'tip':    return allRows.filter(r => r.isTip);
+    case 'reg':    return allRows.filter(r => !r.isTip && r.refType !== 'credit' && r.refType !== 'revoke');
+    case 'credit': return allRows.filter(r => r.refType === 'credit');
+    case 'revoke': return allRows.filter(r => r.refType === 'revoke');
+    case 'refund': return allRows.filter(r => r.refType === 'refund');
+    case 'other':  return allRows.filter(r => !['credit','revoke','refund'].includes(r.refType));
+    case 'dup':    return allRows.filter(r => {
+      const m = r.ref.match(/\b(EX[A-Z0-9]{6,})/i);
+      return m && dupExKeys.has(m[1].toUpperCase());
+    });
+    default: return allRows;
+  }
+}
+
+function renderTable() {
+  const rows = getFilteredRows();
+  const tbody = document.getElementById('adj-tbody');
+  const tableWrap = document.getElementById('adj-table-wrap');
+  const emptyEl = document.getElementById('adj-empty');
+
+  document.getElementById('adj-row-count').textContent = rows.length + ' รายการ';
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '';
+    tableWrap.classList.add('hidden');
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+
+  emptyEl.classList.add('hidden');
+  tableWrap.classList.remove('hidden');
+
+  tbody.innerHTML = rows.map((r, i) => {
+    let rowClass = '';
+    if (r.isTip) rowClass = 'row-tip';
+    else if (r.refType === 'credit') rowClass = 'row-credit';
+    else if (r.refType === 'revoke') rowClass = 'row-revoke';
+    else if (r.refType === 'refund') rowClass = 'row-refund';
+
+    const noteData = getNoteData(r.txnNo);
+    const isChecked = noteData.checked;
+    const noteVal = noteData.note;
+
+    if (isChecked) rowClass += ' row-checked';
+
+    const amtColor = r.amount < 0 ? 'color:#fca5a5' : '';
+    const tipBadge = r.isTip
+      ? `<span class="badge-tip">💙 ${escHtml(r.tipName || 'Wallet ทิพย์')}</span>`
+      : `<span class="badge-reg">Regular</span>`;
+
+    let refBadge = '';
+    if (r.refType === 'credit') refBadge = '<span class="badge-credit">Credit Apply</span>';
+    else if (r.refType === 'revoke') refBadge = '<span class="badge-revoke">Credit Revoke</span>';
+    else if (r.refType === 'refund') refBadge = '<span class="badge-refund">คืนเงิน</span>';
+    else refBadge = '<span class="badge-reg">อื่นๆ</span>';
+
+    const checkCell = `<td style="text-align:center;vertical-align:middle;padding:4px 6px">
+         <label style="display:flex;flex-direction:column;align-items:center;cursor:pointer;gap:2px">
+           <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${escHtml(r.txnNo)}',this.checked)"
+             style="width:16px;height:16px;accent-color:#22c55e;cursor:pointer">
+           <span style="font-size:9px;${isChecked ? 'color:#22c55e' : 'color:#475569'}">${isChecked ? '✓ แล้ว' : 'ยังไม่'}</span>
+         </label>
+       </td>
+       <td style="vertical-align:middle;padding:4px 6px">
+         <input type="text" value="${escHtml(noteVal)}" placeholder="เพิ่ม note..."
+           onchange="saveNote('${escHtml(r.txnNo)}',this.value)"
+           style="background:#0f172a;border:1px solid ${noteVal ? '#3b82f6' : '#1e293b'};border-radius:4px;color:#cbd5e1;font-size:11px;padding:3px 6px;width:100%;min-width:160px;outline:none"
+           onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor=this.value?'#3b82f6':'#1e293b'">
+       </td>`;
+
+    return `<tr class="${rowClass}">
+      <td class="text-slate-500">${i+1}</td>
+      <td class="text-slate-400" style="white-space:nowrap">${escHtml(r.date)}</td>
+      <td class="text-slate-400 font-mono text-xs">${escHtml(r.txnNo)}</td>
+      <td><span class="font-mono text-xs ${r.isTip ? 'text-blue-300 font-bold' : 'text-slate-300'}">${escHtml(r.userId)}</span></td>
+      <td class="text-slate-200" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(r.name)}">${escHtml(r.name)}</td>
+      <td class="font-mono text-right" style="${amtColor}">${fmt(r.amount)}</td>
+      <td class="text-slate-400 text-xs" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(r.ref)}">${escHtml(r.ref)}</td>
+      <td>${refBadge}</td>
+      <td>${tipBadge}</td>
+      ${checkCell}
+    </tr>`;
+  }).join('');
+}
+
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== NOTE / CHECK (localStorage) =====
+function getAllNotes() {
+  try { return JSON.parse(localStorage.getItem('ms_reconcile_notes') || '{}'); } catch(e) { return {}; }
+}
+function getNoteData(txnNo) {
+  const all = getAllNotes();
+  return all[txnNo] || { checked: false, note: '' };
+}
+function toggleCheck(txnNo, checked) {
+  const all = getAllNotes();
+  if (!all[txnNo]) all[txnNo] = { checked: false, note: '' };
+  all[txnNo].checked = checked;
+  localStorage.setItem('ms_reconcile_notes', JSON.stringify(all));
+  renderTable();
+}
+function saveNote(txnNo, note) {
+  const all = getAllNotes();
+  if (!all[txnNo]) all[txnNo] = { checked: false, note: '' };
+  all[txnNo].note = note;
+  localStorage.setItem('ms_reconcile_notes', JSON.stringify(all));
+}
+
+// ===== REFRESH =====
+function refreshReconcile() {
+  if (!workbook) { alert('ยังไม่มีไฟล์ที่โหลดอยู่ — กรุณาอัปโหลดไฟล์ก่อน'); return; }
+  const btn = document.getElementById('btn-refresh-reconcile');
+  btn.innerHTML = '<span class="btn-spinning">🔄</span>';
+  btn.disabled = true;
+  setTimeout(() => {
+    runReconcile();
+    btn.innerHTML = '✅';
+    btn.style.background = '#166534';
+    setTimeout(() => {
+      btn.innerHTML = '🔄';
+      btn.style.background = '#374151';
+      btn.disabled = false;
+    }, 800);
+  }, 300);
+}
+
+function refreshUsersTable() {
+  renderUsersTable();
+  if (allRows.length > 0) runReconcile();
+}
+
+// ===== EXTRACT COMPANY FROM NOTES =====
+let extractCandidates = [];
+
+function detectCompany(notes) {
+  if (!notes || notes === '—') return null;
+
+  // Pattern 1: บริษัท ... จำกัด or จํากัด (+ optional trailing parenthetical like (มหาชน))
+  const p1 = notes.match(/^(บริษัท\s+[\s\S]+?จ[ำํ]กัด(?:\s*\([^)]*\))?)(\s*[\s\S]*)$/);
+  if (p1) return { company: p1[1].trim(), rest: p1[2].trim() };
+
+  // Pattern 2: บจก. or บจน. + name until stop keyword
+  const p2 = notes.match(/^(บจ[กน]\.?\s*(?:[^(]|\([^)]*\))+?)(?=\s+(?:สัญญา|เติม|Sale|ราคา|วันที่|ได้|Pos|POS|\d{1,2}[./]))([\s\S]*)$/);
+  if (p2) return { company: p2[1].trim(), rest: p2[2].trim() };
+
+  return null;
+}
+
+function openExtractModal() {
+  const users = getUsers();
+  extractCandidates = [];
+
+  users.forEach((u, i) => {
+    const result = detectCompany(u.notes);
+    if (result) {
+      extractCandidates.push({
+        index: i,
+        oldName: u.name,
+        newName: u.name + ' / ' + result.company,
+        company: result.company,
+        rest: result.rest,
+        checked: true,
+      });
+    }
+  });
+
+  const tbody = document.getElementById('extract-tbody');
+  const emptyEl = document.getElementById('extract-empty');
+
+  if (extractCandidates.length === 0) {
+    tbody.innerHTML = '';
+    emptyEl.classList.remove('hidden');
+  } else {
+    emptyEl.classList.add('hidden');
+    tbody.innerHTML = extractCandidates.map((c, ci) => `
+      <tr style="border-top:1px solid #334155">
+        <td style="padding:6px 8px;vertical-align:top"><input type="checkbox" class="extract-chk" data-ci="${ci}" checked onchange="updateExtractCount()"></td>
+        <td style="padding:6px 8px;vertical-align:top;font-size:12px">
+          <div class="text-slate-400 line-through text-xs">${escHtml(c.oldName)}</div>
+          <div class="text-emerald-300 font-medium">${escHtml(c.newName)}</div>
+        </td>
+        <td style="padding:6px 8px;vertical-align:top;font-size:12px">
+          <span style="background:#451a03;color:#fcd34d;padding:2px 6px;border-radius:4px">${escHtml(c.company)}</span>
+        </td>
+        <td style="padding:6px 8px;vertical-align:top;font-size:12px;color:#94a3b8;max-width:260px;word-break:break-word">${escHtml(c.rest) || '<span style="color:#475569;font-style:italic">ว่าง</span>'}</td>
+      </tr>
+    `).join('');
+  }
+
+  updateExtractCount();
+  document.getElementById('extract-modal').classList.remove('hidden');
+}
+
+function updateExtractCount() {
+  const checked = document.querySelectorAll('.extract-chk:checked').length;
+  document.getElementById('extract-count-label').textContent = `เลือก ${checked} / ${extractCandidates.length} รายการ`;
+  document.getElementById('extract-chk-all').checked = checked === extractCandidates.length && checked > 0;
+}
+
+function toggleAllExtract(val) {
+  document.querySelectorAll('.extract-chk').forEach(c => c.checked = val);
+  updateExtractCount();
+}
+
+function closeExtractModal() {
+  document.getElementById('extract-modal').classList.add('hidden');
+  extractCandidates = [];
+}
+
+function applyExtract() {
+  const users = getUsers();
+  let count = 0;
+  document.querySelectorAll('.extract-chk').forEach(chk => {
+    if (!chk.checked) return;
+    const ci = parseInt(chk.dataset.ci);
+    const c = extractCandidates[ci];
+    users[c.index].name = c.newName;
+    users[c.index].notes = c.rest;
+    count++;
+  });
+  saveUsers(users);
+  closeExtractModal();
+  renderUsersTable();
+  if (allRows.length > 0) runReconcile();
+  alert(`อัปเดตสำเร็จ ${count} รายการ`);
+}
+
+// ===== EXPORT RECONCILE EXCEL =====
+function exportReconcileExcel() {
+  if (allRows.length === 0) { alert('ยังไม่มีข้อมูล — กรุณา Run Reconcile ก่อน'); return; }
+
+  const wb = XLSX.utils.book_new();
+  const refTypeLabel = r => r.refType === 'credit' ? 'Credit Apply' : r.refType === 'revoke' ? 'Credit Revoke' : r.refType === 'refund' ? 'คืนเงิน' : 'อื่นๆ';
+  const nd = r => getNoteData(r.txnNo);
+
+  // Sheet 1: ข้อมูลทั้งหมด
+  const allHeader = ['#','วันที่/เวลา','เลขที่รายการ','User ID','ชื่อเจ้าของบัญชี','จำนวน (฿)','อ้างอิง','ประเภทรายการ','Wallet ทิพย์','ชื่อ Wallet ทิพย์','ตรวจแล้ว','Note'];
+  const allData = allRows.map((r, i) => {
+    const n = nd(r);
+    return [i+1, r.date, r.txnNo, r.userId, r.name, r.amount, r.ref,
+      refTypeLabel(r), r.isTip ? 'ใช่' : '', r.isTip ? (r.tipName || r.name) : '',
+      n.checked ? '✓' : '', n.note || ''];
+  });
+  const ws1 = XLSX.utils.aoa_to_sheet([allHeader, ...allData]);
+  ws1['!cols'] = [4,14,12,8,22,10,28,12,8,20,8,28].map(w => ({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws1, 'ทั้งหมด');
+
+  // Sheet 2: เฉพาะ Wallet ทิพย์
+  const tipRows = allRows.filter(r => r.isTip);
+  if (tipRows.length > 0) {
+    const tipHeader = ['#','วันที่/เวลา','เลขที่รายการ','User ID','ชื่อ Wallet ทิพย์','ชื่อในระบบ','จำนวน (฿)','อ้างอิง','ประเภทรายการ','ตรวจแล้ว','Note'];
+    const tipData = tipRows.map((r, i) => {
+      const n = nd(r);
+      return [i+1, r.date, r.txnNo, r.userId, r.tipName || r.name, r.name, r.amount, r.ref,
+        refTypeLabel(r), n.checked ? '✓' : '', n.note || ''];
+    });
+    const ws2 = XLSX.utils.aoa_to_sheet([tipHeader, ...tipData]);
+    ws2['!cols'] = [4,14,12,8,22,22,10,28,12,8,28].map(w => ({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws2, 'Wallet ทิพย์');
+  }
+
+  // Sheet 3: Regular เท่านั้น
+  const regRows = allRows.filter(r => !r.isTip && r.refType !== 'credit' && r.refType !== 'revoke');
+  if (regRows.length > 0) {
+    const regHeader = ['#','วันที่/เวลา','เลขที่รายการ','User ID','ชื่อเจ้าของบัญชี','จำนวน (฿)','อ้างอิง','ประเภทรายการ','ตรวจแล้ว','Note'];
+    const regData = regRows.map((r, i) => {
+      const n = nd(r);
+      return [i+1, r.date, r.txnNo, r.userId, r.name, r.amount, r.ref,
+        refTypeLabel(r), n.checked ? '✓' : '', n.note || ''];
+    });
+    const ws3 = XLSX.utils.aoa_to_sheet([regHeader, ...regData]);
+    ws3['!cols'] = [4,14,12,8,22,10,28,12,8,28].map(w => ({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws3, 'Regular');
+  }
+
+  // Sheet 4: EX ซ้ำ (ถ้ามี)
+  if (dupExKeys.size > 0) {
+    const dupRows = allRows.filter(r => { const m = r.ref.match(/\b(EX[A-Z0-9]{6,})/i); return m && dupExKeys.has(m[1].toUpperCase()); });
+    const dupHeader = ['#','วันที่/เวลา','เลขที่รายการ','User ID','ชื่อเจ้าของบัญชี','จำนวน (฿)','อ้างอิง','EX Reference','ตรวจแล้ว','Note'];
+    const dupData = dupRows.map((r, i) => {
+      const m = r.ref.match(/\b(EX[A-Z0-9]{6,})/i);
+      const n = nd(r);
+      return [i+1, r.date, r.txnNo, r.userId, r.name, r.amount, r.ref,
+        m ? m[1].toUpperCase() : '', n.checked ? '✓' : '', n.note || ''];
+    });
+    const ws5 = XLSX.utils.aoa_to_sheet([dupHeader, ...dupData]);
+    ws5['!cols'] = [4,14,12,8,22,10,28,20,8,28].map(w => ({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws5, 'EX ซ้ำ');
+  }
+
+  // Sheet 4: Summary
+  const sum = rows => rows.reduce((a,r) => a+r.amount, 0);
+  const creditRows = allRows.filter(r => r.refType === 'credit');
+  const revokeRows = allRows.filter(r => r.refType === 'revoke');
+  const summaryData = [
+    ['รายการ', 'จำนวนรายการ', 'ยอดรวม (฿)'],
+    ['ทั้งหมด', allRows.length, sum(allRows)],
+    ['Wallet ทิพย์', tipRows.length, sum(tipRows)],
+    ['Regular (ลูกค้าทั่วไป)', regRows.length, sum(regRows)],
+    ['Credit Apply', creditRows.length, sum(creditRows)],
+    ['Credit Revoke', revokeRows.length, sum(revokeRows)],
+  ];
+  const ws4 = XLSX.utils.aoa_to_sheet(summaryData);
+  ws4['!cols'] = [{wch:20},{wch:14},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, ws4, 'Summary');
+
+  const now = new Date();
+  const stamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`;
+  XLSX.writeFile(wb, `MS_WalletReconcile_adjust_${stamp}.xlsx`);
+}
+
+// ===== EXPORT USERS EXCEL =====
+function exportUsersExcel() {
+  const users = getUsers();
+  if (users.length === 0) { alert('ยังไม่มี User ID Wallet ทิพย์'); return; }
+
+  const wb = XLSX.utils.book_new();
+  const header = ['User ID', 'ชื่อ User / บริษัท', 'หมายเหตุ', 'เพิ่มเมื่อ'];
+  const data = users.map(u => [u.userId, u.name, u.notes || '', u.addedAt || '']);
+  const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
+  ws['!cols'] = [{wch:10},{wch:30},{wch:35},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws, 'ID Walletทิพย์');
+
+  const now = new Date();
+  const stamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`;
+  XLSX.writeFile(wb, `MS_WalletTip_Users_${stamp}.xlsx`);
+}
+
+renderUsersTable();
+
+// ===== INCOME BREAKDOWN (Tab 3) =====
+let incomeWorkbook = null;
+let incomeAllRows = [];
+let incomeFilteredRows = [];
+let incomeCurrentFilter = 'all';
+let incomeStatusFilter  = 'all';
+let incomeSearch        = '';
+let incomeSelectedMonth = '';
+
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+function processIncomeFile(file) {
+  if (!file) return;
+  const oz = document.getElementById('inc-oz');
+  const ol = document.getElementById('inc-ol');
+  oz.style.borderColor = '#f59e0b';
+  ol.innerHTML = '⏳ กำลังโหลดไฟล์ — อาจใช้เวลา 10–30 วินาทีสำหรับไฟล์ขนาดใหญ่...';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const buf = e.target.result;
+    // Yield to browser to render loading state before heavy sync work
+    setTimeout(() => {
+      try {
+        // Pass 1: read sheet names only (fast, no cell data)
+        const tempWb = XLSX.read(buf, {type:'array', bookSheets:true});
+        const sheetName = findIncomeSheet(tempWb);
+        if (!sheetName) { ol.textContent='ไม่พบชีท Income Record'; alert('ไม่พบชีท "Income Record" ในไฟล์นี้'); return; }
+
+        ol.innerHTML = `⏳ กำลังอ่านชีท "${sheetName}"...`;
+        setTimeout(() => {
+          try {
+            // Pass 2: read only the needed sheet (much faster than reading all sheets)
+            const wb = XLSX.read(buf, {type:'array', sheets:[sheetName]});
+            const ws  = wb.Sheets[sheetName];
+
+            ol.innerHTML = '⏳ กำลังแปลงข้อมูล...';
+            setTimeout(() => {
+              const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+              ol.innerHTML = `⏳ กำลังประมวลผล (${raw.length.toLocaleString()} แถว)...`;
+
+              // Parse rows in chunks to keep browser responsive
+              parseIncomeRowsAsync(raw,
+                (done, total) => {
+                  ol.innerHTML = `⏳ ประมวลผล ${done.toLocaleString()} / ${total.toLocaleString()} แถว...`;
+                },
+                (rows) => {
+                  incomeAllRows = rows;
+                  oz.classList.add('done'); oz.style.borderColor = '';
+                  ol.textContent = `✅ ${file.name}  (ชีท: ${sheetName}, ${rows.length.toLocaleString()} รายการ)`;
+                  buildMonthOptions();
+                  document.getElementById('inc-month-wrap').classList.remove('hidden');
+                  document.getElementById('inc-month-placeholder').classList.add('hidden');
+                  document.getElementById('inc-run-wrap').classList.remove('hidden');
+                  runIncomeBreakdown();
+                }
+              );
+            }, 50);
+          } catch(err2) { oz.style.borderColor=''; ol.textContent='เกิดข้อผิดพลาด'; alert('อ่านชีทไม่ได้: '+err2.message); }
+        }, 50);
+      } catch(err) { oz.style.borderColor=''; ol.textContent='เกิดข้อผิดพลาด'; alert('โหลดไฟล์ไม่ได้: '+err.message); }
+    }, 80);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function findIncomeSheet(wb) {
+  const names = wb.SheetNames;
+  // Priority 1: exact "Income Record"
+  for (const n of names) { if (n.trim().toLowerCase() === 'income record') return n; }
+  // Priority 2: starts with "Income Record" → catches "Income Record (2)"
+  for (const n of names) { if (/^income record/i.test(n.trim())) return n; }
+  // Priority 3: ends with "income record" → catches "ต้นฉบับIncome Record" only as fallback
+  for (const n of names) { if (/income record$/i.test(n.trim())) return n; }
+  // Priority 4: contains "income record"
+  for (const n of names) { if (n.toLowerCase().includes('income record')) return n; }
+  // Fallback: any sheet with "income"
+  for (const n of names) { if (n.toLowerCase().includes('income')) return n; }
+  return null;
+}
+
+function detectIncomeColumns(raw) {
+  // Find header row
+  let hIdx = -1;
+  for (let i = 0; i < Math.min(20, raw.length); i++) {
+    const s = raw[i].map(c => String(c||'').toLowerCase()).join('|');
+    if (s.includes('status') && (s.includes('delivery') || s.includes('invoice') || s.includes('date'))) { hIdx = i; break; }
+  }
+  // Default column positions (0-indexed) matching Income Record layout
+  const col = { receipt:0, status:1, invoice:2, date:3, sysId:4, name:6, fee:7, delivery:8, cod:9, codFee:10, billId:11 };
+  if (hIdx >= 0) {
+    raw[hIdx].map(c => String(c||'').toLowerCase().trim()).forEach((h, i) => {
+      if (h === 'status') col.status = i;
+      else if (h.includes('invoice') || h.includes('reciept') || h.includes('receipt')) col.invoice = i;
+      else if (h === 'date') col.date = i;
+      else if (h.includes('system id') && !h.includes('customer')) col.sysId = i;
+      else if (h.includes('customer name') || h === 'name') col.name = i;
+      else if (h.includes('ค่าธรรมเนียม') || h.includes('fee') && !h.includes('cod')) col.fee = i;
+      else if (h === 'delivery') col.delivery = i;
+      else if (h.includes('total cod')) col.cod = i;
+      else if (h.includes('cod fee')) col.codFee = i;
+      else if (h.includes('bill')) col.billId = i;
+    });
+  }
+  const dataStart = hIdx >= 0 ? hIdx + 1 : 0;
+  return { col, dataStart };
+}
+
+function parseIncomeRowsAsync(raw, onProgress, onDone) {
+  const { col, dataStart } = detectIncomeColumns(raw);
+  const CHUNK = 3000;
+  let i = dataStart;
+  const rows = [];
+
+  function nextChunk() {
+    const end = Math.min(i + CHUNK, raw.length);
+    while (i < end) {
+      const r = raw[i++];
+      if (!r || r.every(c => !c && c !== 0)) continue;
+      const date = parseIncomeDate(r[col.date]);
+      if (!date) continue;
+      const sysId = String(r[col.sysId] || '').trim();
+      // Skip non-numeric sysIds — filters out leaked header rows
+      if (!sysId || sysId === '0' || !/^\d+$/.test(sysId)) continue;
+
+      const delivery = parseIncNum(r[col.delivery]);
+      const cod      = parseIncNum(r[col.cod]);
+      const codFee   = parseIncNum(r[col.codFee]);
+      const fee      = parseIncNum(r[col.fee]);
+      const status   = String(r[col.status] || '').trim().toLowerCase();
+      const paidCash = (status === 'promptpay' || status === 'credit');
+      const isTip    = (status === 'invoice') || (!paidCash && isWalletTip(sysId));
+      rows.push({
+        receipt:  String(r[col.receipt] || '').trim(),
+        status,
+        invoice:  String(r[col.invoice] || '').trim(),
+        billId:   String(r[col.billId]  || '').trim(),
+        date, dateStr: fmtDate(date),
+        yearMonth: `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`,
+        sysId, name: String(r[col.name] || '').trim(),
+        delivery, cod, codFee, fee, income: delivery + codFee,
+        isTip, tipName: isTip ? (getWalletTipName(sysId) || '') : null
+      });
+    }
+    onProgress(i - dataStart, raw.length - dataStart);
+    if (i < raw.length) setTimeout(nextChunk, 0);
+    else onDone(rows);
+  }
+  nextChunk();
+}
+
+function parseIncomeDate(val) {
+  if (!val && val !== 0) return null;
+  const s = String(val).trim();
+  const m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m1) return new Date(+m1[3], +m1[2]-1, +m1[1]);
+  const num = parseFloat(s);
+  if (!isNaN(num) && num > 40000 && num < 60000) return new Date((num - 25569) * 86400000);
+  const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m2) return new Date(+m2[1], +m2[2]-1, +m2[3]);
+  return null;
+}
+
+function parseIncNum(val) {
+  const n = parseFloat(String(val||'').replace(/,/g,''));
+  return isNaN(n) ? 0 : n;
+}
+
+function fmtDate(d) {
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+
+function buildMonthOptions() {
+  const months = [...new Set(incomeAllRows.map(r => r.yearMonth))].sort().reverse();
+  const sel = document.getElementById('inc-month');
+  sel.innerHTML = months.map(ym => {
+    const [y, m] = ym.split('-');
+    return `<option value="${ym}">${THAI_MONTHS[+m-1]} ${y}</option>`;
+  }).join('');
+  incomeSelectedMonth = months[0] || '';
+}
+
+function resetIncomeFilters() {
+  incomeCurrentFilter = 'all';
+  incomeStatusFilter  = 'all';
+  incomeSearch        = '';
+  const si = document.getElementById('inc-search');
+  if (si) si.value = '';
+  ['inc-type-all','inc-type-reg','inc-type-credit'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('active'); if (id === 'inc-type-all') el.classList.add('active'); }
+  });
+  ['inc-st-all','inc-st-pp','inc-st-cc','inc-st-wl','inc-st-tr','inc-st-inv'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('active'); if (id === 'inc-st-all') el.classList.add('active'); }
+  });
+}
+
+function runIncomeBreakdown() {
+  incomeSelectedMonth = document.getElementById('inc-month').value;
+  incomeFilteredRows  = incomeAllRows.filter(r => r.yearMonth === incomeSelectedMonth);
+  resetIncomeFilters();
+  document.getElementById('inc-summary').classList.remove('hidden');
+  document.getElementById('inc-filters').classList.remove('hidden');
+  updateIncomeSummary();
+  renderIncomeTable();
+}
+
+function updateIncomeSummary() {
+  const rows = incomeFilteredRows;
+  const sum  = arr => arr.reduce((a,r) => a+r.income, 0);
+  const fmtB = n => '฿' + n.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const reg      = rows.filter(r => !r.isTip);
+  const cred     = rows.filter(r =>  r.isTip);
+  const pp       = rows.filter(r => r.status === 'promptpay');
+  const cc       = rows.filter(r => r.status === 'credit');
+  const wallet   = rows.filter(r => r.status === 'wallet');
+  const transfer = rows.filter(r => r.status === 'transfer');
+  const total    = sum(rows);
+  const pct      = n => total ? Math.round(n/total*100)+'% ของรายได้รวม' : '';
+
+  document.getElementById('is-total-count').textContent  = rows.length.toLocaleString();
+  document.getElementById('is-total-income').textContent = fmtB(total);
+  document.getElementById('is-reg-count').textContent    = reg.length.toLocaleString();
+  document.getElementById('is-reg-income').textContent   = fmtB(sum(reg));
+  document.getElementById('is-reg-pct').textContent      = pct(sum(reg));
+  document.getElementById('is-cred-count').textContent   = cred.length.toLocaleString();
+  document.getElementById('is-cred-income').textContent  = fmtB(sum(cred));
+  document.getElementById('is-cred-pct').textContent     = pct(sum(cred));
+  document.getElementById('is-pp-count').textContent     = pp.length.toLocaleString();
+  document.getElementById('is-pp-income').textContent    = fmtB(sum(pp));
+  document.getElementById('is-cc-count').textContent     = cc.length.toLocaleString();
+  document.getElementById('is-cc-income').textContent    = fmtB(sum(cc));
+  document.getElementById('is-wl-count').textContent     = wallet.length.toLocaleString();
+  document.getElementById('is-wl-income').textContent    = fmtB(sum(wallet));
+  document.getElementById('is-tr-count').textContent     = transfer.length.toLocaleString();
+  document.getElementById('is-tr-income').textContent    = fmtB(sum(transfer));
+  const totalFee = rows.reduce((a,r) => a + (r.fee||0), 0);
+  const feeEl = document.getElementById('is-fee-total');
+  if (feeEl) feeEl.textContent = fmtB(totalFee);
+}
+
+function setIncomeFilter(f, btn) {
+  incomeCurrentFilter = f;
+  ['inc-type-all','inc-type-reg','inc-type-credit'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  btn.classList.add('active');
+  renderIncomeTable();
+}
+
+function setIncomeStatus(s, btn) {
+  incomeStatusFilter = s;
+  ['inc-st-all','inc-st-pp','inc-st-cc','inc-st-wl','inc-st-tr','inc-st-inv'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  btn.classList.add('active');
+  renderIncomeTable();
+}
+
+function getIncomeDisplayRows() {
+  let rows = incomeFilteredRows;
+  // Type filter
+  if (incomeCurrentFilter === 'reg')    rows = rows.filter(r => !r.isTip);
+  if (incomeCurrentFilter === 'credit') rows = rows.filter(r =>  r.isTip);
+  // Status filter (exact match per status value)
+  if (incomeStatusFilter !== 'all') rows = rows.filter(r => r.status === incomeStatusFilter);
+  // Search
+  const q = (incomeSearch || '').toLowerCase().trim();
+  if (q) rows = rows.filter(r =>
+    r.sysId.includes(q) ||
+    r.name.toLowerCase().includes(q) ||
+    r.invoice.toLowerCase().includes(q) ||
+    r.billId.toLowerCase().includes(q)
+  );
+  return rows;
+}
+
+function renderIncomeTable() {
+  const rows = getIncomeDisplayRows();
+  document.getElementById('inc-row-count').textContent = rows.length.toLocaleString() + ' รายการ';
+  const tbody = document.getElementById('inc-tbody');
+  const wrap  = document.getElementById('inc-table-wrap');
+  const empty = document.getElementById('inc-empty');
+
+  if (rows.length === 0) { tbody.innerHTML=''; wrap.classList.add('hidden'); empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden'); wrap.classList.remove('hidden');
+
+  const fmtN = n => n ? n.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+  const q = (incomeSearch || '').toLowerCase().trim();
+  const hl = (str) => {
+    if (!q || !str) return escHtml(str);
+    const idx = str.toLowerCase().indexOf(q);
+    if (idx < 0) return escHtml(str);
+    return escHtml(str.slice(0,idx)) + `<mark style="background:#854d0e;color:#fef08a;border-radius:2px">${escHtml(str.slice(idx,idx+q.length))}</mark>` + escHtml(str.slice(idx+q.length));
+  };
+
+  tbody.innerHTML = rows.map((r,i) => {
+    const tipBadge = r.isTip
+      ? `<span class="badge-tip">💙 เครดิต</span>`
+      : `<span class="badge-reg">ทั่วไป</span>`;
+    const stBadge = r.status === 'promptpay'
+      ? `<span style="background:#2e1065;color:#c4b5fd;padding:2px 6px;border-radius:4px;font-size:11px">Promptpay</span>`
+      : r.status === 'credit'
+      ? `<span style="background:#450a0a;color:#fca5a5;padding:2px 6px;border-radius:4px;font-size:11px">Credit Card</span>`
+      : r.status === 'wallet'
+      ? `<span style="background:#082f49;color:#7dd3fc;padding:2px 6px;border-radius:4px;font-size:11px">Wallet</span>`
+      : r.status === 'transfer'
+      ? `<span style="background:#052e16;color:#6ee7b7;padding:2px 6px;border-radius:4px;font-size:11px">Transfer</span>`
+      : r.status === 'invoice'
+      ? `<span style="background:#1e3a5f;color:#93c5fd;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700">Invoice</span>`
+      : `<span style="background:#1e293b;color:#94a3b8;padding:2px 6px;border-radius:4px;font-size:11px">${escHtml(r.status)||'—'}</span>`;
+    return `<tr class="${r.isTip?'row-tip':''}">
+      <td class="text-slate-500">${i+1}</td>
+      <td class="text-slate-400 text-xs" style="white-space:nowrap">${escHtml(r.dateStr)}</td>
+      <td class="font-mono text-slate-200 text-xs" style="white-space:nowrap">${hl(r.invoice||'—')}</td>
+      <td class="font-mono text-slate-400 text-xs" style="white-space:nowrap">${escHtml(r.receipt||'—')}</td>
+      <td class="font-mono text-xs" style="color:#94a3b8;white-space:nowrap">${hl(r.billId||'—')}</td>
+      <td class="font-mono text-blue-300 text-xs font-bold">${hl(r.sysId)}</td>
+      <td class="text-slate-200 text-xs" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(r.name)}">${hl(r.name)}</td>
+      <td class="text-right text-emerald-300 font-mono text-xs">${fmtN(r.delivery)}</td>
+      <td class="text-right font-mono text-xs" style="color:${r.fee>0?'#fbbf24':'#475569'}">${r.fee>0?fmtN(r.fee):'—'}</td>
+      <td class="text-right text-slate-400 font-mono text-xs">${fmtN(r.cod)}</td>
+      <td class="text-right text-amber-300 font-mono text-xs">${fmtN(r.codFee)}</td>
+      <td class="text-right text-white font-mono text-xs font-bold">${fmtN(r.income)}</td>
+      <td>${stBadge}</td>
+      <td>${tipBadge}</td>
+    </tr>`;
+  }).join('');
+}
+
+function refreshIncome(triggerBtn) {
+  if (incomeAllRows.length === 0) { alert('ยังไม่มีข้อมูล — กรุณาอัปโหลดไฟล์ก่อน'); return; }
+
+  // Animate all refresh buttons
+  const allBtns = [
+    document.getElementById('btn-refresh-income'),
+    document.getElementById('btn-refresh-income-bar')
+  ].filter(Boolean);
+  allBtns.forEach(b => {
+    b._origHTML = b.innerHTML;
+    b._origBg   = b.style.background || '';
+    b.innerHTML  = '<span class="btn-spinning">🔄</span>';
+    b.disabled   = true;
+    b.style.opacity = '0.7';
+  });
+
+  setTimeout(() => {
+    incomeAllRows.forEach(r => {
+      const paidCash = (r.status === 'promptpay' || r.status === 'credit');
+      r.isTip   = (r.status === 'invoice') || (!paidCash && isWalletTip(r.sysId));
+      r.tipName = r.isTip ? (getWalletTipName(r.sysId) || '') : null;
+    });
+    runIncomeBreakdown();
+    allBtns.forEach(b => {
+      b.innerHTML = '✅';
+      b.style.opacity = '1';
+      if (b.id === 'btn-refresh-income') b.style.background = '#166534';
+    });
+    setTimeout(() => {
+      allBtns.forEach(b => {
+        b.innerHTML = b._origHTML;
+        b.style.background = b._origBg;
+        b.disabled  = false;
+        b.style.opacity = '1';
+      });
+    }, 900);
+  }, 250);
+}
+
+function exportIncomeExcel() {
+  if (incomeFilteredRows.length === 0) { alert('ยังไม่มีข้อมูล — กรุณาอัปโหลดไฟล์และเลือกเดือนก่อน'); return; }
+  const wb   = XLSX.utils.book_new();
+  const base = ['#','วันที่','Invoice/Reciept.','เลขที่ใบเสร็จ','Bill ID','System ID','ชื่อลูกค้า','ค่าส่ง (฿)','ค่าธรรมเนียม (฿)','COD (฿)','COD Fee (฿)','รายได้รวม (฿)','Status','ประเภท'];
+
+  const toRow = (r,i,showType=true) => [
+    i+1, r.dateStr, r.invoice, r.receipt, r.billId, r.sysId, r.name,
+    r.delivery, r.fee||0, r.cod, r.codFee, r.income, r.status,
+    ...(showType ? [r.isTip ? 'เครดิต (Wallet ทิพย์)' : 'ลูกค้าทั่วไป'] : [])
+  ];
+
+  // Sheet 1: ทั้งหมด
+  const ws1 = XLSX.utils.aoa_to_sheet([base, ...incomeFilteredRows.map((r,i)=>toRow(r,i))]);
+  ws1['!cols'] = [4,12,20,18,14,8,26,10,14,10,10,12,10,18].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws1, 'ทั้งหมด');
+
+  // Sheet 2: ลูกค้าทั่วไป
+  const regRows = incomeFilteredRows.filter(r => !r.isTip);
+  if (regRows.length > 0) {
+    const ws2 = XLSX.utils.aoa_to_sheet([base.slice(0,11), ...regRows.map((r,i)=>toRow(r,i,false))]);
+    ws2['!cols'] = [4,12,20,18,14,8,26,10,14,10,10,12,10].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws2, 'ลูกค้าทั่วไป');
+  }
+
+  // Sheet 3: ลูกค้าเครดิต
+  const credRows = incomeFilteredRows.filter(r => r.isTip);
+  if (credRows.length > 0) {
+    const ch = ['#','วันที่','Invoice/Reciept.','เลขที่ใบเสร็จ','Bill ID','System ID','ชื่อในระบบ','ชื่อ Wallet ทิพย์','ค่าส่ง (฿)','ค่าธรรมเนียม (฿)','COD (฿)','COD Fee (฿)','รายได้รวม (฿)','Status'];
+    const cd = credRows.map((r,i) => [i+1,r.dateStr,r.invoice,r.receipt,r.billId,r.sysId,r.name,r.tipName||r.name,r.delivery,r.fee||0,r.cod,r.codFee,r.income,r.status]);
+    const ws3 = XLSX.utils.aoa_to_sheet([ch, ...cd]);
+    ws3['!cols'] = [4,12,20,18,14,8,26,26,10,14,10,10,12,10].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws3, 'ลูกค้าเครดิต');
+  }
+
+  // Sheet 4: Summary
+  const sum      = arr => arr.reduce((a,r) => a+r.income, 0);
+  // Payment method rows — exclude isTip so each category is mutually exclusive
+  const pp       = incomeFilteredRows.filter(r => r.status === 'promptpay' && !r.isTip);
+  const cc       = incomeFilteredRows.filter(r => r.status === 'credit'    && !r.isTip);
+  const wallet   = incomeFilteredRows.filter(r => r.status === 'wallet'    && !r.isTip);
+  const transfer = incomeFilteredRows.filter(r => r.status === 'transfer'  && !r.isTip);
+  const [y,m]    = incomeSelectedMonth.split('-');
+  const ws4 = XLSX.utils.aoa_to_sheet([
+    [`Income Breakdown — ${THAI_MONTHS[+m-1]} ${y}`, '', ''],
+    ['รายการ', 'จำนวนรายการ', 'รายได้รวม (฿)'],
+    ['ทั้งหมด', incomeFilteredRows.length, sum(incomeFilteredRows)],
+    ['ลูกค้าทั่วไป (non-invoice)', regRows.length, sum(regRows)],
+    ['ลูกค้าเครดิต / Invoice (Wallet ทิพย์)', credRows.length, sum(credRows)],
+    ['', '', ''],
+    ['แยกตาม Payment Method', '', ''],
+    ['Promptpay', pp.length, sum(pp)],
+    ['Credit Card (บัตรเครดิต)', cc.length, sum(cc)],
+    ['Wallet (เติมเงิน)', wallet.length, sum(wallet)],
+    ['Transfer (โอนธนาคาร)', transfer.length, sum(transfer)],
+    ['Invoice (Wallet ทิพย์)', credRows.length, sum(credRows)],
+  ]);
+  ws4['!cols'] = [{wch:28},{wch:16},{wch:18}];
+  XLSX.utils.book_append_sheet(wb, ws4, 'Summary');
+
+  const now = new Date();
+  const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb, `MS_IncomeBreakdown_${incomeSelectedMonth.replace('-','')}_${stamp}.xlsx`);
+}
+
+// ===== TAB 4: INCOME RECONCILE — 4 sub-tabs =====
+
+// ---- Shared state ----
+var roaOmiseRaw  = [];          // raw Omise rows
+var roaTopupMap  = new Map();   // billId → {amount, userId, channel, name}  (shared with rbt)
+var roaRows      = [];          // classified Omise breakdown rows
+var roaFilter    = 'all';
+
+var rbtCheckMap  = new Map();   // billId → {userId,amount,bank,...}
+var rbtTotalMap  = new Map();   // billId → {userId,amount,...} TotalWalletStatement fallback
+var rbtRows      = [];
+var rbtFilter    = 'all';
+
+var rwbRows      = [];
+var rwbFilter    = 'all';
+
+// ---- Special Companies (ต้องออกใบกำกับ) ----
+function scGetList()    { try { return JSON.parse(localStorage.getItem('ms_special_companies_v1') || '[]'); } catch(e) { return []; } }
+function scSaveList(l)  { localStorage.setItem('ms_special_companies_v1', JSON.stringify(l)); }
+function scIsSpecial(u) { var uid=String(u||'').trim(); return scGetList().some(function(x){ return String(x.userId).trim()===uid; }); }
+function scGetName(u)   { var uid=String(u||'').trim(); var h=scGetList().find(function(x){ return String(x.userId).trim()===uid; }); return h?h.name:''; }
+
+// ---- Sub-tab switch ----
+function reconSwitchTab(name, btn) {
+  ['omise','topup','walbal','invoice'].forEach(function(t) {
+    var el = document.getElementById('recon-tab-'+t);
+    if (el) el.classList.toggle('hidden', t !== name);
+  });
+  ['recon-btn-omise','recon-btn-topup','recon-btn-walbal','recon-btn-invoice'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.classList.remove('active');
+  });
+  btn.classList.add('active');
+  if (name === 'invoice') { scRenderList(); scRenderCharges(); }
+}
+
+// ---- updateReconIncomeStatus (called by outer switchTab on tab='recon') ----
+function updateReconIncomeStatus() {
+  var lbl = document.getElementById('roa-income-lbl');
+  if (!lbl) return;
+  var regRows = incomeFilteredRows.filter(function(r){ return !r.isTip; });
+  if (incomeFilteredRows.length === 0) {
+    lbl.textContent = 'ยังไม่มีข้อมูล — ไปที่ Tab Income Breakdown ก่อน';
+    lbl.style.color = '#64748b';
+  } else {
+    var parts = (incomeSelectedMonth||'').split('-'), y=parts[0], m=parts[1];
+    lbl.innerHTML = '<span style="color:#86efac">✅ โหลดแล้ว ' + regRows.length.toLocaleString() + ' รายการ</span>'
+      + ' <span style="color:#94a3b8;font-size:11px">(ลูกค้าทั่วไป ' + (THAI_MONTHS[+m-1]||m) + ' ' + y + ')</span>';
+    lbl.style.color = '';
+  }
+}
+
+// ============================================================
+// SUB A: OMISE BREAKDOWN
+// ============================================================
+function roaLoadOmise(file) {
+  if (!file) return;
+  var lbl  = document.getElementById('roa-omise-lbl');
+  var zone = document.getElementById('roa-omise-zone');
+  lbl.textContent = '⏳ กำลังอ่าน...';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      var hIdx = -1;
+      for (var i = 0; i < Math.min(5, raw.length); i++) {
+        var row = raw[i].map(function(c){ return String(c).toLowerCase().trim(); });
+        if (row.some(function(c){ return c==='id'; }) && row.some(function(c){ return c.includes('description')||c.includes('amount'); })) { hIdx=i; break; }
+      }
+      var headers = hIdx>=0 ? raw[hIdx].map(function(c){ return String(c).toLowerCase().trim(); }) : [];
+      var colId   = headers.indexOf('id');                                                     if (colId<0) colId=0;
+      var colFund = headers.findIndex(function(h){ return h==='funding_amount'; });            if (colFund<0) colFund=headers.findIndex(function(h){ return h==='amount'; }); if (colFund<0) colFund=2;
+      var colDesc = headers.findIndex(function(h){ return h.includes('description'); });       if (colDesc<0) colDesc=7;
+      var colDate = headers.findIndex(function(h){ return h.includes('created'); });           if (colDate<0) colDate=1;
+      var start   = hIdx>=0 ? hIdx+1 : 1;
+      roaOmiseRaw = [];
+      for (var ii = start; ii < raw.length; ii++) {
+        var r = raw[ii];
+        var id = String(r[colId]||'').trim();
+        if (!id.startsWith('chrg_')) continue;
+        var desc = String(r[colDesc]||'');
+        var mx   = desc.match(/Bill ID\s*(\d+)/i);
+        roaOmiseRaw.push({
+          chargeId: id,
+          billId:   mx ? mx[1] : '',
+          amount:   parseFloat(String(r[colFund]||'0').replace(/,/g,''))||0,
+          dateRaw:  r[colDate]||'',
+          desc:     desc
+        });
+      }
+      zone.style.borderColor = '#16a34a';
+      lbl.innerHTML = '<span style="color:#86efac">✅ '+escHtml(file.name)+'</span><br><span style="color:#4ade80;font-size:11px">'+roaOmiseRaw.length.toLocaleString()+' charges</span>';
+    } catch(ex) { lbl.textContent = '❌ อ่านไฟล์ไม่ได้: '+ex.message; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// shared topup parser (ข้อมูลการชำระเงินเติมเงิน)
+// cols: date(0),invoiceNo(1),type(2),channel(3),UserID(4),name(5),amount(6),ref(7),billId(8),amount2(9)
+function parseTopupSheet(raw) {
+  var map = new Map();
+  for (var i = 1; i < raw.length; i++) {
+    var r = raw[i];
+    var billId = String(r[8]||'').trim().replace(/[^\d]/g,'');
+    if (!billId) continue;
+    if (!map.has(billId)) {
+      map.set(billId, {
+        amount:  parseFloat(String(r[6]||'0').replace(/,/g,''))||0,
+        userId:  String(r[4]||'').trim(),
+        name:    String(r[5]||'').trim(),
+        channel: String(r[3]||'').trim()
+      });
+    }
+  }
+  return map;
+}
+
+function roaLoadTopup(file) {
+  if (!file) return;
+  var lbl  = document.getElementById('roa-topup-lbl');
+  var zone = document.getElementById('roa-topup-zone');
+  lbl.textContent = '⏳ กำลังอ่าน...';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      roaTopupMap = parseTopupSheet(raw);
+      zone.style.borderColor = '#16a34a';
+      lbl.innerHTML = '<span style="color:#86efac">✅ '+escHtml(file.name)+'</span><br><span style="color:#4ade80;font-size:11px">'+roaTopupMap.size.toLocaleString()+' รายการ</span>';
+    } catch(ex) { lbl.textContent = '❌ อ่านไฟล์ไม่ได้: '+ex.message; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function roaRun() {
+  if (roaOmiseRaw.length === 0) { alert('กรุณาอัปโหลด Omise Charges ก่อน'); return; }
+  var btn = document.getElementById('roa-run-btn');
+  btn.textContent = '⏳ กำลังประมวลผล...'; btn.disabled = true;
+  setTimeout(function() {
+    // Build bill→income lookup from ALL income rows
+    var incomeMap = new Map();
+    (typeof incomeAllRows!=='undefined' ? incomeAllRows : []).forEach(function(r) {
+      var bk = String(r.billId||'').trim();
+      if (bk && !incomeMap.has(bk)) incomeMap.set(bk, r);
+    });
+    var fmtDate = function(raw) {
+      if (!raw) return '';
+      try { var d=new Date(raw); if(!isNaN(d)) return d.toLocaleDateString('th-TH',{year:'2-digit',month:'2-digit',day:'2-digit'}); } catch(e) {}
+      return String(raw).substring(0,10);
+    };
+    roaRows = roaOmiseRaw.map(function(o) {
+      var type='unknown', sysId='', custName='', ref='';
+      if (o.billId && roaTopupMap.has(o.billId)) {
+        var td = roaTopupMap.get(o.billId);
+        type='topup'; sysId=td.userId; custName=td.name; ref='topup / '+td.channel;
+      } else if (o.billId) {
+        var inc = incomeMap.get(o.billId);
+        if (inc) {
+          sysId=inc.sysId||''; custName=inc.name||'';
+          if (scIsSpecial(sysId)) {
+            type='invoice'; ref='บริษัท: '+scGetName(sysId);
+          } else if (inc.status==='promptpay'||inc.status==='credit') {
+            type='transport'; ref=inc.status;
+          } else {
+            type='unknown'; ref=inc.status||'';
+          }
+        }
+      }
+      return { chargeId:o.chargeId, billId:o.billId, amount:o.amount, dateStr:fmtDate(o.dateRaw), sysId:sysId, custName:custName, type:type, ref:ref };
+    });
+    roaFilter='all';
+    ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+    var all=document.getElementById('roaf-all'); if(all) all.classList.add('active');
+    roaUpdateSummary(); roaRender();
+    document.getElementById('roa-summary').classList.remove('hidden');
+    document.getElementById('roa-filters').classList.remove('hidden');
+    btn.textContent='🔍 Run Breakdown'; btn.disabled=false;
+  }, 150);
+}
+
+function roaUpdateSummary() {
+  var fmtB = function(n){ return '฿'+(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var sum  = function(arr){ return arr.reduce(function(a,r){ return a+r.amount; },0); };
+  var tp=roaRows.filter(function(r){ return r.type==='transport'; });
+  var tpu=roaRows.filter(function(r){ return r.type==='topup'; });
+  var inv=roaRows.filter(function(r){ return r.type==='invoice'; });
+  var unk=roaRows.filter(function(r){ return r.type==='unknown'; });
+  document.getElementById('roa-total').textContent      = roaRows.length.toLocaleString();
+  document.getElementById('roa-total-b').textContent    = fmtB(sum(roaRows));
+  document.getElementById('roa-transport').textContent  = tp.length.toLocaleString();
+  document.getElementById('roa-transport-b').textContent= fmtB(sum(tp));
+  document.getElementById('roa-topup-cnt').textContent  = tpu.length.toLocaleString();
+  document.getElementById('roa-topup-b').textContent    = fmtB(sum(tpu));
+  document.getElementById('roa-invoice').textContent    = inv.length.toLocaleString();
+  document.getElementById('roa-invoice-b').textContent  = fmtB(sum(inv));
+  document.getElementById('roa-unknown').textContent    = unk.length.toLocaleString();
+  document.getElementById('roa-unknown-b').textContent  = fmtB(sum(unk));
+}
+
+function roaSetFilter(f, btn) {
+  roaFilter=f;
+  ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  btn.classList.add('active'); roaRender();
+}
+
+function roaRender() {
+  var rows = roaFilter==='all' ? roaRows : roaRows.filter(function(r){ return r.type===roaFilter; });
+  var tbody=document.getElementById('roa-tbody'), wrap=document.getElementById('roa-table-wrap'), empty=document.getElementById('roa-empty');
+  var cnt=document.getElementById('roa-row-count'); if(cnt) cnt.textContent=rows.length.toLocaleString()+' รายการ';
+  if (!rows.length) { tbody.innerHTML=''; wrap.classList.add('hidden'); empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden'); wrap.classList.remove('hidden');
+  var fN = function(n){ return (n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var badge = function(t) {
+    if (t==='transport') return '<span style="background:#052e16;color:#86efac;padding:2px 8px;border-radius:4px;font-size:11px">🚚 ค่าขนส่ง</span>';
+    if (t==='topup')     return '<span style="background:#082f49;color:#7dd3fc;padding:2px 8px;border-radius:4px;font-size:11px">💰 เติมเงิน</span>';
+    if (t==='invoice')   return '<span style="background:#2e1065;color:#c4b5fd;padding:2px 8px;border-radius:4px;font-size:11px">🏢 ต้องออก</span>';
+    return '<span style="background:#422006;color:#fde68a;padding:2px 8px;border-radius:4px;font-size:11px">❓ ไม่ระบุ</span>';
+  };
+  tbody.innerHTML = rows.map(function(r,i) {
+    var bg = r.type==='topup'?'background:rgba(2,132,199,0.04)':r.type==='invoice'?'background:rgba(124,58,237,0.06)':'';
+    return '<tr style="'+bg+'">'
+      +'<td class="text-slate-500">'+(i+1)+'</td>'
+      +'<td class="text-slate-400 text-xs" style="white-space:nowrap">'+escHtml(r.dateStr)+'</td>'
+      +'<td class="font-mono text-slate-400 text-xs" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escHtml(r.chargeId)+'">'+escHtml(r.chargeId)+'</td>'
+      +'<td class="font-mono text-blue-300 text-xs font-bold">'+escHtml(r.billId||'—')+'</td>'
+      +'<td class="font-mono text-slate-300 text-xs">'+escHtml(r.sysId||'—')+'</td>'
+      +'<td class="text-slate-200 text-xs" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escHtml(r.custName)+'">'+escHtml(r.custName||'—')+'</td>'
+      +'<td class="text-right font-mono text-xs text-emerald-300">'+fN(r.amount)+'</td>'
+      +'<td>'+badge(r.type)+'</td>'
+      +'<td class="font-mono text-slate-500 text-xs" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(r.ref||'')+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function roaExport() {
+  if (!roaRows.length) { alert('ยังไม่มีข้อมูล — กรุณา Run Breakdown ก่อน'); return; }
+  var wb=XLSX.utils.book_new(), tMap={transport:'ค่าขนส่ง',topup:'เติมเงิน',invoice:'ต้องออกใบกำกับ',unknown:'ไม่ระบุ'};
+  var head=['#','วันที่','Charge ID','Bill ID','System ID','ชื่อลูกค้า','ยอด Omise (฿)','ประเภท','อ้างอิง'];
+  var data=roaRows.map(function(r,i){ return [i+1,r.dateStr,r.chargeId,r.billId,r.sysId,r.custName,r.amount,tMap[r.type]||r.type,r.ref]; });
+  var ws=XLSX.utils.aoa_to_sheet([head].concat(data));
+  ws['!cols']=[4,12,26,12,10,24,14,14,20].map(function(w){ return {wch:w}; });
+  XLSX.utils.book_append_sheet(wb,ws,'Omise Breakdown');
+  ['transport','topup','invoice','unknown'].forEach(function(t) {
+    var rr=roaRows.filter(function(r){ return r.type===t; }); if(!rr.length) return;
+    var ws2=XLSX.utils.aoa_to_sheet([head].concat(rr.map(function(r,i){ return [i+1,r.dateStr,r.chargeId,r.billId,r.sysId,r.custName,r.amount,tMap[t],r.ref]; })));
+    ws2['!cols']=ws['!cols']; XLSX.utils.book_append_sheet(wb,ws2,tMap[t]);
+  });
+  var now=new Date(), stamp=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+  XLSX.writeFile(wb,'MS_OmiseBreakdown_'+stamp+'.xlsx');
+}
+
+// ============================================================
+// SUB B: TOPUP RECONCILE
+// ============================================================
+function rbtLoadCheck(file) {
+  if (!file) return;
+  var lbl=document.getElementById('rbt-check-lbl'), zone=document.getElementById('rbt-check-zone');
+  lbl.textContent='⏳ กำลังอ่าน...';
+  var reader=new FileReader();
+  reader.onload=function(e) {
+    try {
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      // cols: UserID(0),BillID(1),PaymentID(2),TransactionDate(3),Bank(4),Amount(5),AcctNo(6),AcctName(7),Status(8)
+      var hIdx=-1;
+      for (var i=0;i<Math.min(5,raw.length);i++) {
+        var row=raw[i].map(function(c){ return String(c).toLowerCase().trim(); });
+        if (row.some(function(c){ return c.includes('bill'); })&&row.some(function(c){ return c.includes('amount')||c.includes('จำนวน'); })) { hIdx=i; break; }
+      }
+      var colUser=0,colBill=1,colPayId=2,colDate=3,colBank=4,colAmt=5,colAcctNo=6,colAcctName=7,colStat=8;
+      if (hIdx>=0) raw[hIdx].forEach(function(h,i) {
+        var hh=String(h).toLowerCase().trim();
+        if (/^user.*id$/i.test(hh)) colUser=i;
+        else if (/^bill.*id$/i.test(hh)) colBill=i;
+        else if (/payment.*id/i.test(hh)) colPayId=i;
+        else if (/date|วัน/i.test(hh)) colDate=i;
+        else if (/^bank$/i.test(hh)) colBank=i;
+        else if (/^amount$|^จำนวน$/i.test(hh)) colAmt=i;
+        else if (/account.*no|acct.*no/i.test(hh)) colAcctNo=i;
+        else if (/account.*name|acct.*name/i.test(hh)) colAcctName=i;
+        else if (/^status$/i.test(hh)) colStat=i;
+      });
+      var start=hIdx>=0?hIdx+1:1; rbtCheckMap.clear(); var cnt=0;
+      for (var ii=start;ii<raw.length;ii++) {
+        var r=raw[ii];
+        var billId=String(r[colBill]||'').trim().replace(/[^\d]/g,''); if(!billId) continue;
+        rbtCheckMap.set(billId,{
+          userId:String(r[colUser]||'').trim(), billId:billId,
+          paymentId:String(r[colPayId]||'').trim(), txDate:String(r[colDate]||'').trim(),
+          bank:String(r[colBank]||'').trim(), amount:parseFloat(String(r[colAmt]||'0').replace(/,/g,''))||0,
+          acctNo:String(r[colAcctNo]||'').trim(), acctName:String(r[colAcctName]||'').trim(),
+          status:String(r[colStat]||'').trim()
+        }); cnt++;
+      }
+      zone.style.borderColor='#16a34a';
+      lbl.innerHTML='<span style="color:#86efac">✅ '+escHtml(file.name)+'</span><br><span style="color:#4ade80;font-size:11px">'+cnt.toLocaleString()+' รายการ</span>';
+    } catch(ex) { lbl.textContent='❌ อ่านไฟล์ไม่ได้: '+ex.message; }
+  }; reader.readAsArrayBuffer(file);
+}
+
+function rbtLoadTopup(file) {
+  if (!file) return;
+  var lbl=document.getElementById('rbt-topup-lbl'), zone=document.getElementById('rbt-topup-zone');
+  lbl.textContent='⏳ กำลังอ่าน...';
+  var reader=new FileReader();
+  reader.onload=function(e) {
+    try {
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      roaTopupMap=parseTopupSheet(raw); // shared map
+      zone.style.borderColor='#16a34a';
+      lbl.innerHTML='<span style="color:#86efac">✅ '+escHtml(file.name)+'</span><br><span style="color:#4ade80;font-size:11px">'+roaTopupMap.size.toLocaleString()+' รายการ</span>';
+    } catch(ex) { lbl.textContent='❌ อ่านไฟล์ไม่ได้: '+ex.message; }
+  }; reader.readAsArrayBuffer(file);
+}
+
+function rbtLoadTotal(file) {
+  if (!file) return;
+  var lbl=document.getElementById('rbt-total-lbl'), zone=document.getElementById('rbt-total-zone');
+  lbl.textContent='⏳ กำลังอ่าน...';
+  var reader=new FileReader();
+  reader.onload=function(e) {
+    try {
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      // TotalWalletStatement: date(0),inv(1),type(2),channel(3),UserID(4),name(5),amount(6),ref(7),billId(8),...
+      rbtTotalMap.clear(); var cnt=0;
+      for (var i=1;i<raw.length;i++) {
+        var r=raw[i];
+        var billId=String(r[8]||'').trim().replace(/[^\d]/g,''); if(!billId) continue;
+        if (!rbtTotalMap.has(billId)) {
+          rbtTotalMap.set(billId,{userId:String(r[4]||'').trim(),name:String(r[5]||'').trim(),
+            amount:parseFloat(String(r[6]||'0').replace(/,/g,''))||0,channel:String(r[3]||'').trim()});
+          cnt++;
+        }
+      }
+      zone.style.borderColor='#16a34a';
+      lbl.innerHTML='<span style="color:#86efac">✅ '+escHtml(file.name)+'</span><br><span style="color:#4ade80;font-size:11px">'+cnt.toLocaleString()+' รายการ (fallback)</span>';
+    } catch(ex) { lbl.textContent='❌ อ่านไฟล์ไม่ได้: '+ex.message; }
+  }; reader.readAsArrayBuffer(file);
+}
+
+function rbtRun() {
+  if (rbtCheckMap.size===0) { alert('กรุณาอัปโหลด check_payment ก่อน'); return; }
+  var btn=document.getElementById('rbt-run-btn');
+  btn.textContent='⏳ กำลังประมวลผล...'; btn.disabled=true;
+  setTimeout(function() {
+    rbtRows=[];
+    rbtCheckMap.forEach(function(cp) {
+      var billId=cp.billId, reconStatus='nf', matchSource='', matchAmt=0;
+      // 1. Check ข้อมูลการชำระเงินเติมเงิน (transfer channel)
+      if (roaTopupMap.has(billId)) {
+        var td=roaTopupMap.get(billId);
+        if (/transfer|โอน/i.test(td.channel)) {
+          reconStatus=Math.abs(cp.amount-td.amount)<0.01?'match':'diff';
+          matchSource='topup-stmt'; matchAmt=td.amount;
+        }
+      }
+      // 2. Fallback: TotalWalletStatement
+      if (reconStatus==='nf' && rbtTotalMap.has(billId)) {
+        var tw=rbtTotalMap.get(billId);
+        reconStatus=Math.abs(cp.amount-tw.amount)<0.01?'match':'diff';
+        matchSource='total-stmt (fallback)'; matchAmt=tw.amount;
+      }
+      var isTip=isWalletTip(cp.userId);
+      rbtRows.push({billId:billId,userId:cp.userId,name:cp.acctName||'',bank:cp.bank,txDate:cp.txDate,
+        amount:cp.amount,matchAmt:matchAmt,reconStatus:isTip?'tip':reconStatus,matchSource:matchSource,isTip:isTip});
+    });
+    rbtFilter='all';
+    ['rbtf-all','rbtf-match','rbtf-nf','rbtf-tip'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+    var all=document.getElementById('rbtf-all'); if(all) all.classList.add('active');
+    rbtUpdateSummary(); rbtRender();
+    document.getElementById('rbt-summary').classList.remove('hidden');
+    document.getElementById('rbt-filters').classList.remove('hidden');
+    btn.textContent='🔍 Run Topup Reconcile'; btn.disabled=false;
+  }, 150);
+}
+
+function rbtUpdateSummary() {
+  var fmtB=function(n){ return '฿'+(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var sum=function(arr){ return arr.reduce(function(a,r){ return a+r.amount; },0); };
+  var match=rbtRows.filter(function(r){ return r.reconStatus==='match'; });
+  var nf=rbtRows.filter(function(r){ return r.reconStatus==='nf'; });
+  var tip=rbtRows.filter(function(r){ return r.isTip; });
+  document.getElementById('rbt-total').textContent   = rbtRows.length.toLocaleString();
+  document.getElementById('rbt-total-b').textContent = fmtB(sum(rbtRows));
+  document.getElementById('rbt-match').textContent   = match.length.toLocaleString();
+  document.getElementById('rbt-match-b').textContent = fmtB(sum(match));
+  document.getElementById('rbt-nf').textContent      = nf.length.toLocaleString();
+  document.getElementById('rbt-nf-b').textContent    = fmtB(sum(nf));
+  document.getElementById('rbt-tip').textContent     = tip.length.toLocaleString();
+  document.getElementById('rbt-tip-b').textContent   = fmtB(sum(tip));
+}
+
+function rbtSetFilter(f, btn) {
+  rbtFilter=f;
+  ['rbtf-all','rbtf-match','rbtf-nf','rbtf-tip'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  btn.classList.add('active'); rbtRender();
+}
+
+function rbtRender() {
+  var rows = rbtFilter==='all' ? rbtRows : rbtFilter==='tip' ? rbtRows.filter(function(r){ return r.isTip; }) : rbtRows.filter(function(r){ return r.reconStatus===rbtFilter; });
+  var tbody=document.getElementById('rbt-tbody'), wrap=document.getElementById('rbt-table-wrap'), empty=document.getElementById('rbt-empty');
+  var cnt=document.getElementById('rbt-row-count'); if(cnt) cnt.textContent=rows.length.toLocaleString()+' รายการ';
+  if (!rows.length) { tbody.innerHTML=''; wrap.classList.add('hidden'); empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden'); wrap.classList.remove('hidden');
+  var fN=function(n){ return (n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var rcBadge=function(s,isTip) {
+    if (isTip) return '<span style="background:#2e1065;color:#c4b5fd;padding:2px 8px;border-radius:4px;font-size:11px">💜 Wallet ทิพย์</span>';
+    if (s==='match') return '<span style="background:#14532d;color:#86efac;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">✅ Match</span>';
+    if (s==='diff')  return '<span style="background:#450a0a;color:#fca5a5;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">❌ Diff</span>';
+    return '<span style="background:#422006;color:#fde68a;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">⚠️ ไม่พบ</span>';
+  };
+  tbody.innerHTML = rows.map(function(r,i) {
+    var bg=r.isTip?'background:rgba(124,58,237,0.06)':r.reconStatus==='match'?'':r.reconStatus==='diff'?'background:rgba(220,38,38,0.05)':'background:rgba(202,138,4,0.04)';
+    return '<tr style="'+bg+'">'
+      +'<td class="text-slate-500">'+(i+1)+'</td>'
+      +'<td class="text-slate-400 text-xs" style="white-space:nowrap">'+escHtml(r.txDate)+'</td>'
+      +'<td class="font-mono text-blue-300 text-xs font-bold">'+escHtml(r.billId)+'</td>'
+      +'<td class="font-mono text-slate-300 text-xs">'+escHtml(r.userId)+'</td>'
+      +'<td class="text-slate-200 text-xs" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escHtml(r.name)+'">'+escHtml(r.name||'—')+'</td>'
+      +'<td class="text-xs text-slate-400">'+escHtml(r.bank)+'</td>'
+      +'<td class="text-right font-mono text-xs text-sky-300">'+fN(r.amount)+'</td>'
+      +'<td>'+rcBadge(r.reconStatus,r.isTip)+'</td>'
+      +'<td class="font-mono text-slate-500 text-xs">'+escHtml(r.matchSource||'—')+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function rbtExport() {
+  if (!rbtRows.length) { alert('ยังไม่มีข้อมูล — กรุณา Run Topup Reconcile ก่อน'); return; }
+  var wb=XLSX.utils.book_new();
+  var head=['#','วันที่','Bill ID','User ID','ชื่อ','ธนาคาร','ยอด check_payment (฿)','สถานะ Recon','แหล่ง Match','Wallet ทิพย์'];
+  var data=rbtRows.map(function(r,i){ return [i+1,r.txDate,r.billId,r.userId,r.name,r.bank,r.amount,r.reconStatus,r.matchSource,r.isTip?'ใช่':'ไม่ใช่']; });
+  var ws=XLSX.utils.aoa_to_sheet([head].concat(data));
+  ws['!cols']=[4,14,12,10,24,12,18,10,20,10].map(function(w){ return {wch:w}; });
+  XLSX.utils.book_append_sheet(wb,ws,'Topup Reconcile');
+  var now=new Date(), stamp=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+  XLSX.writeFile(wb,'MS_TopupRecon_'+stamp+'.xlsx');
+}
+
+// ============================================================
+// SUB C: WALLET BALANCE
+// ============================================================
+function rwbLoad(file) {
+  if (!file) return;
+  var lbl=document.getElementById('rwb-lbl'), zone=document.getElementById('rwb-zone');
+  lbl.textContent='⏳ กำลังอ่าน...';
+  var reader=new FileReader();
+  reader.onload=function(e) {
+    try {
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      // cols: UserID(0),name(1),WalletBalance(2),lastUpdated(3)
+      var hIdx=-1;
+      for (var i=0;i<Math.min(5,raw.length);i++) {
+        var row=raw[i].map(function(c){ return String(c).toLowerCase().trim(); });
+        if (row.some(function(c){ return c.includes('user'); })&&row.some(function(c){ return c.includes('balance')||c.includes('wallet'); })) { hIdx=i; break; }
+      }
+      var colUser=0,colName=1,colBal=2,colDate=3;
+      if (hIdx>=0) raw[hIdx].forEach(function(h,i) {
+        var hh=String(h).toLowerCase().trim();
+        if (/user.*id/i.test(hh)) colUser=i;
+        else if (/^name$|^ชื่อ/i.test(hh)) colName=i;
+        else if (/balance|wallet/i.test(hh)) colBal=i;
+        else if (/date|updated|วัน/i.test(hh)) colDate=i;
+      });
+      var start=hIdx>=0?hIdx+1:1; rwbRows=[];
+      for (var ii=start;ii<raw.length;ii++) {
+        var r=raw[ii];
+        var userId=String(r[colUser]||'').trim(); if(!userId) continue;
+        rwbRows.push({userId:userId, name:String(r[colName]||'').trim(),
+          balance:parseFloat(String(r[colBal]||'0').replace(/,/g,''))||0,
+          updated:String(r[colDate]||'').trim(), isTip:isWalletTip(userId)});
+      }
+      rwbFilter='all'; rwbUpdateSummary(); rwbRender();
+      zone.style.borderColor='#16a34a';
+      lbl.innerHTML='<span style="color:#86efac">✅ '+escHtml(file.name)+'</span><br><span style="color:#4ade80;font-size:11px">'+rwbRows.length.toLocaleString()+' users</span>';
+      document.getElementById('rwb-summary').classList.remove('hidden');
+      document.getElementById('rwb-filters').classList.remove('hidden');
+    } catch(ex) { lbl.textContent='❌ อ่านไฟล์ไม่ได้: '+ex.message; }
+  }; reader.readAsArrayBuffer(file);
+}
+
+function rwbUpdateSummary() {
+  var fmtB=function(n){ return '฿'+(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var tip=rwbRows.filter(function(r){ return r.isTip; });
+  document.getElementById('rwb-total').textContent = rwbRows.length.toLocaleString();
+  document.getElementById('rwb-bal').textContent   = fmtB(rwbRows.reduce(function(a,r){ return a+r.balance; },0));
+  document.getElementById('rwb-tip').textContent   = tip.length.toLocaleString();
+  document.getElementById('rwb-tip-b').textContent = fmtB(tip.reduce(function(a,r){ return a+r.balance; },0));
+}
+
+function rwbSetFilter(f, btn) {
+  rwbFilter=f;
+  ['rwbf-all','rwbf-tip','rwbf-pos','rwbf-zero'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  btn.classList.add('active'); rwbRender();
+}
+
+function rwbRender() {
+  var rows = rwbFilter==='all' ? rwbRows : rwbFilter==='tip' ? rwbRows.filter(function(r){ return r.isTip; }) : rwbFilter==='pos' ? rwbRows.filter(function(r){ return r.balance>0; }) : rwbRows.filter(function(r){ return r.balance<=0; });
+  var tbody=document.getElementById('rwb-tbody'), wrap=document.getElementById('rwb-table-wrap'), empty=document.getElementById('rwb-empty');
+  var cnt=document.getElementById('rwb-row-count'); if(cnt) cnt.textContent=rows.length.toLocaleString()+' รายการ';
+  if (!rows.length) { tbody.innerHTML=''; wrap.classList.add('hidden'); empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden'); wrap.classList.remove('hidden');
+  var fN=function(n){ return (n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  tbody.innerHTML = rows.map(function(r,i) {
+    var bg=r.isTip?'background:rgba(124,58,237,0.06)':'';
+    var bc=r.balance>0?'color:#7dd3fc':r.balance<0?'color:#fca5a5':'color:#64748b';
+    var note=r.isTip?'<span style="background:#2e1065;color:#c4b5fd;padding:2px 8px;border-radius:4px;font-size:11px">💜 Wallet ทิพย์</span>':'';
+    return '<tr style="'+bg+'">'
+      +'<td class="text-slate-500">'+(i+1)+'</td>'
+      +'<td class="font-mono text-slate-300 text-xs">'+escHtml(r.userId)+'</td>'
+      +'<td class="text-slate-200 text-xs" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escHtml(r.name)+'">'+escHtml(r.name)+'</td>'
+      +'<td class="text-right font-mono text-sm font-bold" style="'+bc+'">'+fN(r.balance)+'</td>'
+      +'<td class="text-slate-500 text-xs">'+escHtml(r.updated)+'</td>'
+      +'<td>'+note+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+// ============================================================
+// SUB D: SPECIAL COMPANIES (ต้องออกใบกำกับ)
+// ============================================================
+function scRenderList() {
+  var list=scGetList(), wrap=document.getElementById('sc-list-wrap'); if(!wrap) return;
+  if (!list.length) { wrap.innerHTML='<span class="text-slate-600 text-sm">ยังไม่มีรายชื่อ — เพิ่มโดยกรอก User ID และชื่อบริษัทด้านบน</span>'; return; }
+  wrap.innerHTML = list.map(function(item) {
+    return '<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm" style="background:#2e1065;color:#c4b5fd;border:1px solid #7c3aed">'
+      +'<span class="font-mono font-bold">'+escHtml(item.userId)+'</span>'
+      +' — '+escHtml(item.name)
+      +' <button onclick="scDelete(\''+escHtml(item.userId)+'\')" style="margin-left:4px;color:#a78bfa;font-size:11px;cursor:pointer;background:none;border:none;padding:0" title="ลบ">✕</button>'
+      +'</span>';
+  }).join('');
+}
+
+function scAdd() {
+  var userId=(document.getElementById('sc-new-userid').value||'').trim();
+  var name=(document.getElementById('sc-new-name').value||'').trim();
+  if (!userId) { alert('กรุณากรอก User ID'); return; }
+  if (!name)   { alert('กรุณากรอกชื่อบริษัท'); return; }
+  var list=scGetList();
+  if (list.some(function(x){ return String(x.userId)===userId; })) { alert('User ID '+userId+' มีอยู่แล้ว'); return; }
+  list.push({userId:userId,name:name}); scSaveList(list);
+  document.getElementById('sc-new-userid').value=''; document.getElementById('sc-new-name').value='';
+  scRenderList();
+}
+
+function scDelete(userId) {
+  scSaveList(scGetList().filter(function(x){ return String(x.userId)!==String(userId); }));
+  scRenderList(); scRenderCharges();
+}
+
+function scRenderCharges() {
+  var tbody=document.getElementById('sc-tbody'), wrap=document.getElementById('sc-charges-table-wrap'), empty=document.getElementById('sc-charges-empty');
+  if (!tbody||!wrap||!empty) return;
+  var charges=roaRows.filter(function(r){ return r.type==='invoice'; });
+  if (!charges.length) {
+    wrap.classList.add('hidden'); empty.classList.remove('hidden');
+    empty.textContent=roaRows.length?'ไม่พบ Omise Charges ที่จำแนกเป็น ต้องออกใบกำกับ':'ยังไม่มีข้อมูล — Run Omise Breakdown ก่อน';
+    return;
+  }
+  empty.classList.add('hidden'); wrap.classList.remove('hidden');
+  var fN=function(n){ return (n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  tbody.innerHTML = charges.map(function(r,i) {
+    return '<tr style="background:rgba(124,58,237,0.06)">'
+      +'<td class="text-slate-500">'+(i+1)+'</td>'
+      +'<td class="text-slate-400 text-xs" style="white-space:nowrap">'+escHtml(r.dateStr)+'</td>'
+      +'<td class="font-mono text-slate-400 text-xs" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escHtml(r.chargeId)+'">'+escHtml(r.chargeId)+'</td>'
+      +'<td class="font-mono text-blue-300 text-xs font-bold">'+escHtml(r.billId||'—')+'</td>'
+      +'<td class="font-mono text-slate-300 text-xs">'+escHtml(r.sysId||'—')+'</td>'
+      +'<td class="text-purple-300 text-xs">'+escHtml(scGetName(r.sysId)||r.custName||'—')+'</td>'
+      +'<td class="text-right font-mono text-xs font-bold" style="color:#c4b5fd">'+fN(r.amount)+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+// Init SC list on page load
+document.addEventListener('DOMContentLoaded', function() { scRenderList(); });
+
+// ============================================================
+// MONTHLY REPORT GENERATOR (MR_) — Omise 5-file monthly balance report
+// All globals prefixed MR_ / mr, reuses fmt() and fmtN() from above
+// ============================================================
+var MR_DATA = { charge:null, transfer:null, receipt:null, refund:null, balance:null };
+var MR_LOADED = {};
+var MR_RAW_BUFFERS = {};
+var MR_SHEET_COLS = {
+  charge:   ['funding_amount','fee','fee_vat','net'],
+  transfer: ['amount','fee','fee_vat','net'],
+  receipt:  ['net_transaction_fee','net_transfer_fee','total_fee','total_vat'],
+  refund:   ['amount','charge_fee','charge_fee_vat'],
+  balance:  ['amount']
+};
+var MR_COL_COLORS = {
+  funding_amount:'text-sky-400', fee:'text-orange-400', fee_vat:'text-orange-300',
+  net:'text-emerald-400', amount:'text-emerald-400', charge_fee:'text-orange-400',
+  charge_fee_vat:'text-orange-300', net_transaction_fee:'text-sky-400',
+  net_transfer_fee:'text-sky-400', total_fee:'text-emerald-400', total_vat:'text-orange-300'
+};
+
+function mrFmt(n) {
+  if (n === null || n === undefined || n === '') return '—';
+  return (+n).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function mrEsc(s) {
+  return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function mrSwitchTab(name, btn) {
+  ['upload','charge','transfer','receipt','refund','balance','summary'].forEach(function(t) {
+    document.getElementById('mr-tab-'+t).classList.add('hidden');
+  });
+  document.querySelectorAll('#tab-monthly .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('mr-tab-'+name).classList.remove('hidden');
+  btn.classList.add('active');
+}
+
+function mrDropFile(ev, key) {
+  ev.preventDefault();
+  document.getElementById('mr-uz-'+key).classList.remove('drag-over');
+  var f = ev.dataTransfer.files[0];
+  if (f) mrLoadFile(key, f);
+}
+
+function mrLoadFile(key, file) {
+  if (!file) return;
+  var lbl = document.getElementById('mr-lbl-'+key);
+  lbl.textContent = '⏳ กำลังโหลด ' + file.name + '...';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var rows = mrParseBuffer(e.target.result);
+      MR_DATA[key] = rows;
+      MR_RAW_BUFFERS[key] = e.target.result;
+      MR_LOADED[key] = file.name;
+      document.getElementById('mr-uz-'+key).classList.add('done');
+      lbl.textContent = '✓ ' + file.name + ' (' + (rows.length-1) + ' rows)';
+      mrUpdateLoadedBadges();
+      if (document.getElementById('mr-tab-btn-'+key)) mrRenderDataTab(key);
+    } catch(err) {
+      lbl.textContent = '❌ Error: ' + err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function mrUpdateLoadedBadges() {
+  var keys = ['charge','transfer','receipt','refund','balance'];
+  var ul = document.getElementById('mr-upload-list');
+  var prog = document.getElementById('mr-upload-progress');
+  prog.classList.remove('hidden');
+  ul.innerHTML = keys.map(function(k) {
+    return MR_LOADED[k]
+      ? '<span class="badge badge-g">✓ ' + k + '</span>'
+      : '<span class="badge badge-y">⏳ ' + k + '</span>';
+  }).join('');
+}
+
+function mrIsTrue(v) {
+  return v === true || String(v).toLowerCase() === 'true';
+}
+
+function mrSumCol(data, headers, colName) {
+  var idx = headers.indexOf(colName);
+  if (idx < 0) return null;
+  var total = data.reduce(function(s,r){ return s + (parseFloat(r[idx])||0); }, 0);
+  return Math.round(total * 100) / 100;
+}
+
+function mrRenderDataTab(key) {
+  var rows = MR_DATA[key];
+  if (!rows || rows.length === 0) return;
+  var headers = rows[0];
+  var data = rows.slice(1);
+  var previewCount = Math.min(data.length, 200);
+  var numCols = headers.length;
+  var summaryData = data;
+  var authNote = '';
+  if (key === 'charge') {
+    var authIdx = headers.indexOf('authorized');
+    if (authIdx >= 0) {
+      summaryData = data.filter(function(r){ return mrIsTrue(r[authIdx]); });
+      authNote = ' (authorized=true เท่านั้น)';
+    }
+  }
+  var html = '<div class="flex flex-wrap items-start gap-3 mb-4">';
+  html += '<div class="sum-card"><div class="text-slate-400 text-xs">จำนวนแถวทั้งหมด</div><div class="text-white font-bold text-2xl">' + data.length.toLocaleString() + '</div></div>';
+  if (key === 'charge' && summaryData.length !== data.length) {
+    html += '<div class="sum-card" style="border-color:#22c55e"><div class="text-emerald-400 text-xs">authorized=true</div><div class="text-emerald-400 font-bold text-2xl">' + summaryData.length.toLocaleString() + '</div></div>';
+  }
+  html += '<div class="sum-card"><div class="text-slate-400 text-xs">จำนวนคอลัมน์</div><div class="text-white font-bold text-2xl">' + numCols + '</div></div>';
+  var cols = MR_SHEET_COLS[key] || [];
+  cols.forEach(function(colName) {
+    var total = mrSumCol(summaryData, headers, colName);
+    if (total === null) return;
+    var color = MR_COL_COLORS[colName] || 'text-white';
+    html += '<div class="sum-card"><div class="text-slate-400 text-xs">' + colName + authNote + '</div>'
+          + '<div class="' + color + ' font-bold text-xl">฿' + mrFmt(total) + '</div></div>';
+  });
+  if (data.length > previewCount) {
+    html += '<div class="ml-auto self-center"><span class="text-slate-500 text-xs">แสดง ' + previewCount + ' / ' + data.length + ' แถว</span></div>';
+  }
+  html += '</div>';
+  html += '<div class="overflow-x-auto rounded-lg" style="border:1px solid #334155;max-height:500px;overflow-y:auto">';
+  html += '<table class="w-full"><thead><tr><th>#</th>';
+  headers.forEach(function(h) { html += '<th>' + mrEsc(String(h)) + '</th>'; });
+  html += '</tr></thead><tbody>';
+  for (var i = 0; i < previewCount; i++) {
+    var r = data[i];
+    html += '<tr><td class="text-slate-500">' + (i+1) + '</td>';
+    for (var c = 0; c < headers.length; c++) {
+      var v = r[c] !== undefined ? r[c] : '';
+      html += '<td title="' + mrEsc(String(v)) + '">' + mrEsc(String(v)) + '</td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table></div>';
+  document.getElementById('mr-ct-'+key).innerHTML = html;
+}
+
+function mrSumBalanceBy(kind, type, subtype) {
+  if (!MR_DATA.balance) return 0;
+  var headers = MR_DATA.balance[0];
+  var kindIdx = headers.indexOf('kind');
+  var typeIdx = headers.indexOf('type');
+  var subtypeIdx = headers.indexOf('subtype');
+  var amtIdx = headers.indexOf('amount');
+  if (kindIdx < 0 || typeIdx < 0 || amtIdx < 0) return 0;
+  var satang = MR_DATA.balance.slice(1).reduce(function(s, r) {
+    var ok = (!kind || r[kindIdx] === kind) &&
+             (!type || r[typeIdx] === type) &&
+             (subtype === '' ? true : (!subtype || r[subtypeIdx] === subtype));
+    return ok ? s + Math.round((parseFloat(r[amtIdx]) || 0) * 100) : s;
+  }, 0);
+  return satang / 100;
+}
+
+function mrParseBuffer(buf) {
+  var wb = XLSX.read(buf, {type:'array'});
+  var ws = wb.Sheets[wb.SheetNames[0]];
+  var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+  var _origLen = rows.length;
+  if (ws['!ref']) {
+    var _re = XLSX.utils.decode_range(ws['!ref']);
+    _re.e.r += 10;
+    ws['!ref'] = XLSX.utils.encode_range(_re);
+  }
+  var _rowsExt = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+  var _hLen = rows.length > 0 ? rows[0].length : 0;
+  var _thr = Math.max(8, Math.ceil(_hLen * 0.30));
+  _rowsExt.slice(_origLen).forEach(function(r) {
+    if (r.filter(function(v){return v!=='';}).length >= _thr) rows.push(r);
+  });
+  if (rows.length > 1) {
+    var _idIdx = rows[0].indexOf('id');
+    if (_idIdx >= 0) {
+      rows = [rows[0]].concat(rows.slice(1).filter(function(r) {
+        return r[_idIdx] !== '' && r[_idIdx] !== null && r[_idIdx] !== undefined;
+      }));
+    }
+  }
+  while (rows.length > 1 && rows[rows.length-1].every(function(v){return v===''})) { rows.pop(); }
+  return rows;
+}
+
+function mrReprocess() {
+  var btn = document.querySelector('#tab-monthly [onclick="mrReprocess()"]');
+  var keys = Object.keys(MR_RAW_BUFFERS);
+  if (keys.length === 0) {
+    document.getElementById('mr-gen-status').textContent = '⚠ ยังไม่มีไฟล์ที่โหลด กรุณาอัปโหลดก่อน';
+    if (btn) { btn.style.background='#991b1b'; btn.textContent='⚠ ไม่มีไฟล์'; setTimeout(function(){ btn.style.background='#7c3aed'; btn.textContent='🔄 Refresh'; }, 2000); }
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ กำลัง Refresh...'; btn.style.background='#4338ca'; }
+  setTimeout(function() {
+    try {
+      keys.forEach(function(k) {
+        MR_DATA[k] = mrParseBuffer(MR_RAW_BUFFERS[k]);
+        var lbl = document.getElementById('mr-lbl-'+k);
+        if (lbl) lbl.textContent = '✓ ' + MR_LOADED[k] + ' (' + (MR_DATA[k].length-1) + ' rows)';
+        if (document.getElementById('mr-tab-btn-'+k)) mrRenderDataTab(k);
+      });
+      mrGenerate();
+      if (btn) { btn.textContent = '✅ Refreshed!'; btn.style.background='#065f46'; }
+    } catch(e) {
+      if (btn) { btn.textContent = '❌ Error'; btn.style.background='#991b1b'; }
+      document.getElementById('mr-gen-status').textContent = '❌ ' + e.message;
+    }
+    setTimeout(function(){ if (btn) { btn.disabled=false; btn.textContent='🔄 Refresh'; btn.style.background='#7c3aed'; } }, 2000);
+  }, 50);
+}
+
+function mrBalRow(label, value, cls, subLabel) {
+  var valStr = (value === '' || value === null) ? '<span class="text-slate-600">—</span>' : '<span>฿' + mrFmt(value) + '</span>';
+  return '<div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-800">'
+       + '<div class="text-slate-400 text-sm">' + mrEsc(label) + (subLabel ? '<span class="text-slate-600 text-xs ml-2">(' + mrEsc(subLabel) + ')</span>' : '') + '</div>'
+       + '<div class="font-mono text-sm font-semibold ' + (cls||'text-slate-200') + '">' + valStr + '</div>'
+       + '</div>';
+}
+
+function mrGenerate() {
+  var keys = ['charge','transfer','receipt','refund','balance'];
+  var missing = keys.filter(function(k){ return !MR_DATA[k]; });
+  if (missing.length > 0) {
+    document.getElementById('mr-gen-status').textContent = '⚠ ยังไม่ได้อัปโหลด: ' + missing.join(', ');
+    return;
+  }
+  var prevBalRaw = document.getElementById('mr-inp-prevbal').value;
+  var prevBal = prevBalRaw !== '' ? parseFloat(prevBalRaw) : null;
+  var confirmedBal = document.getElementById('mr-inp-confirmed').value !== ''
+    ? parseFloat(document.getElementById('mr-inp-confirmed').value) : null;
+  var monthLabel = document.getElementById('mr-inp-month').value || 'เดือนนี้';
+  if (prevBal === null || isNaN(prevBal)) {
+    document.getElementById('mr-gen-status').textContent = '⚠ กรุณากรอกยอดยกมาจากเดือนที่แล้วก่อน';
+    document.getElementById('mr-inp-prevbal').style.borderColor = '#ef4444';
+    return;
+  }
+  document.getElementById('mr-inp-prevbal').style.borderColor = '#f59e0b';
+  keys.forEach(function(k) { mrRenderDataTab(k); });
+
+  var netCharge = (function() {
+    var rows = MR_DATA.charge;
+    if (!rows || rows.length < 2) return mrSumBalanceBy('charge', 'credit', '');
+    var h = rows[0];
+    var netIdx  = h.indexOf('net');
+    var authIdx = h.indexOf('authorized');
+    if (netIdx < 0) return mrSumBalanceBy('charge', 'credit', '');
+    var satang = rows.slice(1).reduce(function(s, r) {
+      if (authIdx >= 0 && !mrIsTrue(r[authIdx])) return s;
+      return s + Math.round((parseFloat(r[netIdx]) || 0) * 100);
+    }, 0);
+    return satang / 100;
+  })();
+  var refundDebit  = mrSumBalanceBy('refund',     'debit',  '');
+  var refundCredit = mrSumBalanceBy('refund',      'credit', '');
+  var transferDeb  = mrSumBalanceBy('transfer',    'debit',  '');
+  var adjCredit    = mrSumBalanceBy('adjustment',  'credit', '');
+  var adjDebit     = mrSumBalanceBy('adjustment',  'debit',  '');
+  var calcBal = Math.round((prevBal + netCharge - refundDebit + refundCredit - transferDeb + adjCredit - adjDebit) * 100) / 100;
+  var displayBal = confirmedBal !== null ? confirmedBal : calcBal;
+  var pendingTransfer = confirmedBal !== null ? Math.round((calcBal - confirmedBal) * 100) / 100 : null;
+  var monthName = monthLabel;
+  var html = '';
+
+  html += '<div class="flex items-center justify-between mb-5">';
+  html += '<h2 class="text-white font-bold text-xl">ยอดคงเหลือ ณ ' + mrEsc(monthName) + '</h2>';
+  html += '<button class="export-btn" onclick="mrExportExcel()">⬇ Export Excel</button>';
+  html += '</div>';
+  if (confirmedBal === null) {
+    html += '<div class="mb-4 px-4 py-2 rounded" style="background:#422006;border:1px solid #92400e">'
+          + '<span class="text-yellow-300 text-sm">⚠ ยังไม่ได้ใส่ยอดยืนยันจาก PDF — ยอดที่แสดงคำนวณจาก Balance Transaction เท่านั้น</span>'
+          + '</div>';
+  }
+  html += '<div class="max-w-2xl">';
+  html += '<div style="background:#0f172a;border:1px solid #334155;border-radius:10px;overflow:hidden">';
+  html += '<div class="flex items-center justify-between px-4 py-3 border-b border-slate-700" style="background:#1e293b">';
+  html += '<div class="text-slate-300 text-sm font-semibold">Ending Balance เดือนที่แล้ว</div>';
+  html += '<div class="text-yellow-300 font-mono font-bold text-base">฿' + mrFmt(prevBal) + '</div>';
+  html += '</div>';
+  html += mrBalRow('+' + monthName + ' net charge amount (credit)', netCharge, 'text-emerald-400');
+  html += mrBalRow('- ' + monthName + ' refund amount (debit)', refundDebit > 0 ? -refundDebit : '', 'text-red-400');
+  html += mrBalRow('+ ' + monthName + ' refund fee and vat return (credit)', refundCredit > 0 ? refundCredit : '', 'text-emerald-400');
+  html += mrBalRow('+ or - ' + monthName + ' dispute amount', '', 'text-slate-500');
+  html += mrBalRow('- ' + monthName + ' transfer amount (debit)', transferDeb > 0 ? -transferDeb : '', 'text-red-400');
+  html += mrBalRow('+ ' + monthName + ' adjustment credit', adjCredit > 0 ? adjCredit : '', 'text-emerald-400');
+  html += mrBalRow('- ' + monthName + ' adjustment debit', adjDebit > 0 ? -adjDebit : '', 'text-orange-400');
+  html += '<div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-700" style="background:#0c1a2e">';
+  html += '<div class="text-sky-400 text-sm">Calculated Balance (จาก Balance Transactions)</div>';
+  html += '<div class="text-sky-400 font-mono font-bold text-base">฿' + mrFmt(calcBal) + '</div>';
+  html += '</div>';
+  if (pendingTransfer !== null && Math.abs(pendingTransfer) >= 0.01) {
+    html += '<div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-700" style="background:#1c0a0a">';
+    html += '<div class="text-orange-300 text-sm">- Transfer ค้างจ่าย (โอนต้นเดือนถัดไป)</div>';
+    html += '<div class="text-orange-300 font-mono font-bold text-base">฿' + mrFmt(-pendingTransfer) + '</div>';
+    html += '</div>';
+  }
+  var finalBorderColor = confirmedBal !== null ? '#065f46' : '#475569';
+  html += '<div class="flex items-center justify-between px-4 py-3" style="background:' + (confirmedBal !== null ? '#022c22' : '#1e293b') + ';border-top:2px solid ' + finalBorderColor + '">';
+  html += '<div class="font-bold text-base ' + (confirmedBal !== null ? 'text-emerald-300' : 'text-slate-300') + '">ยอดคงเหลือ ณ ' + mrEsc(monthName) + (confirmedBal !== null ? ' ✅ ยืนยันจาก PDF' : '') + '</div>';
+  html += '<div class="font-mono font-bold text-2xl ' + (confirmedBal !== null ? 'text-emerald-300' : 'text-slate-200') + '">฿' + mrFmt(displayBal) + '</div>';
+  html += '</div></div>';
+
+  html += '<div class="mt-3" style="background:#0f172a;border:1px solid #334155;border-radius:8px;overflow:hidden">';
+  html += '<div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-800">';
+  html += '<div class="text-slate-400 text-sm">GL Peak (กรอกจาก GL Report)</div>';
+  var glConfirmedVal = confirmedBal !== null ? confirmedBal : calcBal;
+  html += '<input type="number" id="mr-inp-gl" placeholder="' + glConfirmedVal.toFixed(2) + '" step="0.01" style="width:200px;text-align:right;background:#1e293b;border:1px solid #475569;color:#e2e8f0;border-radius:4px;padding:4px 8px;font-size:13px" oninput="mrUpdateGLDiff(' + displayBal + ')">';
+  html += '</div><div class="flex items-center justify-between px-4 py-2.5">';
+  html += '<div class="text-slate-400 text-sm">ผลต่าง (Omise − GL)</div>';
+  html += '<div class="font-mono text-sm font-semibold text-slate-500" id="mr-gl-diff-val">—</div>';
+  html += '</div></div>';
+
+  html += '<div class="mt-6 max-w-2xl"><div class="text-slate-300 text-sm font-semibold mb-2">รายละเอียดการโอน (Transfer ในไฟล์เดือนนี้)</div>';
+  html += '<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;overflow:hidden">';
+  if (MR_DATA.transfer && MR_DATA.transfer.length > 1) {
+    var th = MR_DATA.transfer[0];
+    var dateIdx2 = th.indexOf('created_at');
+    var amtIdx2  = th.indexOf('amount');
+    var idIdx2   = th.indexOf('id');
+    var tTotal = 0;
+    MR_DATA.transfer.slice(1).forEach(function(r) {
+      var amt = parseFloat(r[amtIdx2] || 0);
+      tTotal += amt;
+      html += '<div class="flex items-center justify-between px-4 py-2 border-b border-slate-800">';
+      html += '<div class="text-slate-400 text-xs font-mono">' + mrEsc(String(r[dateIdx2]||'').substring(0,10)) + ' &nbsp; ' + mrEsc(String(r[idIdx2]||'')) + '</div>';
+      html += '<div class="text-white font-mono text-sm">฿' + mrFmt(amt) + '</div></div>';
+    });
+    html += '<div class="flex items-center justify-between px-4 py-2" style="background:#1e293b">';
+    html += '<div class="text-white text-xs font-bold">รวมโอนทั้งหมด ' + (MR_DATA.transfer.length-1) + ' รายการ</div>';
+    html += '<div class="text-white font-mono font-bold">฿' + mrFmt(Math.round(tTotal*100)/100) + '</div></div>';
+    if (pendingTransfer !== null && Math.abs(pendingTransfer) >= 0.01) {
+      html += '<div class="flex items-center justify-between px-4 py-2" style="background:#1c1107">';
+      html += '<div class="text-orange-300 text-xs">⏳ Transfer ค้างจ่าย (ยังไม่อยู่ในไฟล์เดือนนี้)</div>';
+      html += '<div class="text-orange-300 font-mono text-sm font-bold">฿' + mrFmt(pendingTransfer) + '</div></div>';
+    }
+  }
+  html += '</div></div>';
+  html += '<div class="mt-8 flex items-center gap-4">';
+  html += '<button class="export-btn" onclick="mrExportExcel()">⬇ Export Excel — makesend-report</button>';
+  html += '<span class="text-slate-500 text-sm">ครบ 7 sheet เหมือน makesend-report-mar2026.xlsx</span></div>';
+  html += '</div>';
+
+  window.MR_SUMMARY = {
+    prevBal:prevBal, netCharge:netCharge, refundDebit:refundDebit,
+    refundCredit:refundCredit, transferDeb:transferDeb,
+    adjCredit:adjCredit, adjDebit:adjDebit,
+    calcBal:calcBal, displayBal:displayBal,
+    confirmedBal:confirmedBal, pendingTransfer:pendingTransfer, monthName:monthName
+  };
+  document.getElementById('mr-ct-summary').innerHTML = html;
+  document.getElementById('mr-gen-status').textContent = '✓ สร้างรายงานแล้ว — คลิก tab 📋 ยอดคงเหลือ เพื่อดูผล';
+}
+
+function mrUpdateGLDiff(omiseBal) {
+  var gl = parseFloat(document.getElementById('mr-inp-gl').value);
+  var el = document.getElementById('mr-gl-diff-val');
+  if (isNaN(gl)) { el.textContent = '—'; el.className = 'font-mono text-sm font-semibold text-slate-500'; return; }
+  var diff = Math.round((omiseBal - gl) * 100) / 100;
+  if (Math.abs(diff) < 0.01) {
+    el.textContent = '฿' + mrFmt(diff) + ' ✓ ยอดตรง';
+    el.className = 'font-mono text-sm font-bold text-emerald-400';
+  } else {
+    el.textContent = '฿' + mrFmt(diff);
+    el.className = 'font-mono text-sm font-bold text-red-400';
+  }
+}
+
+function mrExportExcel() {
+  var keys = ['charge','transfer','receipt','refund','balance'];
+  var missing = keys.filter(function(k){ return !MR_DATA[k]; });
+  if (missing.length > 0) { alert('ยังไม่ได้อัปโหลด: ' + missing.join(', ')); return; }
+  var S = window.MR_SUMMARY;
+  if (!S) { alert('กรุณากด Generate Report ก่อน'); return; }
+  var wb = XLSX.utils.book_new();
+  function rowsToSheet(r) { return XLSX.utils.aoa_to_sheet(r); }
+  XLSX.utils.book_append_sheet(wb, rowsToSheet(MR_DATA.charge),   'การรับชำระ');
+  XLSX.utils.book_append_sheet(wb, rowsToSheet(MR_DATA.transfer), 'OmiseโอนมาKbank');
+  XLSX.utils.book_append_sheet(wb, rowsToSheet(MR_DATA.receipt),  'Receipt');
+  XLSX.utils.book_append_sheet(wb, rowsToSheet(MR_DATA.refund),   'Refund');
+  XLSX.utils.book_append_sheet(wb, rowsToSheet(MR_DATA.balance),  'Balance');
+  var monthName = S.monthName;
+  var glVal = '';
+  var glInput = document.getElementById('mr-inp-gl');
+  if (glInput && glInput.value) glVal = parseFloat(glInput.value) || '';
+  var finalBal = S.confirmedBal !== null ? S.confirmedBal : S.calcBal;
+  var yodRows = [
+    [],
+    ['ยอดคงเหลือ ณ ' + monthName, finalBal],
+    [], [], [],
+    ['Ending Balance at the end of เดือนที่แล้ว', S.prevBal],
+    ['+' + monthName + ' net charge amount (credit)', S.netCharge],
+    ['- ' + monthName + ' refund amount (debit)', S.refundDebit > 0 ? -S.refundDebit : ''],
+    ['+ ' + monthName + ' refund fee and vat return amount (credit)', S.refundCredit > 0 ? S.refundCredit : ''],
+    ['+ or - ' + monthName + ' dispute amount (credit or debit)', ''],
+    ['- ' + monthName + ' transfer amount (debit)', -S.transferDeb],
+    ['+ ' + monthName + ' adjustment amount (credit)', S.adjCredit > 0 ? S.adjCredit : ''],
+    ['- ' + monthName + ' adjustment amount (debit)', S.adjDebit > 0 ? -S.adjDebit : ''],
+    ['Calculated Balance at ' + monthName, S.calcBal],
+    S.pendingTransfer !== null && Math.abs(S.pendingTransfer) >= 0.01
+      ? ['- Transfer ค้างจ่าย (โอนต้นเดือนถัดไป)', -S.pendingTransfer] : [],
+    ['Balance at ' + monthName + (S.confirmedBal !== null ? ' (ยืนยันจาก PDF)' : ''), finalBal],
+    ['', 0], [],
+    ['GL Peak', glVal],
+    ['', glVal !== '' ? Math.round((finalBal - glVal) * 100) / 100 : '']
+  ];
+  XLSX.utils.book_append_sheet(wb, rowsToSheet(yodRows), 'ยอดคงเหลือ');
+  var glRows = [
+    ['111501 (กระเป๋าเงินอิเล็กทรอนิกส์)', '', '', '', '', '', '', '', '', '', 'ชื่อรายงาน :', 'รายงานบัญชีแยกประเภท'],
+    ['', 'ผู้ออกรายงาน :'],
+    ['', 'ชื่อกิจการ :', 'บริษัท เมคเซนด์ เอ็กซ์เพรส จำกัด'],
+    ['', 'วันที่ออกรายงาน :'], ['', 'ช่วงวันที่ :'], ['', 'เลขที่บัญชี :', '111501'], [],
+    ['ลำดับที่','เลขที่รายวัน','วันที่ออก','อ้างอิง','ผู้ติดต่อ','คำอธิบาย','เดบิต','เครดิต','คงเหลือ'],
+    [1,'','','','','ยอดยกมา', S.prevBal, 0, S.prevBal]
+  ];
+  XLSX.utils.book_append_sheet(wb, rowsToSheet(glRows), 'GL');
+  var fname = (document.getElementById('mr-inp-fname').value || 'makesend-report') + '.xlsx';
+  XLSX.writeFile(wb, fname);
+}
+</script>
+</body>
+</html>
