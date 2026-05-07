@@ -541,7 +541,17 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
       <button class="filter-btn" id="roaf-invoice" onclick="roaSetFilter('invoice',this)" style="border-color:#7c3aed;color:#c4b5fd">🏢 ต้องออกใบกำกับ</button>
       <button class="filter-btn" id="roaf-unknown" onclick="roaSetFilter('unknown',this)" style="border-color:#ca8a04;color:#fde68a">❓ ไม่ระบุ</button>
       <button class="filter-btn" id="roaf-noted" onclick="roaSetFilter('noted',this)" style="border-color:#3b82f6;color:#93c5fd">📝 มี Note <span id="roaf-noted-cnt" style="background:#1d4ed8;color:#fff;border-radius:10px;padding:0 6px;font-size:10px;margin-left:3px">0</span></button>
-      <span class="text-slate-500 text-xs ml-auto" id="roa-row-count"></span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <div style="position:relative">
+          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#475569;font-size:13px;pointer-events:none">🔍</span>
+          <input id="roa-search" type="text" placeholder="ค้นหา Bill ID, Charge ID, ชื่อ, System ID…" oninput="roaRender()"
+            style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:5px 10px 5px 30px;font-size:12px;width:280px;outline:none"
+            onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#334155'">
+          <button id="roa-search-clear" onclick="roaClearSearch()" title="ล้างการค้นหา"
+            style="display:none;position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:#64748b;cursor:pointer;font-size:14px;line-height:1;padding:0">✕</button>
+        </div>
+        <span class="text-slate-500 text-xs" id="roa-row-count"></span>
+      </div>
     </div>
     <div id="roa-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:55vh;overflow-y:auto">
       <table class="w-full" style="border-collapse:collapse">
@@ -2346,6 +2356,8 @@ function roaRun() {
     }
 
     roaFilter='all';
+    var _si=document.getElementById('roa-search'); if(_si) _si.value='';
+    var _sc=document.getElementById('roa-search-clear'); if(_sc) _sc.style.display='none';
     ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
     var all=document.getElementById('roaf-all'); if(all) all.classList.add('active');
     roaUpdateSummary(); roaRenderComparison(); roaRender();
@@ -2430,6 +2442,12 @@ function roaSetFilter(f, btn) {
   btn.classList.add('active'); roaRender();
 }
 
+function roaClearSearch() {
+  var inp = document.getElementById('roa-search'); if(inp) inp.value='';
+  var clr = document.getElementById('roa-search-clear'); if(clr) clr.style.display='none';
+  roaRender();
+}
+
 function roaRender() {
   roaLoadNotes();
   // update noted badge count
@@ -2438,8 +2456,28 @@ function roaRender() {
   var rows = roaFilter==='all'   ? roaRows
            : roaFilter==='noted' ? roaRows.filter(function(r){ return !!roaGetNote(r.chargeId); })
            : roaRows.filter(function(r){ return r.type===roaFilter; });
+  // Apply search filter
+  var searchEl = document.getElementById('roa-search');
+  var q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  var clrBtn = document.getElementById('roa-search-clear');
+  if (clrBtn) clrBtn.style.display = q ? 'block' : 'none';
+  if (q) {
+    rows = rows.filter(function(r) {
+      var note = roaGetNote(r.chargeId).toLowerCase();
+      return (r.billId    && r.billId.toLowerCase().includes(q))
+          || (r.chargeId  && r.chargeId.toLowerCase().includes(q))
+          || (r.sysId     && r.sysId.toLowerCase().includes(q))
+          || (r.custName  && r.custName.toLowerCase().includes(q))
+          || (r.ref       && r.ref.toLowerCase().includes(q))
+          || (r.dateStr   && r.dateStr.toLowerCase().includes(q))
+          || note.includes(q);
+    });
+  }
   var tbody=document.getElementById('roa-tbody'), wrap=document.getElementById('roa-table-wrap'), empty=document.getElementById('roa-empty');
-  var cnt=document.getElementById('roa-row-count'); if(cnt) cnt.textContent=rows.length.toLocaleString()+' รายการ';
+  var cnt=document.getElementById('roa-row-count');
+  if(cnt) cnt.textContent = q
+    ? rows.length.toLocaleString()+' / '+roaRows.length.toLocaleString()+' รายการ'
+    : rows.length.toLocaleString()+' รายการ';
   if (!rows.length) { tbody.innerHTML=''; wrap.classList.add('hidden'); empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden'); wrap.classList.remove('hidden');
   var fN = function(n){ return (n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
