@@ -1736,7 +1736,7 @@ function detectIncomeColumns(raw) {
     if (s.includes('status') && (s.includes('delivery') || s.includes('invoice') || s.includes('date'))) { hIdx = i; break; }
   }
   // Default column positions (0-indexed) matching Income Record layout
-  const col = { receipt:0, status:1, invoice:2, date:3, sysId:4, name:6, fee:7, delivery:8, cod:9, codFee:10, billId:11 };
+  const col = { receipt:0, status:1, invoice:2, date:3, sysId:4, name:6, fee:7, delivery:8, cod:9, codFee:10, billId:11, note:-1, perOmise:-1 };
   if (hIdx >= 0) {
     raw[hIdx].map(c => String(c||'').toLowerCase().trim()).forEach((h, i) => {
       if (h === 'status') col.status = i;
@@ -1749,6 +1749,8 @@ function detectIncomeColumns(raw) {
       else if (h.includes('total cod')) col.cod = i;
       else if (h.includes('cod fee')) col.codFee = i;
       else if (h.includes('bill')) col.billId = i;
+      else if (h.includes('หมายเหตุ') || h === 'note' || h === 'remark' || h === 'remarks') col.note = i;
+      else if (h.includes('per omise') || h === 'peromise') col.perOmise = i;
     });
   }
   const dataStart = hIdx >= 0 ? hIdx + 1 : 0;
@@ -1788,7 +1790,9 @@ function parseIncomeRowsAsync(raw, onProgress, onDone) {
         yearMonth: `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`,
         sysId, name: String(r[col.name] || '').trim(),
         delivery, cod, codFee, fee, income: delivery + codFee,
-        isTip, tipName: isTip ? (getWalletTipName(sysId) || '') : null
+        isTip, tipName: isTip ? (getWalletTipName(sysId) || '') : null,
+        note:     col.note     >= 0 ? String(r[col.note]     || '').trim() : '',
+        perOmise: col.perOmise >= 0 ? parseIncNum(r[col.perOmise])         : null
       });
     }
     onProgress(i - dataStart, raw.length - dataStart);
@@ -2325,6 +2329,22 @@ function roaRun() {
                dateStr:fmtDate(o.dateRaw), sysId:sysId, custName:custName,
                type:type, ref:ref, incomeAmt:incomeAmt, incomeFee:incomeFee };
     });
+    // Auto-populate notes from Income หมายเหตุ column (non-overwriting — manual notes take priority)
+    roaLoadNotes();
+    var notesUpdated = 0;
+    roaRows.forEach(function(r) {
+      if (!r.billId) return;
+      var inc = incomeMap.get(r.billId);
+      if (!inc || !inc.note) return;
+      if (!roaNotes[r.chargeId]) {   // only if no manual note already exists
+        roaNotes[r.chargeId] = inc.note;
+        notesUpdated++;
+      }
+    });
+    if (notesUpdated > 0) {
+      localStorage.setItem(ROA_NOTES_KEY, JSON.stringify(roaNotes));
+    }
+
     roaFilter='all';
     ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
     var all=document.getElementById('roaf-all'); if(all) all.classList.add('active');
