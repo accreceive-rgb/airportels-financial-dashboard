@@ -2154,21 +2154,30 @@ function roaLoadOmise(file) {
         if (row.some(function(c){ return c==='id'; }) && row.some(function(c){ return c.includes('description')||c.includes('amount'); })) { hIdx=i; break; }
       }
       var headers = hIdx>=0 ? raw[hIdx].map(function(c){ return String(c).toLowerCase().trim(); }) : [];
-      var colId        = headers.indexOf('id');                                                      if (colId<0) colId=0;
-      // amount = gross charge to customer; funding_amount = net settled to Airportels (after Omise fee)
-      var colAmt       = headers.findIndex(function(h){ return h==='amount'; });                   if (colAmt<0) colAmt=2;
-      var colFundingAmt= headers.findIndex(function(h){ return h==='funding_amount'; });           if (colFundingAmt<0) colFundingAmt=-1;
-      var colFee       = headers.findIndex(function(h){ return h==='fee' && !h.includes('vat'); });if (colFee<0) colFee=headers.findIndex(function(h){ return h==='fee'; }); if (colFee<0) colFee=3;
-      var colFeeVat    = headers.findIndex(function(h){ return h==='fee_vat'; });                  if (colFeeVat<0) colFeeVat=4;
-      var colNet       = headers.findIndex(function(h){ return h==='net'; });                      if (colNet<0) colNet=5;
-      var colDesc      = headers.findIndex(function(h){ return h.includes('description'); });      if (colDesc<0) colDesc=7;
-      var colDate      = headers.findIndex(function(h){ return h.includes('created'); });          if (colDate<0) colDate=1;
-      var start        = hIdx>=0 ? hIdx+1 : 1;
+      var colId     = headers.indexOf('id');                                                         if (colId<0) colId=0;
+      var colAmt    = headers.findIndex(function(h){ return h==='amount'; });                      if (colAmt<0) colAmt=3;
+      var colFee    = headers.findIndex(function(h){ return h==='fee' && !h.includes('vat'); });   if (colFee<0) colFee=headers.findIndex(function(h){ return h==='fee'; }); if (colFee<0) colFee=7;
+      var colFeeVat = headers.findIndex(function(h){ return h==='fee_vat'; });                     if (colFeeVat<0) colFeeVat=8;
+      var colNet    = headers.findIndex(function(h){ return h==='net'; });                         if (colNet<0) colNet=11;
+      var colDesc   = headers.findIndex(function(h){ return h.includes('description'); });         if (colDesc<0) colDesc=12;
+      var colDate   = headers.findIndex(function(h){ return h.includes('created'); });             if (colDate<0) colDate=2;
+      var colPaid   = headers.findIndex(function(h){ return h==='paid'; });                        // paid=true เท่านั้น
+      var colStatus = headers.findIndex(function(h){ return h==='status'; });
+      var start     = hIdx>=0 ? hIdx+1 : 1;
+      var skipped   = 0;
       roaOmiseRaw = [];
       for (var ii = start; ii < raw.length; ii++) {
         var r = raw[ii];
         var id = String(r[colId]||'').trim();
         if (!id.startsWith('chrg_')) continue;
+        // เฉพาะ paid=true (successful) — ตัด expired/failed ออก
+        if (colPaid>=0) {
+          var paidVal = String(r[colPaid]||'').toLowerCase().trim();
+          if (paidVal !== 'true' && paidVal !== '1' && paidVal !== 'yes') { skipped++; continue; }
+        } else if (colStatus>=0) {
+          var stVal = String(r[colStatus]||'').toLowerCase().trim();
+          if (stVal !== 'successful') { skipped++; continue; }
+        }
         var desc = String(r[colDesc]||'');
         var mx   = desc.match(/Bill ID\s*(\d+)/i);
         var pf   = function(v){ return parseFloat(String(v||'0').replace(/,/g,''))||0; };
@@ -2191,12 +2200,12 @@ function roaLoadOmise(file) {
       }
       zone.style.borderColor = '#16a34a';
       var totalGross = roaOmiseRaw.reduce(function(a,r){return a+r.amount;},0);
-      var totalFA    = roaOmiseRaw.reduce(function(a,r){return a+(r.fundingAmt||0);},0);
-      var fmtB2 = function(n){return '฿'+(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});};
+      var totalNet   = roaOmiseRaw.reduce(function(a,r){return a+(r.fundingAmt||0);},0);
       lbl.innerHTML = '<span style="color:#86efac">✅ '+escHtml(file.name)+'</span><br>'
-        +'<span style="color:#4ade80;font-size:11px">'+roaOmiseRaw.length.toLocaleString()+' charges'
-        +' | gross ฿'+totalGross.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})
-        +' | net (หลังหัก fee) ฿'+totalFA.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})
+        +'<span style="color:#4ade80;font-size:11px">'+roaOmiseRaw.length.toLocaleString()+' charges (paid)'
+        +(skipped>0 ? ' <span style="color:#f87171">+'+skipped+' ตัดออก (expired/failed)</span>' : '')
+        +' | ฿'+totalGross.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})
+        +' | net ฿'+totalNet.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})
         +'</span>';
     } catch(ex) { lbl.textContent = '❌ อ่านไฟล์ไม่ได้: '+ex.message; }
   };
