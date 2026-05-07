@@ -2161,7 +2161,7 @@ function roaLoadOmise(file) {
       var colNet    = headers.findIndex(function(h){ return h==='net'; });                         if (colNet<0) colNet=11;
       var colDesc   = headers.findIndex(function(h){ return h.includes('description'); });         if (colDesc<0) colDesc=12;
       var colDate   = headers.findIndex(function(h){ return h.includes('created'); });             if (colDate<0) colDate=2;
-      var colPaid   = headers.findIndex(function(h){ return h==='paid'; });                        // paid=true เท่านั้น
+      var colAuth   = headers.findIndex(function(h){ return h==='authorized'; });                   // authorized=true เท่านั้น
       var colStatus = headers.findIndex(function(h){ return h==='status'; });
       var start     = hIdx>=0 ? hIdx+1 : 1;
       var skipped   = 0;
@@ -2170,10 +2170,10 @@ function roaLoadOmise(file) {
         var r = raw[ii];
         var id = String(r[colId]||'').trim();
         if (!id.startsWith('chrg_')) continue;
-        // เฉพาะ paid=true (successful) — ตัด expired/failed ออก
-        if (colPaid>=0) {
-          var paidVal = String(r[colPaid]||'').toLowerCase().trim();
-          if (paidVal !== 'true' && paidVal !== '1' && paidVal !== 'yes') { skipped++; continue; }
+        // เฉพาะ authorized=true — ตัด expired/failed ออก
+        if (colAuth>=0) {
+          var authVal = String(r[colAuth]||'').toLowerCase().trim();
+          if (authVal !== 'true' && authVal !== '1' && authVal !== 'yes') { skipped++; continue; }
         } else if (colStatus>=0) {
           var stVal = String(r[colStatus]||'').toLowerCase().trim();
           if (stVal !== 'successful') { skipped++; continue; }
@@ -2203,7 +2203,7 @@ function roaLoadOmise(file) {
       var totalNet   = roaOmiseRaw.reduce(function(a,r){return a+(r.fundingAmt||0);},0);
       lbl.innerHTML = '<span style="color:#86efac">✅ '+escHtml(file.name)+'</span><br>'
         +'<span style="color:#4ade80;font-size:11px">'+roaOmiseRaw.length.toLocaleString()+' charges (paid)'
-        +(skipped>0 ? ' <span style="color:#f87171">+'+skipped+' ตัดออก (expired/failed)</span>' : '')
+        +(skipped>0 ? ' <span style="color:#f87171">+'+skipped+' ตัดออก (not authorized)</span>' : '')
         +' | ฿'+totalGross.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})
         +' | net ฿'+totalNet.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})
         +'</span>';
