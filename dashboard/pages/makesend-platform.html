@@ -507,6 +507,32 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
       <div class="stat-card" style="border-color:#7c3aed"><p class="stat-label text-purple-400">🏢 ต้องออกใบกำกับ</p><p class="stat-value text-purple-400" id="roa-invoice">0</p><p class="stat-sub text-purple-600" id="roa-invoice-b">฿0</p></div>
       <div class="stat-card" style="border-color:#ca8a04"><p class="stat-label text-amber-400">❓ ไม่ระบุ</p><p class="stat-value text-amber-400" id="roa-unknown">0</p><p class="stat-sub text-amber-600" id="roa-unknown-b">฿0</p></div>
     </div>
+    <!-- Compare panel (hidden until run) -->
+    <div id="roa-compare" class="hidden mb-4 grid gap-3" style="grid-template-columns:1fr 1fr">
+      <div class="rounded-lg p-4" style="background:#071810;border:1px solid #16a34a">
+        <p class="text-emerald-400 font-semibold mb-3 text-sm">🚚 ค่าขนส่ง — ยอดเปรียบเทียบ</p>
+        <table class="w-full">
+          <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก Omise (funding_amount)</td><td class="text-right font-mono font-bold text-white text-sm" id="cmp-tp-omise">—</td></tr>
+          <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก Income (ค่าส่ง)</td><td class="text-right font-mono font-bold text-emerald-300 text-sm" id="cmp-tp-income">—</td></tr>
+          <tr style="border-top:1px solid #1a3a1e"><td class="text-slate-200 text-sm pt-2 pb-3 font-semibold">ผลต่าง Omise − Income</td><td class="text-right font-mono font-bold pt-2 text-sm" id="cmp-tp-diff">—</td></tr>
+          <tr><td class="text-slate-500 text-xs pb-1">Omise Fee รวม</td><td class="text-right font-mono text-orange-400 text-xs" id="cmp-tp-fee">—</td></tr>
+          <tr><td class="text-slate-500 text-xs pb-1">Omise Fee VAT รวม</td><td class="text-right font-mono text-orange-300 text-xs" id="cmp-tp-feevat">—</td></tr>
+          <tr style="border-top:1px solid #1a3a1e"><td class="text-slate-300 text-xs pt-2 font-semibold">Net โอนเข้าบัญชี (Omise)</td><td class="text-right font-mono text-sky-300 text-xs font-bold pt-2" id="cmp-tp-net">—</td></tr>
+        </table>
+      </div>
+      <div class="rounded-lg p-4" style="background:#060f1a;border:1px solid #0284c7">
+        <p class="text-sky-400 font-semibold mb-3 text-sm">💰 เติมเงิน — ยอดเปรียบเทียบ</p>
+        <table class="w-full">
+          <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก Omise (funding_amount)</td><td class="text-right font-mono font-bold text-white text-sm" id="cmp-tpu-omise">—</td></tr>
+          <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก ข้อมูลการชำระเงินเติมเงิน</td><td class="text-right font-mono font-bold text-sky-300 text-sm" id="cmp-tpu-topup">—</td></tr>
+          <tr style="border-top:1px solid #0c2a42"><td class="text-slate-200 text-sm pt-2 pb-3 font-semibold">ผลต่าง Omise − ข้อมูลชำระ</td><td class="text-right font-mono font-bold pt-2 text-sm" id="cmp-tpu-diff">—</td></tr>
+          <tr><td class="text-slate-500 text-xs pb-1">Omise Fee รวม</td><td class="text-right font-mono text-orange-400 text-xs" id="cmp-tpu-fee">—</td></tr>
+          <tr><td class="text-slate-500 text-xs pb-1">Omise Fee VAT รวม</td><td class="text-right font-mono text-orange-300 text-xs" id="cmp-tpu-feevat">—</td></tr>
+          <tr style="border-top:1px solid #0c2a42"><td class="text-slate-300 text-xs pt-2 font-semibold">Net โอนเข้าบัญชี (Omise)</td><td class="text-right font-mono text-sky-300 text-xs font-bold pt-2" id="cmp-tpu-net">—</td></tr>
+        </table>
+      </div>
+    </div>
+
     <div id="roa-filters" class="hidden flex flex-wrap gap-2 items-center mb-3">
       <button class="filter-btn active" id="roaf-all" onclick="roaSetFilter('all',this)">ทั้งหมด</button>
       <button class="filter-btn" id="roaf-transport" onclick="roaSetFilter('transport',this)" style="border-color:#16a34a;color:#86efac">🚚 ค่าขนส่ง</button>
@@ -517,7 +543,12 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
     </div>
     <div id="roa-table-wrap" class="hidden overflow-x-auto rounded-lg" style="max-height:55vh;overflow-y:auto">
       <table class="w-full" style="border-collapse:collapse">
-        <thead><tr><th>#</th><th>วันที่</th><th>Charge ID</th><th>Bill ID</th><th>System ID</th><th>ชื่อลูกค้า</th><th class="text-right">ยอด (฿)</th><th>ประเภท</th><th>อ้างอิง</th></tr></thead>
+        <thead><tr>
+          <th>#</th><th>วันที่</th><th>Charge ID</th><th>Bill ID</th><th>System ID</th><th>ชื่อลูกค้า</th>
+          <th class="text-right">ยอด Omise (฿)</th><th class="text-right">Fee (฿)</th><th class="text-right">Net Omise (฿)</th>
+          <th class="text-right">Income / Topup (฿)</th><th class="text-right">Diff (฿)</th>
+          <th>ประเภท</th><th>อ้างอิง</th>
+        </tr></thead>
         <tbody id="roa-tbody"></tbody>
       </table>
     </div>
@@ -2122,11 +2153,14 @@ function roaLoadOmise(file) {
         if (row.some(function(c){ return c==='id'; }) && row.some(function(c){ return c.includes('description')||c.includes('amount'); })) { hIdx=i; break; }
       }
       var headers = hIdx>=0 ? raw[hIdx].map(function(c){ return String(c).toLowerCase().trim(); }) : [];
-      var colId   = headers.indexOf('id');                                                     if (colId<0) colId=0;
-      var colFund = headers.findIndex(function(h){ return h==='funding_amount'; });            if (colFund<0) colFund=headers.findIndex(function(h){ return h==='amount'; }); if (colFund<0) colFund=2;
-      var colDesc = headers.findIndex(function(h){ return h.includes('description'); });       if (colDesc<0) colDesc=7;
-      var colDate = headers.findIndex(function(h){ return h.includes('created'); });           if (colDate<0) colDate=1;
-      var start   = hIdx>=0 ? hIdx+1 : 1;
+      var colId     = headers.indexOf('id');                                                       if (colId<0) colId=0;
+      var colFund   = headers.findIndex(function(h){ return h==='funding_amount'; });              if (colFund<0) colFund=headers.findIndex(function(h){ return h==='amount'; }); if (colFund<0) colFund=2;
+      var colFee    = headers.findIndex(function(h){ return h==='fee' && !h.includes('vat'); });   if (colFee<0) colFee=headers.findIndex(function(h){ return h==='fee'; }); if (colFee<0) colFee=3;
+      var colFeeVat = headers.findIndex(function(h){ return h==='fee_vat'; });                     if (colFeeVat<0) colFeeVat=4;
+      var colNet    = headers.findIndex(function(h){ return h==='net'; });                         if (colNet<0) colNet=5;
+      var colDesc   = headers.findIndex(function(h){ return h.includes('description'); });         if (colDesc<0) colDesc=7;
+      var colDate   = headers.findIndex(function(h){ return h.includes('created'); });             if (colDate<0) colDate=1;
+      var start     = hIdx>=0 ? hIdx+1 : 1;
       roaOmiseRaw = [];
       for (var ii = start; ii < raw.length; ii++) {
         var r = raw[ii];
@@ -2134,10 +2168,14 @@ function roaLoadOmise(file) {
         if (!id.startsWith('chrg_')) continue;
         var desc = String(r[colDesc]||'');
         var mx   = desc.match(/Bill ID\s*(\d+)/i);
+        var pf   = function(v){ return parseFloat(String(v||'0').replace(/,/g,''))||0; };
         roaOmiseRaw.push({
           chargeId: id,
           billId:   mx ? mx[1] : '',
-          amount:   parseFloat(String(r[colFund]||'0').replace(/,/g,''))||0,
+          amount:   pf(r[colFund]),
+          fee:      pf(r[colFee]),
+          feeVat:   pf(r[colFeeVat]),
+          net:      pf(r[colNet]),
           dateRaw:  r[colDate]||'',
           desc:     desc
         });
@@ -2205,30 +2243,38 @@ function roaRun() {
       return String(raw).substring(0,10);
     };
     roaRows = roaOmiseRaw.map(function(o) {
-      var type='unknown', sysId='', custName='', ref='';
+      var type='unknown', sysId='', custName='', ref='', incomeAmt=null;
       if (o.billId && roaTopupMap.has(o.billId)) {
         var td = roaTopupMap.get(o.billId);
         type='topup'; sysId=td.userId; custName=td.name; ref='topup / '+td.channel;
+        incomeAmt=td.amount; // topup stmt amount
       } else if (o.billId) {
         var inc = incomeMap.get(o.billId);
         if (inc) {
           sysId=inc.sysId||''; custName=inc.name||'';
           if (scIsSpecial(sysId)) {
             type='invoice'; ref='บริษัท: '+scGetName(sysId);
+            incomeAmt=inc.delivery||null;
           } else if (inc.status==='promptpay'||inc.status==='credit') {
             type='transport'; ref=inc.status;
+            incomeAmt=inc.delivery||null;
           } else {
             type='unknown'; ref=inc.status||'';
+            incomeAmt=inc.delivery||null;
           }
         }
       }
-      return { chargeId:o.chargeId, billId:o.billId, amount:o.amount, dateStr:fmtDate(o.dateRaw), sysId:sysId, custName:custName, type:type, ref:ref };
+      return { chargeId:o.chargeId, billId:o.billId, amount:o.amount,
+               fee:o.fee, feeVat:o.feeVat, net:o.net,
+               dateStr:fmtDate(o.dateRaw), sysId:sysId, custName:custName,
+               type:type, ref:ref, incomeAmt:incomeAmt };
     });
     roaFilter='all';
     ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
     var all=document.getElementById('roaf-all'); if(all) all.classList.add('active');
-    roaUpdateSummary(); roaRender();
+    roaUpdateSummary(); roaRenderComparison(); roaRender();
     document.getElementById('roa-summary').classList.remove('hidden');
+    document.getElementById('roa-compare').classList.remove('hidden');
     document.getElementById('roa-filters').classList.remove('hidden');
     btn.textContent='🔍 Run Breakdown'; btn.disabled=false;
   }, 150);
@@ -2253,6 +2299,47 @@ function roaUpdateSummary() {
   document.getElementById('roa-unknown-b').textContent  = fmtB(sum(unk));
 }
 
+function roaRenderComparison() {
+  var fmtB = function(n){ return '฿'+(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var diffCell = function(d) {
+    var c = Math.abs(d)<0.01 ? 'color:#86efac' : d>0 ? 'color:#fca5a5' : 'color:#fde68a';
+    var sign = d>0 ? '+' : '';
+    return '<span style="'+c+'">'+sign+(d||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>';
+  };
+  var sumF = function(arr,k){ return arr.reduce(function(a,r){ return a+(r[k]||0); },0); };
+  var hasInc = function(arr){ return arr.some(function(r){ return r.incomeAmt!==null && r.incomeAmt!==undefined; }); };
+
+  // ค่าขนส่ง
+  var tp = roaRows.filter(function(r){ return r.type==='transport'; });
+  var tpOmise  = sumF(tp,'amount');
+  var tpIncome = sumF(tp,'incomeAmt');
+  var tpDiff   = tpOmise - tpIncome;
+  var tpFee    = sumF(tp,'fee');
+  var tpFeeVat = sumF(tp,'feeVat');
+  var tpNet    = sumF(tp,'net');
+  document.getElementById('cmp-tp-omise').textContent  = fmtB(tpOmise);
+  document.getElementById('cmp-tp-income').textContent = hasInc(tp) ? fmtB(tpIncome) : '— (ยังไม่มี Income)';
+  document.getElementById('cmp-tp-diff').innerHTML     = hasInc(tp) ? diffCell(tpDiff) : '—';
+  document.getElementById('cmp-tp-fee').textContent    = fmtB(tpFee);
+  document.getElementById('cmp-tp-feevat').textContent = fmtB(tpFeeVat);
+  document.getElementById('cmp-tp-net').textContent    = tpNet ? fmtB(tpNet) : fmtB(tpOmise - tpFee - tpFeeVat);
+
+  // เติมเงิน
+  var tpu = roaRows.filter(function(r){ return r.type==='topup'; });
+  var tpuOmise  = sumF(tpu,'amount');
+  var tpuTopup  = sumF(tpu,'incomeAmt');
+  var tpuDiff   = tpuOmise - tpuTopup;
+  var tpuFee    = sumF(tpu,'fee');
+  var tpuFeeVat = sumF(tpu,'feeVat');
+  var tpuNet    = sumF(tpu,'net');
+  document.getElementById('cmp-tpu-omise').textContent  = fmtB(tpuOmise);
+  document.getElementById('cmp-tpu-topup').textContent  = hasInc(tpu) ? fmtB(tpuTopup) : '— (ยังไม่มีข้อมูลเติมเงิน)';
+  document.getElementById('cmp-tpu-diff').innerHTML     = hasInc(tpu) ? diffCell(tpuDiff) : '—';
+  document.getElementById('cmp-tpu-fee').textContent    = fmtB(tpuFee);
+  document.getElementById('cmp-tpu-feevat').textContent = fmtB(tpuFeeVat);
+  document.getElementById('cmp-tpu-net').textContent    = tpuNet ? fmtB(tpuNet) : fmtB(tpuOmise - tpuFee - tpuFeeVat);
+}
+
 function roaSetFilter(f, btn) {
   roaFilter=f;
   ['roaf-all','roaf-transport','roaf-topup','roaf-invoice','roaf-unknown'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
@@ -2274,16 +2361,24 @@ function roaRender() {
   };
   tbody.innerHTML = rows.map(function(r,i) {
     var bg = r.type==='topup'?'background:rgba(2,132,199,0.04)':r.type==='invoice'?'background:rgba(124,58,237,0.06)':'';
+    var diff = (r.incomeAmt!==null && r.incomeAmt!==undefined) ? r.amount - r.incomeAmt : null;
+    var diffColor = diff===null ? '' : Math.abs(diff)<0.01 ? 'color:#86efac' : diff>0 ? 'color:#fca5a5' : 'color:#fde68a';
+    var incLabel = r.type==='topup' ? 'color:#7dd3fc' : r.type==='transport' ? 'color:#86efac' : 'color:#94a3b8';
+    var netVal = r.net || (r.amount - r.fee - r.feeVat);
     return '<tr style="'+bg+'">'
       +'<td class="text-slate-500">'+(i+1)+'</td>'
       +'<td class="text-slate-400 text-xs" style="white-space:nowrap">'+escHtml(r.dateStr)+'</td>'
-      +'<td class="font-mono text-slate-400 text-xs" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escHtml(r.chargeId)+'">'+escHtml(r.chargeId)+'</td>'
+      +'<td class="font-mono text-slate-400 text-xs" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escHtml(r.chargeId)+'">'+escHtml(r.chargeId)+'</td>'
       +'<td class="font-mono text-blue-300 text-xs font-bold">'+escHtml(r.billId||'—')+'</td>'
       +'<td class="font-mono text-slate-300 text-xs">'+escHtml(r.sysId||'—')+'</td>'
-      +'<td class="text-slate-200 text-xs" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escHtml(r.custName)+'">'+escHtml(r.custName||'—')+'</td>'
-      +'<td class="text-right font-mono text-xs text-emerald-300">'+fN(r.amount)+'</td>'
+      +'<td class="text-slate-200 text-xs" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escHtml(r.custName)+'">'+escHtml(r.custName||'—')+'</td>'
+      +'<td class="text-right font-mono text-xs text-white font-bold">'+fN(r.amount)+'</td>'
+      +'<td class="text-right font-mono text-xs text-orange-400">'+fN(r.fee)+'</td>'
+      +'<td class="text-right font-mono text-xs text-sky-300">'+fN(netVal)+'</td>'
+      +'<td class="text-right font-mono text-xs" style="'+incLabel+'">'+(r.incomeAmt!==null&&r.incomeAmt!==undefined ? fN(r.incomeAmt) : '—')+'</td>'
+      +'<td class="text-right font-mono text-xs font-bold" style="'+diffColor+'">'+(diff!==null ? (diff>0?'+':'')+fN(diff) : '—')+'</td>'
       +'<td>'+badge(r.type)+'</td>'
-      +'<td class="font-mono text-slate-500 text-xs" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(r.ref||'')+'</td>'
+      +'<td class="font-mono text-slate-500 text-xs" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(r.ref||'')+'</td>'
       +'</tr>';
   }).join('');
 }
@@ -2291,16 +2386,37 @@ function roaRender() {
 function roaExport() {
   if (!roaRows.length) { alert('ยังไม่มีข้อมูล — กรุณา Run Breakdown ก่อน'); return; }
   var wb=XLSX.utils.book_new(), tMap={transport:'ค่าขนส่ง',topup:'เติมเงิน',invoice:'ต้องออกใบกำกับ',unknown:'ไม่ระบุ'};
-  var head=['#','วันที่','Charge ID','Bill ID','System ID','ชื่อลูกค้า','ยอด Omise (฿)','ประเภท','อ้างอิง'];
-  var data=roaRows.map(function(r,i){ return [i+1,r.dateStr,r.chargeId,r.billId,r.sysId,r.custName,r.amount,tMap[r.type]||r.type,r.ref]; });
-  var ws=XLSX.utils.aoa_to_sheet([head].concat(data));
-  ws['!cols']=[4,12,26,12,10,24,14,14,20].map(function(w){ return {wch:w}; });
+  var head=['#','วันที่','Charge ID','Bill ID','System ID','ชื่อลูกค้า','ยอด Omise (฿)','Fee (฿)','Fee VAT (฿)','Net Omise (฿)','Income หรือ Topup (฿)','Diff (฿)','ประเภท','อ้างอิง'];
+  var toRow=function(r,i) {
+    var diff=r.incomeAmt!==null&&r.incomeAmt!==undefined ? r.amount-r.incomeAmt : '';
+    var net=r.net||(r.amount-r.fee-r.feeVat);
+    return [i+1,r.dateStr,r.chargeId,r.billId,r.sysId,r.custName,r.amount,r.fee,r.feeVat,net,r.incomeAmt!==null&&r.incomeAmt!==undefined?r.incomeAmt:'',diff,tMap[r.type]||r.type,r.ref];
+  };
+  var ws=XLSX.utils.aoa_to_sheet([head].concat(roaRows.map(toRow)));
+  ws['!cols']=[4,12,26,12,10,24,14,12,12,14,16,12,14,20].map(function(w){ return {wch:w}; });
   XLSX.utils.book_append_sheet(wb,ws,'Omise Breakdown');
   ['transport','topup','invoice','unknown'].forEach(function(t) {
     var rr=roaRows.filter(function(r){ return r.type===t; }); if(!rr.length) return;
-    var ws2=XLSX.utils.aoa_to_sheet([head].concat(rr.map(function(r,i){ return [i+1,r.dateStr,r.chargeId,r.billId,r.sysId,r.custName,r.amount,tMap[t],r.ref]; })));
+    var ws2=XLSX.utils.aoa_to_sheet([head].concat(rr.map(toRow)));
     ws2['!cols']=ws['!cols']; XLSX.utils.book_append_sheet(wb,ws2,tMap[t]);
   });
+  // Summary sheet
+  var sumF=function(arr,k){ return arr.reduce(function(a,r){ return a+(r[k]||0); },0); };
+  var tp=roaRows.filter(function(r){ return r.type==='transport'; });
+  var tpu=roaRows.filter(function(r){ return r.type==='topup'; });
+  var sHead=['','ค่าขนส่ง','เติมเงิน'];
+  var sData=[
+    ['รายการ',tp.length,tpu.length],
+    ['ยอด Omise (funding_amount)',sumF(tp,'amount'),sumF(tpu,'amount')],
+    ['ยอด Income / ข้อมูลการชำระเงินเติมเงิน',sumF(tp,'incomeAmt'),sumF(tpu,'incomeAmt')],
+    ['ผลต่าง',sumF(tp,'amount')-sumF(tp,'incomeAmt'),sumF(tpu,'amount')-sumF(tpu,'incomeAmt')],
+    ['Fee รวม',sumF(tp,'fee'),sumF(tpu,'fee')],
+    ['Fee VAT รวม',sumF(tp,'feeVat'),sumF(tpu,'feeVat')],
+    ['Net (Omise)',sumF(tp,'net')||sumF(tp,'amount')-sumF(tp,'fee')-sumF(tp,'feeVat'),sumF(tpu,'net')||sumF(tpu,'amount')-sumF(tpu,'fee')-sumF(tpu,'feeVat')]
+  ];
+  var wsSum=XLSX.utils.aoa_to_sheet([sHead].concat(sData));
+  wsSum['!cols']=[28,18,18].map(function(w){ return {wch:w}; });
+  XLSX.utils.book_append_sheet(wb,wsSum,'สรุปเปรียบเทียบ');
   var now=new Date(), stamp=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
   XLSX.writeFile(wb,'MS_OmiseBreakdown_'+stamp+'.xlsx');
 }
