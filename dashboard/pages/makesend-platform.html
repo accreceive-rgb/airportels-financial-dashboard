@@ -512,7 +512,7 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
       <div class="rounded-lg p-4" style="background:#071810;border:1px solid #16a34a">
         <p class="text-emerald-400 font-semibold mb-3 text-sm">🚚 ค่าขนส่ง — ยอดเปรียบเทียบ</p>
         <table class="w-full">
-          <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก Omise (funding_amount)</td><td class="text-right font-mono font-bold text-white text-sm" id="cmp-tp-omise">—</td></tr>
+          <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก Omise (amount)</td><td class="text-right font-mono font-bold text-white text-sm" id="cmp-tp-omise">—</td></tr>
           <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก Income (ค่าส่ง)</td><td class="text-right font-mono font-bold text-emerald-300 text-sm" id="cmp-tp-income">—</td></tr>
           <tr style="border-top:1px solid #1a3a1e"><td class="text-slate-200 text-sm pt-2 pb-3 font-semibold">ผลต่าง Omise − Income</td><td class="text-right font-mono font-bold pt-2 text-sm" id="cmp-tp-diff">—</td></tr>
           <tr><td class="text-slate-500 text-xs pb-1">Omise Fee รวม</td><td class="text-right font-mono text-orange-400 text-xs" id="cmp-tp-fee">—</td></tr>
@@ -523,7 +523,7 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
       <div class="rounded-lg p-4" style="background:#060f1a;border:1px solid #0284c7">
         <p class="text-sky-400 font-semibold mb-3 text-sm">💰 เติมเงิน — ยอดเปรียบเทียบ</p>
         <table class="w-full">
-          <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก Omise (funding_amount)</td><td class="text-right font-mono font-bold text-white text-sm" id="cmp-tpu-omise">—</td></tr>
+          <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก Omise (amount)</td><td class="text-right font-mono font-bold text-white text-sm" id="cmp-tpu-omise">—</td></tr>
           <tr><td class="text-slate-400 text-sm pb-2">ยอดจาก ข้อมูลการชำระเงินเติมเงิน</td><td class="text-right font-mono font-bold text-sky-300 text-sm" id="cmp-tpu-topup">—</td></tr>
           <tr style="border-top:1px solid #0c2a42"><td class="text-slate-200 text-sm pt-2 pb-3 font-semibold">ผลต่าง Omise − ข้อมูลชำระ</td><td class="text-right font-mono font-bold pt-2 text-sm" id="cmp-tpu-diff">—</td></tr>
           <tr><td class="text-slate-500 text-xs pb-1">Omise Fee รวม</td><td class="text-right font-mono text-orange-400 text-xs" id="cmp-tpu-fee">—</td></tr>
@@ -545,7 +545,7 @@ input[type=number],input[type=text]{background:#1e293b;border:1px solid #475569;
       <table class="w-full" style="border-collapse:collapse">
         <thead><tr>
           <th>#</th><th>วันที่</th><th>Charge ID</th><th>Bill ID</th><th>System ID</th><th>ชื่อลูกค้า</th>
-          <th class="text-right">ยอด Omise (฿)</th><th class="text-right">Fee (฿)</th><th class="text-right">Net Omise (฿)</th>
+          <th class="text-right">amount (฿)</th><th class="text-right">Fee (฿)</th><th class="text-right">Net Omise (฿)</th>
           <th class="text-right">Income / Topup (฿)</th><th class="text-right">Diff (฿)</th>
           <th>ประเภท</th><th>อ้างอิง</th>
         </tr></thead>
@@ -2154,7 +2154,8 @@ function roaLoadOmise(file) {
       }
       var headers = hIdx>=0 ? raw[hIdx].map(function(c){ return String(c).toLowerCase().trim(); }) : [];
       var colId     = headers.indexOf('id');                                                       if (colId<0) colId=0;
-      var colFund   = headers.findIndex(function(h){ return h==='funding_amount'; });              if (colFund<0) colFund=headers.findIndex(function(h){ return h==='amount'; }); if (colFund<0) colFund=2;
+      // ใช้ 'amount' เป็นหลัก (ยอดที่ลูกค้าจ่ายจริง), fallback ไป 'funding_amount'
+      var colFund   = headers.findIndex(function(h){ return h==='amount'; });                      if (colFund<0) colFund=headers.findIndex(function(h){ return h==='funding_amount'; }); if (colFund<0) colFund=2;
       var colFee    = headers.findIndex(function(h){ return h==='fee' && !h.includes('vat'); });   if (colFee<0) colFee=headers.findIndex(function(h){ return h==='fee'; }); if (colFee<0) colFee=3;
       var colFeeVat = headers.findIndex(function(h){ return h==='fee_vat'; });                     if (colFeeVat<0) colFeeVat=4;
       var colNet    = headers.findIndex(function(h){ return h==='net'; });                         if (colNet<0) colNet=5;
