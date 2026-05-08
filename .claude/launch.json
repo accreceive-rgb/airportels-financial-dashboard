@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "dashboard",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-l", "3456", "."],
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npx-cli.js", "serve", "-l", "3456", "."],
       "port": 3456
     }
   ]
