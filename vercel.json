@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "name": "madga-airportels-financial",
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "routes": [
+    { "src": "/", "dest": "/dashboard/index.html" },
+    { "src": "/pr", "dest": "/dashboard/pages/purchase-request-app.html" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
