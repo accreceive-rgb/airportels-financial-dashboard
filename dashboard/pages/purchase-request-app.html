@@ -756,6 +756,144 @@ function showToast(type, msg) {
   setTimeout(() => el.classList.add('hidden'), 3000);
 }
 
+// ======== EXPORT PDF ========
+function exportPDF(id) {
+  const pr = prs.find(p => p.id === id);
+  if (!pr) return;
+
+  const statusTH = STATUS_LABELS[pr.status] || pr.status;
+  const allSteps = [
+    { key: 'team_lead', label: 'หัวหน้าทีม' },
+    { key: 'manager', label: 'ผู้จัดการฝ่าย' },
+    { key: 'executive', label: 'ผู้บริหาร' }
+  ];
+  const requiredSteps = pr.requiredSteps || ['team_lead'];
+
+  const approvalRows = allSteps.map(s => {
+    const a = pr.approvals[s.key];
+    const required = requiredSteps.includes(s.key);
+    if (!required) return '';
+    const statusIcon = a.status === 'approved' ? '✓ อนุมัติ' : a.status === 'rejected' ? '✕ ไม่อนุมัติ' : '— รอดำเนินการ';
+    const statusColor = a.status === 'approved' ? '#059669' : a.status === 'rejected' ? '#dc2626' : '#92400e';
+    return `<tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;">${s.label}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;color:${statusColor};font-weight:600;">${statusIcon}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#6b7280;">${a.by || '—'}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#6b7280;">${a.date || '—'}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-style:italic;">${a.comment || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  const signatureRows = allSteps.map(s => {
+    if (!requiredSteps.includes(s.key)) return '';
+    const a = pr.approvals[s.key];
+    return `<td style="text-align:center;padding:0 20px;">
+      <div style="border-top:1px solid #374151;margin-top:40px;padding-top:6px;">
+        <div style="font-weight:600;font-size:13px;">${a.by || '……………………………'}</div>
+        <div style="color:#6b7280;font-size:12px;margin-top:2px;">${s.label}</div>
+        <div style="color:#6b7280;font-size:12px;">วันที่: ${a.date || '…………………'}</div>
+      </div>
+    </td>`;
+  }).join('');
+
+  const printHTML = `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>${pr.id} — ใบขอซื้อ</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Sarabun', sans-serif; font-size: 14px; color: #111827; background: white; padding: 32px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #4f46e5; }
+    .company { font-size: 11px; color: #6b7280; margin-top: 4px; }
+    .pr-number { font-size: 22px; font-weight: 700; color: #4f46e5; font-family: monospace; }
+    .status-pill { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    table.info { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    table.info td { padding: 8px 12px; font-size: 13px; vertical-align: top; }
+    table.info td.label { color: #6b7280; width: 140px; white-space: nowrap; }
+    table.info td.value { font-weight: 500; }
+    .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 8px; margin-top: 20px; }
+    .price-box { background: #eef2ff; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .price-box .amount { font-size: 26px; font-weight: 700; color: #3730a3; }
+    .price-box .detail { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    table.approval { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.approval th { background: #f3f4f6; padding: 8px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
+    .reason-box { background: #f9fafb; border-left: 3px solid #4f46e5; padding: 12px 16px; border-radius: 4px; font-size: 13px; line-height: 1.6; color: #374151; margin-bottom: 20px; }
+    .signatures { margin-top: 40px; }
+    .footer { margin-top: 48px; border-top: 1px solid #e5e7eb; padding-top: 12px; font-size: 11px; color: #9ca3af; display: flex; justify-content: space-between; }
+    @media print {
+      body { padding: 20px; }
+      @page { margin: 15mm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div style="font-size:18px;font-weight:700;color:#111827;">ใบขอซื้อ (Purchase Request)</div>
+      <div class="company">Airportels Financial · Finance / Procurement</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="pr-number">${pr.id}</div>
+      <div style="margin-top:6px;">
+        <span class="status-pill" style="background:${pr.status==='approved'?'#d1fae5':pr.status==='rejected'?'#fee2e2':'#fef3c7'};color:${pr.status==='approved'?'#065f46':pr.status==='rejected'?'#991b1b':'#92400e'};">${statusTH}</span>
+      </div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:4px;">วันที่ยื่น: ${pr.createdAt}</div>
+    </div>
+  </div>
+
+  <div class="price-box">
+    <div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:2px;">มูลค่ารวมทั้งสิ้น</div>
+      <div class="amount">฿${pr.totalPrice.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>
+      <div class="detail">${pr.quantity} หน่วย × ฿${pr.unitPrice.toLocaleString('th-TH')} / หน่วย</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:11px;color:#6b7280;margin-bottom:2px;">หมวดงบประมาณ</div>
+      <div style="font-weight:700;color:#4f46e5;">${pr.category}</div>
+    </div>
+  </div>
+
+  <div class="section-title">ข้อมูลคำขอ</div>
+  <table class="info">
+    <tr><td class="label">ผู้ขอ</td><td class="value">${pr.requester}</td><td class="label">แผนก / ฝ่าย</td><td class="value">${pr.department}</td></tr>
+    <tr><td class="label">สินค้า / บริการ</td><td class="value" colspan="3">${pr.item}</td></tr>
+    ${pr.spec ? `<tr><td class="label">สเปค</td><td class="value" colspan="3">${pr.spec}</td></tr>` : ''}
+    <tr><td class="label">จำนวน</td><td class="value">${pr.quantity} หน่วย</td><td class="label">ราคาต่อหน่วย</td><td class="value">฿${pr.unitPrice.toLocaleString('th-TH')}</td></tr>
+    <tr><td class="label">ผู้ขาย</td><td class="value">${pr.vendor}</td><td class="label">ต้องการภายใน</td><td class="value">${pr.neededDate || '—'}</td></tr>
+  </table>
+
+  <div class="section-title">เหตุผลความจำเป็น</div>
+  <div class="reason-box">${pr.reason}</div>
+
+  <div class="section-title">สถานะการอนุมัติ</div>
+  <table class="approval">
+    <thead><tr>
+      <th>ผู้อนุมัติ</th><th>ผล</th><th>โดย</th><th>วันที่</th><th>ความคิดเห็น</th>
+    </tr></thead>
+    <tbody>${approvalRows}</tbody>
+  </table>
+
+  <div class="signatures">
+    <table style="width:100%;"><tr>${signatureRows}</tr></table>
+  </div>
+
+  <div class="footer">
+    <span>พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+    <span>Airportels Financial MADGA · ${pr.id}</span>
+  </div>
+
+  <script>window.onload = function() { window.print(); }<\/script>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank', 'width=800,height=900');
+  w.document.write(printHTML);
+  w.document.close();
+}
+
 // ======== KEYBOARD ========
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal({ target: document.getElementById('modal') });
