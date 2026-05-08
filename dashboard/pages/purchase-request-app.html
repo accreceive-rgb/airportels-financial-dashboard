@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบขอซื้อ (Purchase Request) — Airportels Financial MADGA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Sarabun', sans-serif; }
+    .tab-active { border-bottom: 2px solid #4f46e5; color: #4f46e5; font-weight: 600; }
+    .tab-inactive { color: #6b7280; }
+    .tab-inactive:hover { color: #374151; }
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+    .step-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+    .step-line { width: 2px; height: 24px; margin: 2px auto; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .animate-in { animation: fadeSlide 0.2s ease-out; }
+    @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .pr-row:hover { background: #f8faff; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid #6366f1; outline-offset: 1px; }
+    .approval-step.done .step-circle { background: #10b981; color: white; }
+    .approval-step.current .step-circle { background: #f59e0b; color: white; }
+    .approval-step.pending .step-circle { background: #e5e7eb; color: #9ca3af; }
+    .approval-step.rejected .step-circle { background: #ef4444; color: white; }
+    .approval-step.skipped .step-circle { background: #d1d5db; color: #6b7280; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Header -->
+<header class="bg-white border-b shadow-sm sticky top-0 z-40">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="../index.html" class="text-xs text-gray-400 hover:text-indigo-600 transition-colors">&larr; MADGA Dashboard</a>
+      <span class="text-gray-300">|</span>
+      <div>
+        <h1 class="text-lg font-bold text-gray-900 leading-tight">ระบบขอซื้อ</h1>
+        <p class="text-xs text-gray-500">Purchase Request · Finance / Procurement</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Role Switcher -->
+      <div class="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5">
+        <span class="text-xs text-gray-500">สิทธิ์:</span>
+        <select id="roleSelect" onchange="changeRole()" class="text-xs bg-transparent font-medium text-gray-700 outline-none cursor-pointer pr-1">
+          <option value="requester">👤 พนักงาน (ผู้ขอ)</option>
+          <option value="team_lead">👔 หัวหน้าทีม</option>
+          <option value="manager">🏢 ผู้จัดการฝ่าย</option>
+          <option value="executive">⭐ ผู้บริหาร</option>
+          <option value="procurement">📋 จัดซื้อ</option>
+        </select>
+      </div>
+      <span class="text-xs font-mono bg-gray-800 text-white px-2 py-1 rounded">MADGA</span>
+    </div>
+  </div>
+</header>
+
+<!-- Tabs -->
+<div class="bg-white border-b">
+  <div class="max-w-6xl mx-auto px-4 flex gap-1">
+    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-inactive px-4 py-3 text-sm transition-colors">📊 ภาพรวม</button>
+    <button onclick="switchTab('new')" id="tab-new" class="tab-inactive px-4 py-3 text-sm transition-colors">➕ ยื่นคำขอใหม่</button>
+    <button onclick="switchTab('list')" id="tab-list" class="tab-inactive px-4 py-3 text-sm transition-colors">📋 รายการ PR ทั้งหมด</button>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+  <!-- ===== TAB: DASHBOARD ===== -->
+  <div id="panel-dashboard" class="hidden animate-in">
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-indigo-400">
+        <p class="text-xs text-gray-500 mb-1">PR ทั้งหมด</p>
+        <p id="stat-total" class="text-3xl font-bold text-gray-900">0</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-amber-400">
+        <p class="text-xs text-gray-500 mb-1">รอดำเนินการ</p>
+        <p id="stat-pending" class="text-3xl font-bold text-amber-600">0</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-emerald-400">
+        <p class="text-xs text-gray-500 mb-1">อนุมัติแล้ว</p>
+        <p id="stat-approved" class="text-3xl font-bold text-emerald-600">0</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-red-400">
+        <p class="text-xs text-gray-500 mb-1">ไม่อนุมัติ</p>
+        <p id="stat-rejected" class="text-3xl font-bold text-red-600">0</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="bg-white rounded-xl shadow-sm p-4">
+        <p class="text-xs text-gray-500 mb-1">มูลค่าคำขอรวม (รอ + อนุมัติ)</p>
+        <p id="stat-value" class="text-2xl font-bold text-gray-900">฿0</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4">
+        <p class="text-xs text-gray-500 mb-1">รอฉันดำเนินการ</p>
+        <p id="stat-my-action" class="text-2xl font-bold text-indigo-600">0 รายการ</p>
+      </div>
+    </div>
+
+    <!-- Pending for My Action -->
+    <div class="bg-white rounded-xl shadow-sm p-5 mb-4" id="my-action-section">
+      <h2 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+        <span class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+        รายการรอการดำเนินการของฉัน
+      </h2>
+      <div id="my-action-list" class="space-y-2 text-sm text-gray-500">
+        <p class="text-center py-4">ไม่มีรายการที่รอดำเนินการ</p>
+      </div>
+    </div>
+
+    <!-- Recent PRs -->
+    <div class="bg-white rounded-xl shadow-sm p-5">
+      <h2 class="text-sm font-semibold text-gray-800 mb-3">PR ล่าสุด</h2>
+      <div id="recent-prs" class="space-y-2 text-sm text-gray-500">
+        <p class="text-center py-4">ยังไม่มีคำขอ — <button onclick="switchTab('new')" class="text-indigo-600 hover:underline">ยื่นคำขอแรก</button></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: NEW PR ===== -->
+  <div id="panel-new" class="hidden animate-in max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <h2 class="text-base font-bold text-gray-900 mb-1">ยื่นคำขอซื้อใหม่</h2>
+      <p class="text-xs text-gray-500 mb-5">กรอกข้อมูลให้ครบถ้วน — เลขที่ PR จะถูกสร้างอัตโนมัติ</p>
+
+      <form id="prForm" onsubmit="submitPR(event)" class="space-y-4">
+
+        <!-- Requester info -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">ชื่อผู้ขอ <span class="text-red-500">*</span></label>
+            <input type="text" id="f-requester" required placeholder="ชื่อ-นามสกุล"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">แผนก / ฝ่าย <span class="text-red-500">*</span></label>
+            <input type="text" id="f-department" required placeholder="เช่น Finance, IT, Operations"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <!-- Item details -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">ชื่อสินค้า / บริการ <span class="text-red-500">*</span></label>
+          <input type="text" id="f-item" required placeholder="เช่น MacBook Pro 14'"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">สเปค / รายละเอียด</label>
+          <textarea id="f-spec" rows="2" placeholder="เช่น Apple M3 Pro, RAM 18GB, SSD 512GB, สี Space Black"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">จำนวน <span class="text-red-500">*</span></label>
+            <input type="number" id="f-quantity" required min="1" value="1" oninput="calcTotal()"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">ราคาต่อหน่วย (บาท) <span class="text-red-500">*</span></label>
+            <input type="number" id="f-price" required min="0" step="0.01" oninput="calcTotal()" placeholder="0.00"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+        </div>
+
+        <!-- Total preview -->
+        <div class="bg-indigo-50 rounded-lg px-4 py-3 flex justify-between items-center">
+          <span class="text-sm text-indigo-700 font-medium">ราคารวม</span>
+          <span id="total-preview" class="text-xl font-bold text-indigo-800">฿0.00</span>
+        </div>
+        <div id="approval-tier-hint" class="text-xs text-center text-gray-400 -mt-2"></div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">ผู้ขาย / Vendor <span class="text-red-500">*</span></label>
+          <input type="text" id="f-vendor" required placeholder="ชื่อบริษัทหรือร้านค้า"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">หมวดงบประมาณ <span class="text-red-500">*</span></label>
+            <select id="f-category" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">-- เลือกหมวด --</option>
+              <option value="IT Hardware">IT Hardware</option>
+              <option value="Office Supplies">Office Supplies</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Training">Training</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">วันที่ต้องการ</label>
+            <input type="date" id="f-needed-date"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">เหตุผลความจำเป็น <span class="text-red-500">*</span></label>
+          <textarea id="f-reason" required rows="3" placeholder="อธิบายว่าต้องการสิ่งนี้เพื่ออะไร และทำไมจึงจำเป็น"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"></textarea>
+        </div>
+
+        <button type="submit"
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg text-sm transition-colors shadow-sm">
+          ส่งคำขอ &rarr;
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== TAB: LIST ===== -->
+  <div id="panel-list" class="hidden animate-in">
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-wrap gap-3 items-center">
+      <div class="flex-1 min-w-48">
+        <input type="text" id="search-input" oninput="renderList()" placeholder="🔍 ค้นหา เลข PR / ชื่อสินค้า / ผู้ขอ..."
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <select id="filter-status" onchange="renderList()" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+        <option value="">สถานะทั้งหมด</option>
+        <option value="pending_team_lead">รอหัวหน้าทีม</option>
+        <option value="pending_manager">รอผู้จัดการ</option>
+        <option value="pending_executive">รอผู้บริหาร</option>
+        <option value="approved">อนุมัติแล้ว</option>
+        <option value="rejected">ไม่อนุมัติ</option>
+      </select>
+      <select id="filter-category" onchange="renderList()" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+        <option value="">หมวดทั้งหมด</option>
+        <option value="IT Hardware">IT Hardware</option>
+        <option value="Office Supplies">Office Supplies</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Training">Training</option>
+        <option value="Other">Other</option>
+      </select>
+      <button onclick="clearFilters()" class="text-xs text-gray-400 hover:text-gray-700 px-2">ล้างตัวกรอง</button>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 border-b text-xs text-gray-500 uppercase tracking-wide">
+              <th class="py-3 px-4">เลข PR</th>
+              <th class="py-3 px-4">สินค้า</th>
+              <th class="py-3 px-4">ผู้ขอ</th>
+              <th class="py-3 px-4">หมวด</th>
+              <th class="py-3 px-4 text-right">มูลค่า</th>
+              <th class="py-3 px-4">สถานะ</th>
+              <th class="py-3 px-4">วันที่ยื่น</th>
+              <th class="py-3 px-4"></th>
+            </tr>
+          </thead>
+          <tbody id="pr-table-body">
+            <tr><td colspan="8" class="py-12 text-center text-sm text-gray-400">ยังไม่มีรายการ</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="list-footer" class="px-4 py-2 border-t bg-gray-50 text-xs text-gray-500 hidden"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== MODAL: PR DETAIL + APPROVAL ===== -->
+<div id="modal" class="modal-overlay hidden" onclick="closeModal(event)">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in" onclick="event.stopPropagation()">
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- ===== MODAL: SUCCESS ===== -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+  <div class="bg-gray-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 animate-in">
+    <span id="toast-icon">✅</span>
+    <span id="toast-msg"></span>
+  </div>
+</div>
+
+<script>
+// ======== STATE ========
+let currentRole = 'requester';
+let prs = [];
+let currentFilter = { search: '', status: '', category: '' };
+
+const ROLE_NAMES = {
+  requester: 'พนักงาน',
+  team_lead: 'หัวหน้าทีม',
+  manager: 'ผู้จัดการฝ่าย',
+  executive: 'ผู้บริหาร',
+  procurement: 'จัดซื้อ'
+};
+
+const STATUS_LABELS = {
+  pending_team_lead: 'รอหัวหน้าทีม',
+  pending_manager: 'รอผู้จัดการ',
+  pending_executive: 'รอผู้บริหาร',
+  approved: 'อนุมัติแล้ว',
+  rejected: 'ไม่อนุมัติ'
+};
+
+const STATUS_COLORS = {
+  pending_team_lead: 'bg-amber-100 text-amber-800',
+  pending_manager: 'bg-blue-100 text-blue-800',
+  pending_executive: 'bg-purple-100 text-purple-800',
+  approved: 'bg-emerald-100 text-emerald-800',
+  rejected: 'bg-red-100 text-red-800'
+};
+
+const CATEGORY_COLORS = {
+  'IT Hardware': 'bg-blue-50 text-blue-700',
+  'Office Supplies': 'bg-gray-100 text-gray-700',
+  'Marketing': 'bg-pink-50 text-pink-700',
+  'Training': 'bg-indigo-50 text-indigo-700',
+  'Other': 'bg-yellow-50 text-yellow-700'
+};
+
+// ======== INIT ========
+function init() {
+  const saved = localStorage.getItem('madga_prs');
+  if (saved) prs = JSON.parse(saved);
+  switchTab('dashboard');
+}
+
+function save() {
+  localStorage.setItem('madga_prs', JSON.stringify(prs));
+}
+
+// ======== TAB ========
+function switchTab(name) {
+  ['dashboard', 'new', 'list'].forEach(t => {
+    document.getElementById('panel-' + t).classList.add('hidden');
+    document.getElementById('tab-' + t).classList.remove('tab-active');
+    document.getElementById('tab-' + t).classList.add('tab-inactive');
+  });
+  document.getElementById('panel-' + name).classList.remove('hidden');
+  document.getElementById('tab-' + name).classList.add('tab-active');
+  document.getElementById('tab-' + name).classList.remove('tab-inactive');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'list') renderList();
+}
+
+// ======== ROLE ========
+function changeRole() {
+  currentRole = document.getElementById('roleSelect').value;
+  renderDashboard();
+  renderList();
+  showToast('info', `เปลี่ยนสิทธิ์เป็น: ${ROLE_NAMES[currentRole]}`);
+}
+
+// ======== PR NUMBER ========
+function generatePRNumber() {
+  const beYear = new Date().getFullYear() + 543;
+  const existingForYear = prs.filter(p => p.id.startsWith(`PR-${beYear}-`));
+  const seq = String(existingForYear.length + 1).padStart(4, '0');
+  return `PR-${beYear}-${seq}`;
+}
+
+// ======== APPROVAL TIER ========
+function getApprovalTier(total) {
+  if (total < 5000) return 'team_lead';
+  if (total <= 50000) return 'manager';
+  return 'executive';
+}
+
+function getRequiredSteps(total) {
+  if (total < 5000) return ['team_lead'];
+  if (total <= 50000) return ['team_lead', 'manager'];
+  return ['team_lead', 'manager', 'executive'];
+}
+
+function calcTotal() {
+  const qty = parseFloat(document.getElementById('f-quantity').value) || 0;
+  const price = parseFloat(document.getElementById('f-price').value) || 0;
+  const total = qty * price;
+  document.getElementById('total-preview').textContent = '฿' + total.toLocaleString('th-TH', { minimumFractionDigits: 2 });
+
+  const hint = document.getElementById('approval-tier-hint');
+  if (total <= 0) { hint.textContent = ''; return; }
+  if (total < 5000) hint.textContent = '✔ ต้องการอนุมัติจากหัวหน้าทีมเท่านั้น';
+  else if (total <= 50000) hint.textContent = '✔ ต้องการอนุมัติ: หัวหน้าทีม → ผู้จัดการฝ่าย';
+  else hint.textContent = '⚠ ต้องการอนุมัติ: หัวหน้าทีม → ผู้จัดการฝ่าย → ผู้บริหาร';
+}
+
+// ======== SUBMIT ========
+function submitPR(e) {
+  e.preventDefault();
+  const qty = parseInt(document.getElementById('f-quantity').value);
+  const unitPrice = parseFloat(document.getElementById('f-price').value);
+  const total = qty * unitPrice;
+  const steps = getRequiredSteps(total);
+  const firstStep = steps[0];
+
+  const pr = {
+    id: generatePRNumber(),
+    requester: document.getElementById('f-requester').value.trim(),
+    department: document.getElementById('f-department').value.trim(),
+    item: document.getElementById('f-item').value.trim(),
+    spec: document.getElementById('f-spec').value.trim(),
+    quantity: qty,
+    unitPrice: unitPrice,
+    totalPrice: total,
+    vendor: document.getElementById('f-vendor').value.trim(),
+    category: document.getElementById('f-category').value,
+    neededDate: document.getElementById('f-needed-date').value,
+    reason: document.getElementById('f-reason').value.trim(),
+    createdAt: new Date().toISOString().slice(0, 10),
+    status: 'pending_team_lead',
+    requiredSteps: steps,
+    approvals: {
+      team_lead: { status: null, by: null, date: null, comment: '' },
+      manager: { status: null, by: null, date: null, comment: '' },
+      executive: { status: null, by: null, date: null, comment: '' }
+    }
+  };
+
+  prs.unshift(pr);
+  save();
+  document.getElementById('prForm').reset();
+  document.getElementById('total-preview').textContent = '฿0.00';
+  document.getElementById('approval-tier-hint').textContent = '';
+  showToast('success', `สร้าง ${pr.id} เรียบร้อยแล้ว`);
+  switchTab('list');
+}
+
+// ======== DASHBOARD ========
+function renderDashboard() {
+  const total = prs.length;
+  const pending = prs.filter(p => !['approved','rejected'].includes(p.status)).length;
+  const approved = prs.filter(p => p.status === 'approved').length;
+  const rejected = prs.filter(p => p.status === 'rejected').length;
+  const totalValue = prs.filter(p => p.status !== 'rejected').reduce((s, p) => s + p.totalPrice, 0);
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-approved').textContent = approved;
+  document.getElementById('stat-rejected').textContent = rejected;
+  document.getElementById('stat-value').textContent = '฿' + totalValue.toLocaleString('th-TH', { minimumFractionDigits: 2 });
+
+  // My action items
+  const myAction = prs.filter(p => canApprove(p));
+  document.getElementById('stat-my-action').textContent = myAction.length + ' รายการ';
+
+  const myList = document.getElementById('my-action-list');
+  if (myAction.length === 0) {
+    myList.innerHTML = '<p class="text-center py-4 text-gray-400">ไม่มีรายการที่รอดำเนินการ</p>';
+  } else {
+    myList.innerHTML = myAction.map(p => `
+      <div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="openModal('${p.id}')">
+        <div>
+          <span class="font-mono text-indigo-600 text-xs">${p.id}</span>
+          <span class="ml-2 text-sm text-gray-700">${p.item}</span>
+          <span class="ml-1 text-xs text-gray-400">(${p.requester})</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-semibold text-gray-700">฿${p.totalPrice.toLocaleString('th-TH')}</span>
+          <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">รอคุณ</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Recent PRs
+  const recent = document.getElementById('recent-prs');
+  if (prs.length === 0) {
+    recent.innerHTML = '<p class="text-center py-4 text-gray-400">ยังไม่มีคำขอ — <button onclick="switchTab(\'new\')" class="text-indigo-600 hover:underline">ยื่นคำขอแรก</button></p>';
+  } else {
+    recent.innerHTML = prs.slice(0, 5).map(p => `
+      <div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="openModal('${p.id}')">
+        <div>
+          <span class="font-mono text-indigo-600 text-xs">${p.id}</span>
+          <span class="ml-2 text-sm text-gray-700">${p.item}</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-gray-500">฿${p.totalPrice.toLocaleString('th-TH')}</span>
+          <span class="status-badge ${STATUS_COLORS[p.status]}">${STATUS_LABELS[p.status]}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+// ======== LIST ========
+function renderList() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const statusF = document.getElementById('filter-status').value;
+  const catF = document.getElementById('filter-category').value;
+
+  let filtered = prs.filter(p => {
+    if (search && !p.id.toLowerCase().includes(search) && !p.item.toLowerCase().includes(search) && !p.requester.toLowerCase().includes(search)) return false;
+    if (statusF && p.status !== statusF) return false;
+    if (catF && p.category !== catF) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('pr-table-body');
+  const footer = document.getElementById('list-footer');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="py-12 text-center text-sm text-gray-400">ไม่พบรายการ</td></tr>';
+    footer.classList.add('hidden');
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p => `
+    <tr class="pr-row border-t cursor-pointer" onclick="openModal('${p.id}')">
+      <td class="py-3 px-4 font-mono text-sm text-indigo-600">${p.id}</td>
+      <td class="py-3 px-4">
+        <p class="text-sm font-medium text-gray-900">${p.item}</p>
+        <p class="text-xs text-gray-400">${p.vendor}</p>
+      </td>
+      <td class="py-3 px-4">
+        <p class="text-sm text-gray-700">${p.requester}</p>
+        <p class="text-xs text-gray-400">${p.department}</p>
+      </td>
+      <td class="py-3 px-4">
+        <span class="text-xs px-2 py-0.5 rounded-full ${CATEGORY_COLORS[p.category] || 'bg-gray-100 text-gray-600'}">${p.category}</span>
+      </td>
+      <td class="py-3 px-4 text-right">
+        <p class="text-sm font-semibold text-gray-900">฿${p.totalPrice.toLocaleString('th-TH')}</p>
+        <p class="text-xs text-gray-400">${p.quantity} × ฿${p.unitPrice.toLocaleString('th-TH')}</p>
+      </td>
+      <td class="py-3 px-4">
+        <span class="status-badge ${STATUS_COLORS[p.status]}">${STATUS_LABELS[p.status]}</span>
+        ${canApprove(p) ? '<span class="ml-1 text-xs text-amber-600">← รอคุณ</span>' : ''}
+      </td>
+      <td class="py-3 px-4 text-xs text-gray-400">${p.createdAt}</td>
+      <td class="py-3 px-4">
+        <button onclick="event.stopPropagation(); openModal('${p.id}')" class="text-xs text-indigo-600 hover:underline">ดูรายละเอียด</button>
+      </td>
+    </tr>
+  `).join('');
+
+  footer.textContent = `แสดง ${filtered.length} จาก ${prs.length} รายการ`;
+  footer.classList.remove('hidden');
+}
+
+function clearFilters() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('filter-category').value = '';
+  renderList();
+}
+
+// ======== CAN APPROVE ========
+function canApprove(pr) {
+  if (pr.status === 'approved' || pr.status === 'rejected') return false;
+  if (currentRole === 'team_lead' && pr.status === 'pending_team_lead') return true;
+  if (currentRole === 'manager' && pr.status === 'pending_manager') return true;
+  if (currentRole === 'executive' && pr.status === 'pending_executive') return true;
+  return false;
+}
+
+// ======== MODAL ========
+function openModal(id) {
+  const pr = prs.find(p => p.id === id);
+  if (!pr) return;
+
+  const steps = pr.requiredSteps || ['team_lead', 'manager', 'executive'];
+  const allSteps = [
+    { key: 'team_lead', label: 'หัวหน้าทีม', icon: '👔' },
+    { key: 'manager', label: 'ผู้จัดการฝ่าย', icon: '🏢' },
+    { key: 'executive', label: 'ผู้บริหาร', icon: '⭐' }
+  ];
+
+  function stepState(stepKey) {
+    const a = pr.approvals[stepKey];
+    if (!steps.includes(stepKey)) return 'skipped';
+    if (a.status === 'approved') return 'done';
+    if (a.status === 'rejected') return 'rejected';
+    // current step
+    if (pr.status === 'pending_' + stepKey) return 'current';
+    // check if it's downstream
+    const idx = steps.indexOf(stepKey);
+    const currentIdx = ['team_lead','manager','executive'].indexOf(pr.status.replace('pending_',''));
+    if (currentIdx >= 0 && idx > currentIdx) return 'pending';
+    if (pr.status === 'approved' || pr.status === 'rejected') {
+      if (a.status === null && steps.includes(stepKey)) return 'skipped';
+    }
+    return 'pending';
+  }
+
+  function stepIcon(state) {
+    if (state === 'done') return '✓';
+    if (state === 'rejected') return '✕';
+    if (state === 'current') return '●';
+    return '○';
+  }
+
+  const stepsHTML = allSteps.map((s, i) => {
+    const state = stepState(s.key);
+    const a = pr.approvals[s.key];
+    const isReq = steps.includes(s.key);
+    if (!isReq && state === 'skipped') {
+      return `<div class="approval-step skipped flex items-start gap-3 opacity-40">
+        <div class="step-circle bg-gray-200 text-gray-400">${s.icon}</div>
+        <div class="pt-1 text-sm text-gray-400">${s.label} <span class="text-xs">(ไม่จำเป็น)</span></div>
+      </div>`;
+    }
+    return `<div class="approval-step ${state} flex items-start gap-3">
+      <div class="flex flex-col items-center">
+        <div class="step-circle">${stepIcon(state)}</div>
+        ${i < allSteps.length - 1 ? `<div class="step-line bg-gray-200 mt-1"></div>` : ''}
+      </div>
+      <div class="pt-1 flex-1">
+        <p class="text-sm font-medium text-gray-800">${s.icon} ${s.label}</p>
+        ${a.by ? `<p class="text-xs text-gray-500">${a.by} · ${a.date}</p>` : ''}
+        ${a.comment ? `<p class="text-xs mt-1 italic text-gray-500">"${a.comment}"</p>` : ''}
+        ${state === 'current' && canApprove(pr) ? `
+          <div class="mt-2 space-y-2" id="approval-form-${s.key}">
+            <textarea id="comment-${s.key}" rows="2" placeholder="ความคิดเห็น (ไม่บังคับ)"
+              class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm resize-none"></textarea>
+            <div class="flex gap-2">
+              <button onclick="doApprove('${pr.id}','${s.key}','approved')"
+                class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-sm py-1.5 rounded-lg font-medium transition-colors">
+                ✓ อนุมัติ
+              </button>
+              <button onclick="doApprove('${pr.id}','${s.key}','rejected')"
+                class="flex-1 bg-red-500 hover:bg-red-600 text-white text-sm py-1.5 rounded-lg font-medium transition-colors">
+                ✕ ไม่อนุมัติ
+              </button>
+            </div>
+          </div>
+        ` : ''}
+        ${state === 'current' && !canApprove(pr) ? `<p class="text-xs text-amber-600 mt-1">⏳ รอการอนุมัติ</p>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const neededDateHTML = pr.neededDate ? `<div><p class="text-xs text-gray-500 mb-0.5">ต้องการภายใน</p><p class="text-sm font-medium">${pr.neededDate}</p></div>` : '';
+
+  document.getElementById('modal-content').innerHTML = `
+    <div class="p-6">
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-5">
+        <div>
+          <p class="font-mono text-indigo-600 text-sm font-semibold">${pr.id}</p>
+          <h2 class="text-xl font-bold text-gray-900 mt-0.5">${pr.item}</h2>
+          <p class="text-sm text-gray-500 mt-0.5">${pr.requester} · ${pr.department} · ${pr.createdAt}</p>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <span class="status-badge ${STATUS_COLORS[pr.status]} text-sm px-3 py-1">${STATUS_LABELS[pr.status]}</span>
+          <button onclick="closeModal()" class="text-gray-400 hover:text-gray-700 text-xs">✕ ปิด</button>
+        </div>
+      </div>
+
+      <!-- Price highlight -->
+      <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4 mb-5 flex justify-between items-center">
+        <div>
+          <p class="text-xs text-gray-500 mb-0.5">มูลค่ารวม</p>
+          <p class="text-2xl font-bold text-indigo-800">฿${pr.totalPrice.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</p>
+          <p class="text-xs text-gray-500">${pr.quantity} หน่วย × ฿${pr.unitPrice.toLocaleString('th-TH')}</p>
+        </div>
+        <span class="text-xs px-3 py-1 rounded-full ${CATEGORY_COLORS[pr.category] || 'bg-gray-100'} font-medium">${pr.category}</span>
+      </div>
+
+      <!-- Details grid -->
+      <div class="grid grid-cols-2 gap-4 mb-5 text-sm">
+        <div><p class="text-xs text-gray-500 mb-0.5">ผู้ขาย</p><p class="font-medium">${pr.vendor}</p></div>
+        ${neededDateHTML}
+        ${pr.spec ? `<div class="col-span-2"><p class="text-xs text-gray-500 mb-0.5">สเปค</p><p class="font-medium">${pr.spec}</p></div>` : ''}
+        <div class="col-span-2"><p class="text-xs text-gray-500 mb-0.5">เหตุผลความจำเป็น</p><p class="text-gray-700 leading-relaxed">${pr.reason}</p></div>
+      </div>
+
+      <hr class="border-gray-100 mb-5">
+
+      <!-- Approval steps -->
+      <h3 class="text-sm font-semibold text-gray-700 mb-4">Approval Workflow</h3>
+      <div class="space-y-3">
+        ${stepsHTML}
+      </div>
+
+      ${pr.status === 'approved' ? `
+        <div class="mt-5 bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-700 text-center font-medium">
+          ✅ คำขอนี้ได้รับการอนุมัติแล้ว
+        </div>` : ''}
+      ${pr.status === 'rejected' ? `
+        <div class="mt-5 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 text-center font-medium">
+          ❌ คำขอนี้ถูกปฏิเสธ
+        </div>` : ''}
+    </div>
+  `;
+
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.add('hidden');
+  }
+}
+
+// ======== APPROVE / REJECT ========
+function doApprove(prId, stepKey, decision) {
+  const pr = prs.find(p => p.id === prId);
+  if (!pr) return;
+
+  const comment = document.getElementById('comment-' + stepKey)?.value.trim() || '';
+  pr.approvals[stepKey] = {
+    status: decision,
+    by: ROLE_NAMES[currentRole],
+    date: new Date().toISOString().slice(0, 10),
+    comment: comment
+  };
+
+  if (decision === 'rejected') {
+    pr.status = 'rejected';
+  } else {
+    // Move to next step
+    const steps = pr.requiredSteps;
+    const idx = steps.indexOf(stepKey);
+    if (idx < steps.length - 1) {
+      pr.status = 'pending_' + steps[idx + 1];
+    } else {
+      pr.status = 'approved';
+    }
+  }
+
+  save();
+  closeModal();
+
+  const msg = decision === 'approved' ? `อนุมัติ ${prId} แล้ว` : `ปฏิเสธ ${prId} แล้ว`;
+  showToast(decision === 'approved' ? 'success' : 'error', msg);
+
+  renderDashboard();
+  renderList();
+}
+
+// ======== TOAST ========
+function showToast(type, msg) {
+  const el = document.getElementById('toast');
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  document.getElementById('toast-icon').textContent = icons[type] || '✅';
+  document.getElementById('toast-msg').textContent = msg;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 3000);
+}
+
+// ======== KEYBOARD ========
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal({ target: document.getElementById('modal') });
+});
+
+// ======== START ========
+init();
+</script>
+</body>
+</html>
