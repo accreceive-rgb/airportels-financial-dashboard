@@ -25,6 +25,13 @@
     .approval-step.rejected .step-circle { background: #ef4444; color: white; }
     .approval-step.skipped .step-circle { background: #d1d5db; color: #6b7280; }
   </style>
+  <style id="print-style">
+    @media print {
+      body > * { display: none !important; }
+      #print-area { display: block !important; }
+    }
+    #print-area { display: none; }
+  </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
