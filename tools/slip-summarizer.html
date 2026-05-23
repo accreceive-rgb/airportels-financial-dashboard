@@ -506,49 +506,54 @@ async function summarizeAll() {
     records.push(placeholder);
     renderRow(placeholder);
 
-    if (apiKey && !item.expandError) {
+    if (item.expandError) {
+      placeholder.status = 'error';
+      refreshRow(placeholder);
+
+    } else if (apiKey) {
+      // ── PATH A: Claude Vision (multi-slip detect) ──
       try {
         const b64   = await blobToBase64(item.blob);
         const mt    = item.mimeType || 'image/jpeg';
-        const slips = await detectSlipsFromImage(b64, mt);  // ← returns array
+        const slips = await detectSlipsFromImage(b64, mt);
 
         if (slips.length === 0) {
-          // Image has no recognisable slip
           placeholder.status = 'noSlip';
           refreshRow(placeholder);
-
         } else if (slips.length === 1) {
-          // Single slip — fill placeholder
           fillRecord(placeholder, slips[0]);
           refreshRow(placeholder);
-
         } else {
-          // Multiple slips in one image → expand into N rows
-          fillRecord(placeholder, slips[0],
-            labelFor(item, 1, slips.length));
+          fillRecord(placeholder, slips[0], labelFor(item, 1, slips.length));
           refreshRow(placeholder);
-
           for (let s = 1; s < slips.length; s++) {
-            const extra = makeRecord({
-              imageUrl,
-              item,
-              status: 'done',
-              sourceLabel: labelFor(item, s + 1, slips.length)
-            });
+            const extra = makeRecord({ imageUrl, item, status:'done',
+              sourceLabel: labelFor(item, s+1, slips.length) });
             fillRecord(extra, slips[s]);
             records.push(extra);
             renderRow(extra);
           }
         }
-
       } catch(err) {
-        console.warn('Detect error:', err);
+        console.warn('Claude error:', err);
         placeholder.status = 'error';
         refreshRow(placeholder);
       }
+
     } else {
-      placeholder.status = item.expandError ? 'error' : 'manual';
-      refreshRow(placeholder);
+      // ── PATH B: Tesseract.js free OCR ──
+      try {
+        placeholder.status = 'ocr';
+        refreshRow(placeholder);
+        const result = await readWithTesseract(item.blob);
+        fillRecord(placeholder, result);
+        placeholder.status = result._lowConf ? 'ocrwarn' : 'done';
+        refreshRow(placeholder);
+      } catch(err) {
+        console.warn('Tesseract error:', err);
+        placeholder.status = 'manual';
+        refreshRow(placeholder);
+      }
     }
 
     recalcTotal();
