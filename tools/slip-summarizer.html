@@ -744,7 +744,12 @@ async function extractZipContents(file) {
   return extracted;
 }
 
-async function callClaudeVision(b64, mimeType) {
+/**
+ * detectSlipsFromImage — core AI call
+ * Returns an ARRAY of slip objects: [{date, sender, recipient, amount}, ...]
+ * One element per slip found. Empty array = no slip in image.
+ */
+async function detectSlipsFromImage(b64, mimeType) {
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -755,37 +760,71 @@ async function callClaudeVision(b64, mimeType) {
     },
     body: JSON.stringify({
       model: 'claude-opus-4-5',
-      max_tokens: 400,
+      max_tokens: 1500,
       messages: [{
         role: 'user',
         content: [
-          { type: 'image', source: { type: 'base64', media_type: mimeType, data: b64 } },
-          { type: 'text', text: `คุณคือระบบ OCR สำหรับสลิปโอนเงินธนาคารไทย
-อ่านข้อมูลจากภาพสลิปแล้วตอบเป็น JSON เท่านั้น (ไม่ต้องอธิบาย):
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: mimeType, data: b64 }
+          },
+          {
+            type: 'text',
+            text: `คุณคือระบบ OCR สำหรับสลิปโอนเงินธนาคารไทย
 
-{
-  "date": "วันที่โอน รูปแบบ DD/MM/YYYY",
-  "sender": "ชื่อบัญชีผู้โอน",
-  "recipient": "ชื่อบัญชีผู้รับโอน",
-  "amount": ยอดโอน (ตัวเลขล้วน ไม่มีหน่วย)
-}
+ตรวจสอบภาพนี้อย่างละเอียด — ภาพอาจมีสลิปโอนเงิน 1 ใบ หรือหลายใบในภาพเดียวกัน
+(เช่น ภาพรวม, grid ของสลิป, หรือสลิปเรียงต่อกัน)
 
-ถ้าหาไม่เจอ: text→"ไม่ระบุ", number→0` }
+กรุณาค้นหาและอ่านข้อมูลจากสลิปโอนเงิน**ทุกใบ**ที่ปรากฏในภาพ
+
+ตอบกลับเป็น JSON array เท่านั้น — 1 object = 1 สลิป:
+[
+  {
+    "date": "DD/MM/YYYY",
+    "sender": "ชื่อบัญชีผู้โอน",
+    "recipient": "ชื่อบัญชีผู้รับโอน",
+    "amount": 0
+  }
+]
+
+กฎสำคัญ:
+• ถ้ามีหลายสลิปในภาพ → ตอบหลาย object ใน array
+• ถ้าภาพไม่มีสลิปโอนเงินเลย → ตอบ []
+• ฟิลด์ที่หาไม่เจอ: text → "ไม่ระบุ" | number → 0
+• amount ต้องเป็นตัวเลขล้วน ไม่มี comma ไม่มีหน่วยเงิน
+• date รูปแบบ DD/MM/YYYY (ปี ค.ศ.) เท่านั้น
+• ตอบเฉพาะ JSON ไม่ต้องอธิบายเพิ่ม`
+          }
         ]
       }]
     })
   });
 
   if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(`HTTP ${resp.status}: ${err}`);
+    const errText = await resp.text();
+    throw new Error(`API ${resp.status}: ${errText}`);
   }
 
   const json = await resp.json();
-  const text = (json.content?.[0]?.text || '').trim();
-  const m = text.match(/\{[\s\S]*?\}/);
-  if (!m) throw new Error('No JSON in response');
-  return JSON.parse(m[0]);
+  const raw  = (json.content?.[0]?.text || '').trim();
+
+  // 1. Try to parse as JSON array directly
+  const arrMatch = raw.match(/\[[\s\S]*\]/);
+  if (arrMatch) {
+    try {
+      const arr = JSON.parse(arrMatch[0]);
+      return Array.isArray(arr) ? arr : [arr];
+    } catch(e) { /* fall through */ }
+  }
+
+  // 2. Fallback: single object → wrap in array
+  const objMatch = raw.match(/\{[\s\S]*?\}/);
+  if (objMatch) {
+    try { return [JSON.parse(objMatch[0])]; } catch(e) { /* fall through */ }
+  }
+
+  // 3. No recognisable JSON
+  return [];
 }
 
 /* ─── TABLE RENDER ─── */
