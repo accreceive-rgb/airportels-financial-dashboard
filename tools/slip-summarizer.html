@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>สรุปรายการโอนชำระ — Airportels Financial MADGA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { font-family: 'Sarabun', sans-serif; }
+
+    /* Drop Zone */
+    .drop-zone { border: 3px dashed #cbd5e1; transition: all 0.25s ease; }
+    .drop-zone.drag-over { border-color: #3b82f6; background: #eff6ff; transform: scale(1.01); }
+
+    /* Slip thumbnail */
+    .slip-thumb { width: 72px; height: 96px; object-fit: cover; border-radius: 6px; cursor: zoom-in; transition: transform 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .slip-thumb:hover { transform: scale(1.08); }
+
+    /* Image Modal */
+    .img-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; }
+    .img-modal.open { display:flex; }
+
+    /* Spinner */
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .spinner { width:18px; height:18px; border:3px solid #e2e8f0; border-top-color:#3b82f6; border-radius:50%; animation:spin .8s linear infinite; display:inline-block; }
+
+    /* Status badges */
+    .badge-processing { background:#dbeafe; color:#1d4ed8; }
+    .badge-done       { background:#dcfce7; color:#15803d; }
+    .badge-error      { background:#fee2e2; color:#b91c1c; }
+    .badge-manual     { background:#fef9c3; color:#92400e; }
+
+    /* Editable input */
+    .cell-input { border:1px solid transparent; border-radius:5px; padding:4px 7px; font-size:13px; width:100%; transition:border-color .15s; background:transparent; }
+    .cell-input:hover { border-color:#e2e8f0; background:#f8fafc; }
+    .cell-input:focus { border-color:#3b82f6; background:#fff; outline:none; box-shadow:0 0 0 2px rgba(59,130,246,0.15); }
+    .cell-input-amount { text-align:right; }
+
+    /* Export dropdown */
+    .export-menu { display:none; position:absolute; top:calc(100% + 6px); left:0; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.12); min-width:180px; z-index:100; overflow:hidden; }
+    .export-menu.open { display:block; }
+    .export-item { display:flex; align-items:center; gap:10px; padding:10px 16px; font-size:14px; color:#374151; cursor:pointer; transition:background .15s; }
+    .export-item:hover { background:#f0f9ff; color:#2563eb; }
+
+    /* Row hover */
+    .slip-row { transition:background .1s; }
+    .slip-row:hover { background:#f8fafc; }
+    .slip-row.checked-row { background:#f0fdf4; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:#f1f5f9; }
+    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+
+    /* Print */
+    @media print {
+      .no-print { display:none !important; }
+      body { background:#fff !important; }
+      .slip-thumb { width:60px; height:80px; }
+      table { font-size:11px; }
+      th, td { padding:6px 8px !important; }
+    }
+
+    /* Shimmer loading */
+    @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+    .shimmer { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size:800px 100%; animation:shimmer 1.4s infinite; border-radius:4px; height:16px; }
+
+    /* Progress bar */
+    @keyframes progbar { from{width:0%} }
+    .prog-bar { height:3px; background:#3b82f6; border-radius:2px; transition:width .4s ease; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="bg-white border-b border-gray-200 shadow-sm no-print sticky top-0 z-50">
+  <div class="max-w-screen-xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-base font-bold text-gray-900 leading-tight">ระบบสรุปรายการโอนชำระ</h1>
+        <p class="text-xs text-gray-400">Payment Slip Summarizer · Airportels Financial</p>
+      </div>
+    </div>
+    <span class="text-xs font-mono bg-gray-900 text-white px-2 py-1 rounded">MADGA</span>
+  </div>
+  <!-- Progress bar (hidden by default) -->
+  <div id="topProgress" class="hidden px-0">
+    <div class="prog-bar" id="topProgressBar" style="width:0%"></div>
+  </div>
+</header>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+
+  <!-- API KEY SECTION -->
+  <div id="apiSection" class="bg-amber-50 border border-amber-200 rounded-2xl p-5 no-print">
+    <div class="flex items-start gap-3">
+      <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-amber-800 text-sm mb-1">Anthropic API Key
+          <span class="font-normal text-amber-600">— ใช้สำหรับอ่านข้อมูลจากสลิปโดยอัตโนมัติ (ไม่บังคับ)</span>
+        </p>
+        <div class="flex gap-2">
+          <input id="apiKeyInput" type="password" placeholder="sk-ant-api..."
+            class="flex-1 text-sm border border-amber-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 min-w-0"/>
+          <button onclick="saveApiKey()"
+            class="flex-shrink-0 bg-amber-600 text-white text-sm px-4 py-2 rounded-xl font-medium hover:bg-amber-700 transition-colors">
+            บันทึก
+          </button>
+          <button onclick="clearApiKey()"
+            class="flex-shrink-0 bg-white text-amber-700 border border-amber-300 text-sm px-3 py-2 rounded-xl font-medium hover:bg-amber-50 transition-colors">
+            ล้าง
+          </button>
+          <button onclick="toggleApiSection()"
+            class="flex-shrink-0 text-amber-400 hover:text-amber-600 px-1" title="ซ่อน">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+            </svg>
+          </button>
+        </div>
+        <p id="apiKeyStatus" class="text-xs mt-1.5 text-amber-600">
+          ยังไม่ได้ตั้งค่า — ถ้าไม่มี API Key สามารถกรอกข้อมูลด้วยตนเองได้
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD ZONE -->
+  <div id="uploadZone"
+    class="drop-zone bg-white rounded-2xl p-10 text-center cursor-pointer no-print select-none"
+    onclick="triggerFileInput()"
+    ondragover="onDragOver(event)"
+    ondragleave="onDragLeave(event)"
+    ondrop="onDrop(event)">
+    <input id="fileInput" type="file" accept="image/*" multiple class="hidden" onchange="onFileSelect(event)"/>
+    <div class="flex flex-col items-center gap-3 pointer-events-none">
+      <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center">
+        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-lg font-semibold text-gray-700">วางไฟล์สลิปโอนเงินที่นี่</p>
+        <p class="text-sm text-gray-400 mt-0.5">หรือคลิกเพื่อเลือกไฟล์ · รองรับหลายไฟล์พร้อมกัน (JPG, PNG, WEBP, GIF)</p>
+      </div>
+      <div id="fileCountBadge" class="hidden bg-blue-100 text-blue-700 text-sm px-4 py-1.5 rounded-full font-semibold pointer-events-auto"></div>
+    </div>
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="flex flex-wrap gap-3 no-print">
+    <!-- Summarize -->
+    <button id="btnSummarize" onclick="summarizeAll()" disabled
+      class="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold text-sm
+             hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm
+             disabled:opacity-40 disabled:cursor-not-allowed">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      <span id="btnSumText">สรุปรายการ</span>
+    </button>
+
+    <!-- Add manual -->
+    <button onclick="addManual()"
+      class="flex items-center gap-2 bg-white text-gray-700 border border-gray-200 px-5 py-3 rounded-xl font-semibold text-sm
+             hover:bg-gray-50 transition-colors shadow-sm">
+      <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      เพิ่มรายการเอง
+    </button>
+
+    <!-- Export dropdown -->
+    <div class="relative" id="exportWrapper">
+      <button id="btnExport" onclick="toggleExportMenu(event)" disabled
+        class="flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold text-sm
+               hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Export
+        <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      <div id="exportMenu" class="export-menu">
+        <button class="export-item w-full" onclick="doExportCSV()">
+          <span class="text-lg">📊</span> Export CSV
+        </button>
+        <button class="export-item w-full" onclick="doExportExcel()">
+          <span class="text-lg">📗</span> Export Excel (.xlsx)
+        </button>
+        <div class="border-t border-gray-100 my-1"></div>
+        <button class="export-item w-full" onclick="doExportPrint()">
+          <span class="text-lg">🖨️</span> พิมพ์ / PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Spacer -->
+    <div class="flex-1"></div>
+
+    <!-- Reset -->
+    <button onclick="doReset()"
+      class="flex items-center gap-2 bg-white text-red-500 border border-red-200 px-5 py-3 rounded-xl font-semibold text-sm
+             hover:bg-red-50 transition-colors shadow-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      รีเซ็ต
+    </button>
+  </div>
+
+  <!-- SUMMARY TABLE CARD -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+
+    <!-- Card Header -->
+    <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <h2 class="font-bold text-gray-800">รายการสรุปการโอนชำระ</h2>
+        <span id="recordCount"
+          class="text-xs font-semibold bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full">
+          0 รายการ
+        </span>
+      </div>
+      <div id="progressInfo" class="hidden flex items-center gap-2 text-sm text-blue-600 font-medium">
+        <div class="spinner"></div>
+        <span id="progressText">กำลังประมวลผล...</span>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm min-w-[900px]">
+        <thead>
+          <tr class="bg-gray-50 text-xs uppercase text-gray-400 tracking-wide">
+            <th class="px-4 py-3 text-center w-10">#</th>
+            <th class="px-3 py-3 text-center w-24">สลิป</th>
+            <th class="px-3 py-3 text-left">วันที่โอน</th>
+            <th class="px-3 py-3 text-left">ชื่อผู้โอน</th>
+            <th class="px-3 py-3 text-left">ชื่อผู้รับโอน</th>
+            <th class="px-3 py-3 text-right">ยอดโอน (฿)</th>
+            <th class="px-3 py-3 text-left">หมายเหตุ</th>
+            <th class="px-3 py-3 text-center w-12 text-base">✓</th>
+            <th class="px-3 py-3 text-center w-14 no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr id="emptyRow">
+            <td colspan="9" class="px-6 py-20 text-center">
+              <div class="flex flex-col items-center gap-3 text-gray-300">
+                <svg class="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <p class="text-base text-gray-400 font-medium">ยังไม่มีรายการ</p>
+                <p class="text-sm text-gray-300">อัปโหลดสลิป แล้วกด <strong class="text-blue-400">"สรุปรายการ"</strong></p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="bg-gradient-to-r from-blue-50 to-indigo-50 border-t-2 border-blue-100">
+            <td colspan="5" class="px-5 py-4 font-bold text-gray-700 text-right text-sm">
+              รวมยอดโอนทั้งหมด
+            </td>
+            <td class="px-3 py-4 text-right font-bold text-blue-700 text-lg tracking-tight" id="grandTotal">
+              ฿ 0.00
+            </td>
+            <td colspan="3" class="px-3 py-4">
+              <span id="checkedCount" class="text-xs text-gray-400"></span>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center text-xs text-gray-300 pb-6 no-print">
+    Airportels Financial · MADGA · Payment Slip Summarizer · ข้อมูลทั้งหมดประมวลผลในเครื่องของคุณ
+  </footer>
+
+</main>
+
+<!-- ═══════════════ IMAGE MODAL ═══════════════ -->
+<div id="imgModal" class="img-modal" onclick="closeModal()">
+  <div class="relative max-h-screen p-4 flex items-center justify-center" onclick="event.stopPropagation()">
+    <img id="modalImg" src="" alt="สลิปโอนเงิน"
+      class="max-w-[92vw] max-h-[88vh] object-contain rounded-2xl shadow-2xl"/>
+    <button onclick="closeModal()"
+      class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-600 hover:bg-white shadow-lg text-sm font-bold">
+      ✕
+    </button>
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm" id="modalLabel"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SCRIPT ═══════════════ -->
+<script>
+/* ─── STATE ─── */
+let records = [];
+let pendingFiles = [];
+let apiKey = localStorage.getItem('madga_api_key') || '';
+let isProcessing = false;
+
+/* ─── INIT ─── */
+(function init() {
+  if (apiKey) {
+    document.getElementById('apiKeyInput').value = maskKey(apiKey);
+    setApiStatus(true);
+  }
+  document.addEventListener('click', e => {
+    if (!document.getElementById('exportWrapper').contains(e.target)) {
+      closeExportMenu();
+    }
+  });
+})();
+
+/* ─── API KEY ─── */
+function maskKey(k) { return k.slice(0,8) + '•'.repeat(Math.max(0, k.length - 12)) + k.slice(-4); }
+
+function saveApiKey() {
+  const v = document.getElementById('apiKeyInput').value.trim();
+  if (!v || v.includes('•')) return;
+  apiKey = v;
+  localStorage.setItem('madga_api_key', v);
+  document.getElementById('apiKeyInput').value = maskKey(v);
+  setApiStatus(true);
+}
+
+function clearApiKey() {
+  apiKey = '';
+  localStorage.removeItem('madga_api_key');
+  document.getElementById('apiKeyInput').value = '';
+  setApiStatus(false);
+}
+
+function setApiStatus(has) {
+  const el = document.getElementById('apiKeyStatus');
+  if (has) {
+    el.textContent = '✅ API Key บันทึกแล้ว — ระบบจะอ่านสลิปอัตโนมัติด้วย Claude Vision';
+    el.className = 'text-xs mt-1.5 text-green-600 font-medium';
+  } else {
+    el.textContent = 'ยังไม่ได้ตั้งค่า — ถ้าไม่มี API Key สามารถกรอกข้อมูลด้วยตนเองได้';
+    el.className = 'text-xs mt-1.5 text-amber-600';
+  }
+}
+
+function toggleApiSection() {
+  const body = document.querySelector('#apiSection > div > div:last-child > div:first-child + div');
+  /* just collapse the input row */
+  const inputRow = document.querySelector('#apiSection .flex.gap-2:not(.flex-1)');
+  if (inputRow) inputRow.classList.toggle('hidden');
+}
+
+/* ─── DRAG & DROP ─── */
+function triggerFileInput() {
+  if (isProcessing) return;
+  document.getElementById('fileInput').click();
+}
+
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.add('drag-over');
+}
+
+function onDragLeave(e) {
+  document.getElementById('uploadZone').classList.remove('drag-over');
+}
+
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag-over');
+  if (isProcessing) return;
+  const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+  addPendingFiles(files);
+}
+
+function onFileSelect(e) {
+  addPendingFiles([...e.target.files]);
+  e.target.value = '';
+}
+
+function addPendingFiles(files) {
+  if (!files.length) return;
+  pendingFiles.push(...files);
+  const badge = document.getElementById('fileCountBadge');
+  badge.textContent = `${pendingFiles.length} ไฟล์พร้อมประมวลผล`;
+  badge.classList.remove('hidden');
+  document.getElementById('btnSummarize').disabled = false;
+}
+
+/* ─── SUMMARIZE ─── */
+async function summarizeAll() {
+  if (!pendingFiles.length || isProcessing) return;
+  isProcessing = true;
+
+  const btn = document.getElementById('btnSummarize');
+  btn.disabled = true;
+  document.getElementById('progressInfo').classList.remove('hidden');
+  document.getElementById('topProgress').classList.remove('hidden');
+  document.getElementById('emptyRow').style.display = 'none';
+
+  const total = pendingFiles.length;
+
+  for (let i = 0; i < pendingFiles.length; i++) {
+    const file = pendingFiles[i];
+    setProgress(i, total, file.name);
+
+    const id = Date.now() + Math.random();
+    const imageUrl = URL.createObjectURL(file);
+
+    const rec = {
+      id, imageUrl,
+      filename: file.name,
+      date: '', sender: '', recipient: '',
+      amount: 0, notes: '', checked: false,
+      status: 'processing'
+    };
+
+    records.push(rec);
+    renderRow(rec);
+
+    if (apiKey) {
+      try {
+        const b64 = await toBase64(file);
+        const mt = file.type || 'image/jpeg';
+        const data = await callClaudeVision(b64, mt);
+        rec.date      = data.date      || '';
+        rec.sender    = data.sender    || '';
+        rec.recipient = data.recipient || '';
+        rec.amount    = parseFloat(data.amount) || 0;
+        rec.status    = 'done';
+      } catch(err) {
+        console.warn('OCR error:', err);
+        rec.status = 'error';
+      }
+    } else {
+      rec.status = 'manual';
+    }
+
+    refreshRow(rec);
+    recalcTotal();
+  }
+
+  pendingFiles = [];
+  document.getElementById('fileCountBadge').classList.add('hidden');
+  document.getElementById('progressInfo').classList.add('hidden');
+  document.getElementById('topProgress').classList.add('hidden');
+  document.getElementById('topProgressBar').style.width = '0%';
+  btn.disabled = false;
+  isProcessing = false;
+  updateRecordCount();
+  updateExportBtn();
+}
+
+function setProgress(i, total, name) {
+  const pct = Math.round(((i) / total) * 100);
+  document.getElementById('progressText').textContent =
+    `กำลังอ่านสลิป ${i+1}/${total} — ${name}`;
+  document.getElementById('topProgressBar').style.width = pct + '%';
+}
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function callClaudeVision(b64, mimeType) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-calls': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-5',
+      max_tokens: 400,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mimeType, data: b64 } },
+          { type: 'text', text: `คุณคือระบบ OCR สำหรับสลิปโอนเงินธนาคารไทย
+อ่านข้อมูลจากภาพสลิปแล้วตอบเป็น JSON เท่านั้น (ไม่ต้องอธิบาย):
+
+{
+  "date": "วันที่โอน รูปแบบ DD/MM/YYYY",
+  "sender": "ชื่อบัญชีผู้โอน",
+  "recipient": "ชื่อบัญชีผู้รับโอน",
+  "amount": ยอดโอน (ตัวเลขล้วน ไม่มีหน่วย)
+}
+
+ถ้าหาไม่เจอ: text→"ไม่ระบุ", number→0` }
+        ]
+      }]
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`HTTP ${resp.status}: ${err}`);
+  }
+
+  const json = await resp.json();
+  const text = (json.content?.[0]?.text || '').trim();
+  const m = text.match(/\{[\s\S]*?\}/);
+  if (!m) throw new Error('No JSON in response');
+  return JSON.parse(m[0]);
+}
+
+/* ─── TABLE RENDER ─── */
+function renderRow(rec) {
+  const tbody = document.getElementById('tableBody');
+  const tr = document.createElement('tr');
+  tr.id = `r-${rec.id}`;
+  tr.className = 'slip-row border-b border-gray-50' + (rec.checked ? ' checked-row' : '');
+  tr.innerHTML = buildRowHTML(rec, records.length);
+  tbody.appendChild(tr);
+}
+
+function refreshRow(rec) {
+  const tr = document.getElementById(`r-${rec.id}`);
+  if (!tr) return;
+  const idx = records.findIndex(r => r.id === rec.id) + 1;
+  tr.innerHTML = buildRowHTML(rec, idx);
+  tr.className = 'slip-row border-b border-gray-50' + (rec.checked ? ' checked-row' : '');
+}
+
+function buildRowHTML(rec, idx) {
+  const isLoading = rec.status === 'processing';
+
+  const statusBadge = {
+    processing: '',
+    done:   '',
+    error:  '<span class="badge-error text-xs px-2 py-0.5 rounded-full font-medium">อ่านไม่ได้</span>',
+    manual: '<span class="badge-manual text-xs px-2 py-0.5 rounded-full font-medium">กรอกเอง</span>',
+  }[rec.status] || '';
+
+  const imgCell = rec.imageUrl
+    ? `<img src="${rec.imageUrl}" class="slip-thumb mx-auto" onclick="openModal('${rec.imageUrl}','${escHtml(rec.filename)}')" title="${escHtml(rec.filename)}"/>`
+    : `<div class="w-16 h-20 bg-gray-100 rounded-lg mx-auto flex items-center justify-center text-gray-300 text-xs">ไม่มีภาพ</div>`;
+
+  const shimmer = `<div class="shimmer w-full"></div>`;
+
+  const inputDate = isLoading ? shimmer
+    : `<input type="text" value="${escHtml(rec.date)}"
+         class="cell-input" placeholder="DD/MM/YYYY"
+         onchange="setField(${rec.id},'date',this.value)"/>`;
+
+  const inputSender = isLoading ? shimmer
+    : `<input type="text" value="${escHtml(rec.sender)}"
+         class="cell-input" placeholder="ชื่อผู้โอน"
+         onchange="setField(${rec.id},'sender',this.value)"/>`;
+
+  const inputRecipient = isLoading ? shimmer
+    : `<input type="text" value="${escHtml(rec.recipient)}"
+         class="cell-input" placeholder="ชื่อผู้รับโอน"
+         onchange="setField(${rec.id},'recipient',this.value)"/>`;
+
+  const inputAmount = isLoading
+    ? `<div class="flex items-center justify-end gap-1"><div class="spinner"></div></div>`
+    : `<div class="flex items-center justify-end gap-1">
+         ${statusBadge}
+         <input type="number" value="${rec.amount}" step="0.01" min="0"
+           class="cell-input cell-input-amount w-28" placeholder="0.00"
+           onchange="setField(${rec.id},'amount',parseFloat(this.value)||0); recalcTotal()"/>
+       </div>`;
+
+  return `
+    <td class="px-4 py-3 text-center text-xs text-gray-400 font-mono">${idx}</td>
+    <td class="px-3 py-3 text-center">${imgCell}</td>
+    <td class="px-3 py-3">${inputDate}</td>
+    <td class="px-3 py-3">${inputSender}</td>
+    <td class="px-3 py-3">${inputRecipient}</td>
+    <td class="px-3 py-3">${inputAmount}</td>
+    <td class="px-3 py-3">
+      <input type="text" value="${escHtml(rec.notes)}"
+        class="cell-input" placeholder="หมายเหตุ..."
+        onchange="setField(${rec.id},'notes',this.value)"/>
+    </td>
+    <td class="px-3 py-3 text-center">
+      <input type="checkbox" ${rec.checked ? 'checked' : ''}
+        class="w-4 h-4 cursor-pointer rounded accent-blue-600"
+        onchange="toggleCheck(${rec.id},this.checked)"/>
+    </td>
+    <td class="px-3 py-3 text-center no-print">
+      <button onclick="deleteRecord(${rec.id})"
+        class="w-7 h-7 rounded-lg flex items-center justify-center mx-auto text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+      </button>
+    </td>`;
+}
+
+function escHtml(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;')
+    .replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+/* ─── RECORD ACTIONS ─── */
+function setField(id, key, val) {
+  const rec = records.find(r => r.id === id);
+  if (rec) rec[key] = val;
+}
+
+function toggleCheck(id, val) {
+  const rec = records.find(r => r.id === id);
+  if (!rec) return;
+  rec.checked = val;
+  const tr = document.getElementById(`r-${id}`);
+  if (tr) tr.classList.toggle('checked-row', val);
+  updateCheckedCount();
+}
+
+function deleteRecord(id) {
+  records = records.filter(r => r.id !== id);
+  const tr = document.getElementById(`r-${id}`);
+  if (tr) tr.remove();
+  reindex();
+  recalcTotal();
+  updateRecordCount();
+  updateExportBtn();
+  if (!records.length) {
+    document.getElementById('emptyRow').style.display = '';
+  }
+}
+
+function reindex() {
+  records.forEach((r, i) => {
+    const tr = document.getElementById(`r-${r.id}`);
+    if (tr) {
+      const td = tr.querySelector('td:first-child');
+      if (td) td.textContent = i + 1;
+    }
+  });
+}
+
+/* ─── TOTALS ─── */
+function recalcTotal() {
+  const sum = records.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+  document.getElementById('grandTotal').textContent =
+    '฿ ' + sum.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  updateCheckedCount();
+}
+
+function updateRecordCount() {
+  document.getElementById('recordCount').textContent = `${records.length} รายการ`;
+}
+
+function updateCheckedCount() {
+  const checked = records.filter(r => r.checked).length;
+  const el = document.getElementById('checkedCount');
+  el.textContent = checked > 0 ? `ติ๊กถูกแล้ว ${checked}/${records.length} รายการ` : '';
+}
+
+function updateExportBtn() {
+  document.getElementById('btnExport').disabled = records.length === 0;
+}
+
+/* ─── ADD MANUAL ─── */
+function addManual() {
+  const rec = {
+    id: Date.now() + Math.random(),
+    imageUrl: '', filename: '',
+    date: '', sender: '', recipient: '',
+    amount: 0, notes: '', checked: false,
+    status: 'manual'
+  };
+  records.push(rec);
+  document.getElementById('emptyRow').style.display = 'none';
+  renderRow(rec);
+  recalcTotal();
+  updateRecordCount();
+  updateExportBtn();
+}
+
+/* ─── RESET ─── */
+function doReset() {
+  if (records.length > 0 || pendingFiles.length > 0) {
+    if (!confirm('รีเซ็ตจะล้างรายการทั้งหมด ยืนยันหรือไม่?')) return;
+  }
+  records = [];
+  pendingFiles = [];
+  isProcessing = false;
+
+  const tbody = document.getElementById('tableBody');
+  [...tbody.querySelectorAll('tr:not(#emptyRow)')].forEach(tr => tr.remove());
+  document.getElementById('emptyRow').style.display = '';
+
+  document.getElementById('fileCountBadge').classList.add('hidden');
+  document.getElementById('progressInfo').classList.add('hidden');
+  document.getElementById('topProgress').classList.add('hidden');
+  document.getElementById('topProgressBar').style.width = '0%';
+  document.getElementById('btnSummarize').disabled = true;
+  document.getElementById('btnSummarize').querySelector('#btnSumText').textContent = 'สรุปรายการ';
+
+  recalcTotal();
+  updateRecordCount();
+  updateExportBtn();
+}
+
+/* ─── IMAGE MODAL ─── */
+function openModal(src, label) {
+  document.getElementById('modalImg').src = src;
+  document.getElementById('modalLabel').textContent = label || '';
+  document.getElementById('imgModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('imgModal').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ─── EXPORT MENU ─── */
+function toggleExportMenu(e) {
+  e.stopPropagation();
+  document.getElementById('exportMenu').classList.toggle('open');
+}
+
+function closeExportMenu() {
+  document.getElementById('exportMenu').classList.remove('open');
+}
+
+function getTableData() {
+  return records.map((r, i) => ({
+    '#': i + 1,
+    'วันที่โอน': r.date,
+    'ชื่อผู้โอน': r.sender,
+    'ชื่อผู้รับโอน': r.recipient,
+    'ยอดโอน (บาท)': r.amount,
+    'หมายเหตุ': r.notes,
+    'ตรวจสอบแล้ว': r.checked ? 'ใช่' : 'ไม่'
+  }));
+}
+
+function doExportCSV() {
+  closeExportMenu();
+  const headers = ['#','วันที่โอน','ชื่อผู้โอน','ชื่อผู้รับโอน','ยอดโอน (บาท)','หมายเหตุ','ตรวจสอบแล้ว'];
+  const rows = records.map((r, i) => [
+    i+1, r.date, r.sender, r.recipient, r.amount, r.notes, r.checked?'ใช่':'ไม่'
+  ]);
+  const total = records.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+  rows.push(['','รวมทั้งหมด','','',total,'','']);
+
+  const csv = [headers,...rows]
+    .map(row => row.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(','))
+    .join('\r\n');
+
+  downloadBlob(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}), `สรุปการโอน_${today()}.csv`);
+}
+
+function doExportExcel() {
+  closeExportMenu();
+  if (typeof XLSX === 'undefined') { alert('กำลังโหลด SheetJS กรุณาลองใหม่'); return; }
+
+  const headers = ['#','วันที่โอน','ชื่อผู้โอน','ชื่อผู้รับโอน','ยอดโอน (บาท)','หมายเหตุ','ตรวจสอบแล้ว'];
+  const rows = records.map((r,i)=>[i+1,r.date,r.sender,r.recipient,r.amount,r.notes,r.checked?'ใช่':'ไม่']);
+  const total = records.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+  rows.push(['','รวมทั้งหมด','','',total,'','']);
+
+  const ws = XLSX.utils.aoa_to_sheet([headers,...rows]);
+
+  // Column widths
+  ws['!cols'] = [
+    {wch:5},{wch:14},{wch:22},{wch:22},{wch:16},{wch:24},{wch:12}
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'สรุปการโอน');
+  XLSX.writeFile(wb, `สรุปการโอน_${today()}.xlsx`);
+}
+
+function doExportPrint() {
+  closeExportMenu();
+  window.print();
+}
+
+function downloadBlob(blob, name) {
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob),
+    download: name
+  });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+</script>
+</body>
+</html>
