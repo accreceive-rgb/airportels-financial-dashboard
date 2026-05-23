@@ -438,8 +438,22 @@ function onFileSelect(e) {
 function addPendingFiles(files) {
   if (!files.length) return;
   pendingFiles.push(...files);
+
+  const imgs = pendingFiles.filter(f => f.type.startsWith('image/')).length;
+  const pdfs = pendingFiles.filter(f =>
+    f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')).length;
+  const zips = pendingFiles.filter(f =>
+    f.type === 'application/zip' ||
+    f.type === 'application/x-zip-compressed' ||
+    f.name.toLowerCase().endsWith('.zip')).length;
+
+  const parts = [];
+  if (imgs)  parts.push(`${imgs} ภาพ`);
+  if (pdfs)  parts.push(`${pdfs} PDF`);
+  if (zips)  parts.push(`${zips} ZIP`);
+
   const badge = document.getElementById('fileCountBadge');
-  badge.textContent = `${pendingFiles.length} ไฟล์พร้อมประมวลผล`;
+  badge.textContent = `${pendingFiles.length} ไฟล์ (${parts.join(', ')}) · พร้อมประมวลผล`;
   badge.classList.remove('hidden');
   document.getElementById('btnSummarize').disabled = false;
 }
