@@ -476,7 +476,6 @@ async function summarizeAll() {
     items = await expandAllFiles(pendingFiles);
   } catch(e) {
     console.error('Expand error:', e);
-    // Fallback: treat raw files as items
     items = pendingFiles
       .filter(f => f.type.startsWith('image/'))
       .map(f => ({ blob: f, filename: f.name, mimeType: f.type, expandError: false }));
@@ -484,45 +483,64 @@ async function summarizeAll() {
 
   const total = items.length;
 
-  // ── Step 2: Process each image item ──
+  // ── Step 2: For each image, detect ALL slips inside it ──
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     setProgress(i, total, item.filename);
 
-    const id = Date.now() + Math.random();
+    // Shared image URL for all slips found in this image
     const imageUrl = URL.createObjectURL(item.blob);
 
-    const rec = {
-      id, imageUrl,
-      filename: item.filename,
-      sourceLabel: item.sourceLabel || '',   // e.g. "receipts.pdf · หน้า 2/5"
-      date: '', sender: '', recipient: '',
-      amount: 0, notes: '', checked: false,
-      status: 'processing'
-    };
-
-    records.push(rec);
-    renderRow(rec);
+    // Show a placeholder row while processing
+    const placeholder = makeRecord({ imageUrl, item, status: 'processing' });
+    records.push(placeholder);
+    renderRow(placeholder);
 
     if (apiKey && !item.expandError) {
       try {
-        const b64 = await blobToBase64(item.blob);
-        const mt  = item.mimeType || 'image/jpeg';
-        const data = await callClaudeVision(b64, mt);
-        rec.date      = data.date      || '';
-        rec.sender    = data.sender    || '';
-        rec.recipient = data.recipient || '';
-        rec.amount    = parseFloat(data.amount) || 0;
-        rec.status    = 'done';
+        const b64   = await blobToBase64(item.blob);
+        const mt    = item.mimeType || 'image/jpeg';
+        const slips = await detectSlipsFromImage(b64, mt);  // ← returns array
+
+        if (slips.length === 0) {
+          // Image has no recognisable slip
+          placeholder.status = 'noSlip';
+          refreshRow(placeholder);
+
+        } else if (slips.length === 1) {
+          // Single slip — fill placeholder
+          fillRecord(placeholder, slips[0]);
+          refreshRow(placeholder);
+
+        } else {
+          // Multiple slips in one image → expand into N rows
+          fillRecord(placeholder, slips[0],
+            labelFor(item, 1, slips.length));
+          refreshRow(placeholder);
+
+          for (let s = 1; s < slips.length; s++) {
+            const extra = makeRecord({
+              imageUrl,
+              item,
+              status: 'done',
+              sourceLabel: labelFor(item, s + 1, slips.length)
+            });
+            fillRecord(extra, slips[s]);
+            records.push(extra);
+            renderRow(extra);
+          }
+        }
+
       } catch(err) {
-        console.warn('OCR error:', err);
-        rec.status = 'error';
+        console.warn('Detect error:', err);
+        placeholder.status = 'error';
+        refreshRow(placeholder);
       }
     } else {
-      rec.status = item.expandError ? 'error' : 'manual';
+      placeholder.status = item.expandError ? 'error' : 'manual';
+      refreshRow(placeholder);
     }
 
-    refreshRow(rec);
     recalcTotal();
   }
 
@@ -535,6 +553,33 @@ async function summarizeAll() {
   isProcessing = false;
   updateRecordCount();
   updateExportBtn();
+}
+
+/* helpers for summarizeAll */
+function makeRecord({ imageUrl, item, status, sourceLabel }) {
+  return {
+    id:          Date.now() + Math.random(),
+    imageUrl:    imageUrl,
+    filename:    item.filename,
+    sourceLabel: sourceLabel || item.sourceLabel || '',
+    date: '', sender: '', recipient: '',
+    amount: 0, notes: '', checked: false,
+    status
+  };
+}
+
+function fillRecord(rec, slip, sourceLabel) {
+  rec.date      = slip.date      || '';
+  rec.sender    = slip.sender    || '';
+  rec.recipient = slip.recipient || '';
+  rec.amount    = parseFloat(slip.amount) || 0;
+  rec.status    = 'done';
+  if (sourceLabel) rec.sourceLabel = sourceLabel;
+}
+
+function labelFor(item, slipNum, total) {
+  const base = item.sourceLabel || item.filename;
+  return `${base} · สลิปที่ ${slipNum}/${total}`;
 }
 
 function setProgress(i, total, name) {
