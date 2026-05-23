@@ -1852,6 +1852,360 @@ function cleanName(s) {
     .replace(/^[\s\.\-]+|[\s\.\-]+$/g, '')  // trim leading/trailing punct
     .slice(0, 60);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   RECONCILIATION  (กระทบยอด)
+   ═══════════════════════════════════════════════════════════════ */
+
+let reconData   = { A: null, B: null };
+let reconResult = null;
+
+/* ── Tab switch ──────────────────────────────────────────── */
+function switchTab(tab) {
+  ['slip','recon'].forEach(t => {
+    document.getElementById('panel' + (t === 'slip' ? 'Slip' : 'Recon')).classList.toggle('hidden', t !== tab);
+    document.getElementById('tabBtn' + (t === 'slip' ? 'Slip' : 'Recon')).classList.toggle('active', t === tab);
+  });
+}
+
+/* ── Drag & Drop helpers ─────────────────────────────────── */
+function reconDragOver(e, s)  { e.preventDefault(); document.getElementById('drop'+s).classList.add('drag-over'); }
+function reconDragLeave(e, s) { document.getElementById('drop'+s).classList.remove('drag-over'); }
+function reconDrop(e, s)      { e.preventDefault(); reconDragLeave(e,s); const f = e.dataTransfer.files[0]; if(f) loadReconFile(f,s); }
+function reconFileSelect(e,s) { const f = e.target.files[0]; if(f) loadReconFile(f,s); e.target.value=''; }
+
+/* ── Load & parse file ───────────────────────────────────── */
+async function loadReconFile(file, side) {
+  const lbl   = document.getElementById('label'    + side);
+  const drop  = document.getElementById('drop'     + side);
+  const dlbl  = document.getElementById('dropLabel'+ side);
+
+  dlbl.textContent = '⏳ กำลังอ่านไฟล์…';
+  lbl.textContent  = file.name;
+
+  try {
+    const data = await parseReconFile(file);
+    reconData[side] = data;
+
+    buildColOptions('amtCol' + side,  data.headers, data.amtCol,  false);
+    buildColOptions('dateCol'+ side,  data.headers, data.dateCol, true);
+
+    document.getElementById('colPick' + side).classList.remove('hidden');
+    ['amtCol','dateCol'].forEach(p =>
+      document.getElementById(p + side).addEventListener('change', () => updateStats(side))
+    );
+
+    drop.classList.add('has-file');
+    dlbl.textContent = '✅ ' + file.name;
+
+    renderPreview(side, data);
+    updateStats(side);
+    updateReconBtn();
+  } catch(err) {
+    drop.classList.remove('has-file');
+    dlbl.textContent = '⚠️ ' + (err.message || 'อ่านไฟล์ไม่ได้');
+    reconData[side] = null;
+    updateReconBtn();
+  }
+}
+
+async function parseReconFile(file) {
+  return new Promise((resolve, reject) => {
+    const isExcel = /\.(xlsx?|xls)$/i.test(file.name);
+    const reader  = new FileReader();
+
+    reader.onerror = () => reject(new Error('อ่านไฟล์ไม่ได้'));
+    reader.onload  = e => {
+      try {
+        const wb = isExcel
+          ? XLSX.read(new Uint8Array(e.target.result), { type:'array' })
+          : XLSX.read(e.target.result, { type:'string', codepage:65001 });
+
+        const ws  = wb.Sheets[wb.SheetNames[0]];
+        const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+
+        if (!raw.length) { reject(new Error('ไฟล์ว่าง')); return; }
+
+        // Find first non-empty row as header
+        let hi = 0;
+        for (let i = 0; i < Math.min(5, raw.length); i++) {
+          if (raw[i].filter(c => c !== '').length >= 2) { hi = i; break; }
+        }
+        const headers = raw[hi].map(h => String(h || '').trim());
+        const rows    = raw.slice(hi + 1).filter(r => r.some(c => c !== ''));
+
+        if (!rows.length) { reject(new Error('ไม่มีข้อมูล')); return; }
+
+        resolve({
+          filename: file.name,
+          headers,
+          rows,
+          amtCol:  detectAmtCol(headers, rows),
+          dateCol: detectDateCol(headers, rows),
+        });
+      } catch(err) { reject(err); }
+    };
+
+    if (isExcel) reader.readAsArrayBuffer(file);
+    else         reader.readAsText(file, 'UTF-8');
+  });
+}
+
+/* ── Column auto-detection ───────────────────────────────── */
+function detectAmtCol(headers, rows) {
+  const AMT = ['ยอด','จำนวน','amount','baht','thb','เงิน','withdrawal',
+               'deposit','debit','credit','เดบิต','เครดิต','สุทธิ','รวม','transfer'];
+  for (let i = 0; i < headers.length; i++) {
+    if (AMT.some(k => headers[i].toLowerCase().includes(k))) return i;
+  }
+  // Fallback: column with most non-zero numerics
+  let best = 0, bestScore = -1;
+  for (let c = 0; c < headers.length; c++) {
+    const score = rows.filter(r => {
+      const v = parseFloat(String(r[c]||'').replace(/,/g,''));
+      return !isNaN(v) && v !== 0;
+    }).length;
+    if (score > bestScore) { bestScore = score; best = c; }
+  }
+  return best;
+}
+
+function detectDateCol(headers, rows) {
+  const D = ['วันที่','date','วัน','day','datetime','เวลา','time'];
+  for (let i = 0; i < headers.length; i++) {
+    if (D.some(k => headers[i].toLowerCase().includes(k))) return i;
+  }
+  return -1;
+}
+
+/* ── Column picker dropdowns ─────────────────────────────── */
+function buildColOptions(selId, headers, defaultIdx, allowNone) {
+  const sel = document.getElementById(selId);
+  sel.innerHTML = '';
+  if (allowNone) {
+    const o = document.createElement('option');
+    o.value = -1; o.textContent = '— ไม่ใช้ —';
+    sel.appendChild(o);
+  }
+  headers.forEach((h, i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = h || ('คอลัมน์ ' + (i + 1));
+    if (i === defaultIdx) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+/* ── Preview table ───────────────────────────────────────── */
+function renderPreview(side, data) {
+  const maxC = Math.min(data.headers.length, 5);
+  const maxR = Math.min(data.rows.length, 5);
+  let html = `<thead class="bg-gray-50"><tr>`;
+  for (let c = 0; c < maxC; c++)
+    html += `<th class="px-2 py-1.5 text-[10px] uppercase font-semibold text-gray-400 whitespace-nowrap">${hEsc(data.headers[c] || 'Col'+(c+1))}</th>`;
+  html += `</tr></thead><tbody>`;
+  for (let r = 0; r < maxR; r++) {
+    html += `<tr class="${r%2?'bg-gray-50/60':''}">`;
+    for (let c = 0; c < maxC; c++)
+      html += `<td class="px-2 py-1 text-gray-600 whitespace-nowrap max-w-[110px] overflow-hidden text-ellipsis">${hEsc(String(data.rows[r][c]||''))}</td>`;
+    html += `</tr>`;
+  }
+  if (data.rows.length > maxR)
+    html += `<tr><td colspan="${maxC}" class="px-2 py-1 text-[10px] text-gray-300 italic">… และอีก ${data.rows.length - maxR} แถว</td></tr>`;
+  html += `</tbody>`;
+  document.getElementById('previewTable'+side).innerHTML = html;
+  document.getElementById('preview'+side).classList.remove('hidden');
+}
+
+/* ── Stats label ─────────────────────────────────────────── */
+function updateStats(side) {
+  const data = reconData[side];
+  if (!data) return;
+  const amtCol  = parseInt(document.getElementById('amtCol' +side).value);
+  const rows    = getReconRows(data, amtCol, -1);
+  const total   = rows.reduce((s,r) => s + r.amount, 0);
+  document.getElementById('statRows' +side).textContent = rows.length + ' รายการ';
+  document.getElementById('statTotal'+side).textContent = 'รวม ฿' + rcFmt(total);
+  document.getElementById('stats'+side).classList.remove('hidden');
+}
+
+function updateReconBtn() {
+  document.getElementById('btnRecon').disabled = !(reconData.A && reconData.B);
+}
+
+/* ── Extract normalised rows ─────────────────────────────── */
+function getReconRows(data, amtCol, dateCol) {
+  return data.rows.map((row, idx) => {
+    const rawAmt = String(row[amtCol] || '').replace(/,/g,'').replace(/[^\d.\-]/g,'');
+    const amount = Math.abs(parseFloat(rawAmt) || 0);
+    const date   = dateCol >= 0 ? String(row[dateCol] || '').trim() : '';
+    const desc   = row.filter((_,c) => c !== amtCol && c !== dateCol)
+                      .map(c => String(c||'').trim()).filter(Boolean)
+                      .join(' · ').slice(0, 80);
+    return { amount, date, desc, _row: row, _idx: idx };
+  }).filter(r => r.amount > 0);
+}
+
+/* ── Matching algorithm ──────────────────────────────────── */
+function reconcileData(rowsA, rowsB) {
+  const pool    = rowsB.map((r,i) => ({...r, _pi:i}));
+  const matched = [], onlyA = [];
+
+  for (const a of rowsA) {
+    // Priority 1: exact amount + exact date
+    let fi = (a.date)
+      ? pool.findIndex(b => Math.abs(b.amount - a.amount) < 0.005 && b.date === a.date)
+      : -1;
+    // Priority 2: exact amount only
+    if (fi < 0)
+      fi = pool.findIndex(b => Math.abs(b.amount - a.amount) < 0.005);
+
+    if (fi >= 0) {
+      const b = pool.splice(fi, 1)[0];
+      const dateMatch = (a.date && b.date) ? (a.date === b.date) : null;
+      matched.push({ a, b, dateMatch });
+    } else {
+      onlyA.push(a);
+    }
+  }
+  return { matched, onlyA, onlyB: pool };
+}
+
+/* ── Run reconciliation ──────────────────────────────────── */
+function runReconcile() {
+  if (!reconData.A || !reconData.B) return;
+  const amtColA  = parseInt(document.getElementById('amtColA').value);
+  const amtColB  = parseInt(document.getElementById('amtColB').value);
+  const dateColA = parseInt(document.getElementById('dateColA').value);
+  const dateColB = parseInt(document.getElementById('dateColB').value);
+
+  const rowsA = getReconRows(reconData.A, amtColA, dateColA);
+  const rowsB = getReconRows(reconData.B, amtColB, dateColB);
+
+  reconResult = reconcileData(rowsA, rowsB);
+  renderReconResults(reconResult);
+  document.getElementById('reconResults').classList.remove('hidden');
+  setTimeout(() => document.getElementById('reconResults')
+    .scrollIntoView({ behavior:'smooth', block:'start' }), 80);
+}
+
+/* ── Render results ──────────────────────────────────────── */
+function renderReconResults(res) {
+  const { matched, onlyA, onlyB } = res;
+
+  const sumMatch = matched.reduce((s,m) => s + m.a.amount, 0);
+  const sumA     = onlyA.reduce((s,r) => s + r.amount, 0);
+  const sumB     = onlyB.reduce((s,r) => s + r.amount, 0);
+  const totalA   = sumMatch + sumA;
+  const totalB   = matched.reduce((s,m) => s + m.b.amount, 0) + sumB;
+  const diff     = totalA - totalB;
+  const balanced = Math.abs(diff) < 0.01;
+
+  // Summary cards
+  document.getElementById('rcMatchCount').textContent  = matched.length;
+  document.getElementById('rcMatchAmt').textContent    = '฿' + rcFmt(sumMatch);
+  document.getElementById('rcOnlyACount').textContent  = onlyA.length;
+  document.getElementById('rcOnlyAAmt').textContent    = '฿' + rcFmt(sumA);
+  document.getElementById('rcOnlyBCount').textContent  = onlyB.length;
+  document.getElementById('rcOnlyBAmt').textContent    = '฿' + rcFmt(sumB);
+
+  const diffEl   = document.getElementById('rcDiffAmt');
+  const diffNote = document.getElementById('rcDiffNote');
+  diffEl.textContent   = (diff >= 0 ? '+' : '') + '฿' + rcFmt(diff);
+  diffEl.style.color   = balanced ? '#15803d' : '#b91c1c';
+  diffNote.textContent = balanced ? '✅ ยอดตรงกันทุกบาท' : '⚠️ ยอดไม่สมดุล';
+  diffNote.style.color = balanced ? '#15803d' : '#c2410c';
+
+  // Badges
+  document.getElementById('matchedBadge').textContent = matched.length + ' รายการ';
+  document.getElementById('onlyABadge').textContent   = onlyA.length  + ' รายการ';
+  document.getElementById('onlyBBadge').textContent   = onlyB.length  + ' รายการ';
+
+  // Matched rows
+  document.getElementById('matchedBody').innerHTML = matched.length
+    ? matched.map(m => {
+        const icon = m.dateMatch === true  ? '<span title="ยอด+วันที่ตรงกัน" class="text-green-600">✅</span>'
+                   : m.dateMatch === false ? '<span title="ยอดตรง วันที่ต่างกัน" class="text-yellow-500">⚠️</span>'
+                   :                        '<span title="ยอดตรง (ไม่มีวันที่)" class="text-gray-400">～</span>';
+        return `<tr class="rc-row-match border-b border-gray-50">
+          <td class="px-3 py-2 text-gray-500 whitespace-nowrap">${hEsc(m.a.date)}</td>
+          <td class="px-3 py-2 text-gray-700 max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap">${hEsc(m.a.desc)}</td>
+          <td class="px-3 py-2 text-right font-semibold text-green-700">${rcFmt(m.a.amount)}</td>
+          <td class="px-2 py-2 text-center text-gray-300">⟺</td>
+          <td class="px-3 py-2 text-gray-500 whitespace-nowrap">${hEsc(m.b.date)}</td>
+          <td class="px-3 py-2 text-gray-700 max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap">${hEsc(m.b.desc)}</td>
+          <td class="px-3 py-2 text-right font-semibold text-green-700">${rcFmt(m.b.amount)}</td>
+          <td class="px-3 py-2 text-center">${icon}</td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="8" class="px-4 py-8 text-center text-gray-300">ไม่มีรายการที่จับคู่ได้</td></tr>`;
+
+  // Only-A rows
+  document.getElementById('onlyABody').innerHTML = onlyA.length
+    ? onlyA.map(r => `<tr class="rc-row-only-a border-b border-gray-50">
+        <td class="px-3 py-2 text-gray-500 whitespace-nowrap">${hEsc(r.date)}</td>
+        <td class="px-3 py-2 text-gray-700 max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap">${hEsc(r.desc)}</td>
+        <td class="px-3 py-2 text-right font-semibold text-red-600">${rcFmt(r.amount)}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="3" class="px-4 py-6 text-center text-gray-300">ทุกรายการมีคู่ ✅</td></tr>`;
+
+  // Only-B rows
+  document.getElementById('onlyBBody').innerHTML = onlyB.length
+    ? onlyB.map(r => `<tr class="rc-row-only-b border-b border-gray-50">
+        <td class="px-3 py-2 text-gray-500 whitespace-nowrap">${hEsc(r.date)}</td>
+        <td class="px-3 py-2 text-gray-700 max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap">${hEsc(r.desc)}</td>
+        <td class="px-3 py-2 text-right font-semibold text-orange-600">${rcFmt(r.amount)}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="3" class="px-4 py-6 text-center text-gray-300">ทุกรายการมีคู่ ✅</td></tr>`;
+}
+
+/* ── Export ──────────────────────────────────────────────── */
+function exportReconExcel() {
+  if (!reconResult) return;
+  const { matched, onlyA, onlyB } = reconResult;
+  const rows = [
+    ['สถานะ','วันที่ (A)','รายการ (A)','ยอด (A)','วันที่ (B)','รายการ (B)','ยอด (B)','หมายเหตุ'],
+    ...matched.map(m => [
+      'จับคู่ได้', m.a.date, m.a.desc, m.a.amount,
+      m.b.date, m.b.desc, m.b.amount,
+      m.dateMatch === false ? 'วันที่ต่างกัน' : ''
+    ]),
+    ...onlyA.map(r => ['ไม่มีใน B', r.date, r.desc, r.amount, '','','','']),
+    ...onlyB.map(r => ['ไม่มีใน A', '','','', r.date, r.desc, r.amount, '']),
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  // Column widths
+  ws['!cols'] = [14,12,30,12,12,30,12,20].map(w => ({ wch:w }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'กระทบยอด');
+  XLSX.writeFile(wb, 'recon_' + today() + '.xlsx');
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+function resetRecon() {
+  reconData   = { A: null, B: null };
+  reconResult = null;
+  ['A','B'].forEach(s => {
+    reconData[s] = null;
+    document.getElementById('drop'     + s).classList.remove('has-file');
+    document.getElementById('dropLabel'+ s).textContent = 'วางไฟล์ CSV / Excel ที่นี่';
+    document.getElementById('label'    + s).textContent = 'ยังไม่มีไฟล์';
+    document.getElementById('colPick'  + s).classList.add('hidden');
+    document.getElementById('preview'  + s).classList.add('hidden');
+    document.getElementById('stats'    + s).classList.add('hidden');
+    document.getElementById('input'    + s).value = '';
+  });
+  document.getElementById('reconResults').classList.add('hidden');
+  document.getElementById('btnRecon').disabled = true;
+}
+
+/* ── Helpers ─────────────────────────────────────────────── */
+function rcFmt(v) {
+  return Math.abs(v).toLocaleString('th-TH', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+function hEsc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 </script>
 </body>
 </html>
