@@ -643,6 +643,16 @@ function labelFor(item, slipNum, total) {
   return `${base} · สลิปที่ ${slipNum}/${total}`;
 }
 
+function autoRemoveRow(rec) {
+  records = records.filter(r => r.id !== rec.id);
+  const tr = document.getElementById(`r-${rec.id}`);
+  if (tr) {
+    tr.style.transition = 'opacity 0.3s';
+    tr.style.opacity = '0';
+    setTimeout(() => { tr.remove(); reindex(); }, 300);
+  }
+}
+
 function setProgress(i, total, name) {
   const pct = Math.round(5 + ((i / total) * 95));
   document.getElementById('progressText').textContent =
