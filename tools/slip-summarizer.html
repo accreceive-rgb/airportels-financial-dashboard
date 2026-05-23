@@ -91,6 +91,23 @@
     /* Progress bar */
     @keyframes progbar { from{width:0%} }
     .prog-bar { height:3px; background:#3b82f6; border-radius:2px; transition:width .4s ease; }
+
+    /* ── Tab navigation ── */
+    .tab-btn { padding:8px 22px; border-radius:10px; font-size:13px; font-weight:600; color:#6b7280;
+               transition:all .15s; cursor:pointer; border:none; background:transparent; white-space:nowrap; }
+    .tab-btn.active { background:#2563eb; color:#fff; box-shadow:0 2px 8px rgba(37,99,235,.22); }
+    .tab-btn:not(.active):hover { background:#f3f4f6; color:#374151; }
+
+    /* ── Reconciliation drop zones ── */
+    .recon-drop { border:2px dashed #e2e8f0; border-radius:14px; padding:28px 16px;
+                  text-align:center; cursor:pointer; transition:all .2s; }
+    .recon-drop:hover, .recon-drop.drag-over { border-color:#6366f1; background:#eef2ff; }
+    .recon-drop.has-file { border-color:#10b981; background:#f0fdf4; border-style:solid; }
+
+    /* ── Recon result rows ── */
+    .rc-row-match  { background:#f0fdf4; }
+    .rc-row-only-a { background:#fff5f5; }
+    .rc-row-only-b { background:#fff7ed; }
   </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
