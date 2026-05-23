@@ -1425,7 +1425,23 @@ function parseSlipText(raw, confidence) {
     if (sender !== 'ไม่ระบุ' && recipient !== 'ไม่ระบุ') break;
   }
 
-  /* ── 3b. Fallback: scan all lines for Thai-looking names ── */
+  /* ── 3b. Title-prefix scan (KBank K+, SCB app — names appear WITHOUT labels) ──
+     Looks for lines containing Thai name titles: นาย, น.ส., นาง, นางสาว, ด.ช., ด.ญ.
+     This is the most reliable signal when explicit sender/recipient labels are absent.  */
+  if (sender === 'ไม่ระบุ' || recipient === 'ไม่ระบุ') {
+    const TITLES = ['นาย','น.ส.','นาง','นางสาว','ด.ช.','ด.ญ.','เด็กชาย','เด็กหญิง'];
+    const prefixNames = [];
+    for (const l of lines) {
+      if (TITLES.some(p => l.includes(p))) {
+        const c = cleanName(l);
+        if (c.length >= 4 && !isKeywordLine(c)) prefixNames.push(c);
+      }
+    }
+    if (sender    === 'ไม่ระบุ' && prefixNames[0]) sender    = prefixNames[0];
+    if (recipient === 'ไม่ระบุ' && prefixNames[1]) recipient = prefixNames[1];
+  }
+
+  /* ── 3c. Generic fallback: scan all lines for high-consonant Thai names ── */
   if (sender === 'ไม่ระบุ' || recipient === 'ไม่ระบุ') {
     const nameCandidates = lines
       .map(l => cleanName(l))
