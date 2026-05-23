@@ -1952,6 +1952,117 @@ async function parseReconFile(file) {
   });
 }
 
+/* ── PDF parser for reconciliation ──────────────────────────
+   Uses PDF.js to extract TEXT from each page, clusters text
+   items into rows (by Y) and columns (by X), then builds the
+   same {filename, headers, rows, amtCol, dateCol} structure
+   as CSV/Excel so the rest of the pipeline is identical.
+   ─────────────────────────────────────────────────────────── */
+async function parsePDFForRecon(file) {
+  if (!window.pdfjsLib) throw new Error('PDF.js ยังโหลดไม่เสร็จ — โปรดลองใหม่อีกครั้ง');
+
+  const ab  = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(ab) }).promise;
+
+  // ── 1. Collect all text items across all pages ───────────
+  const items = []; // {x, y, str}
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const vp   = page.getViewport({ scale: 1 });
+    const tc   = await page.getTextContent();
+
+    for (const it of tc.items) {
+      const str = (it.str || '').trim();
+      if (!str) continue;
+      items.push({
+        x:   Math.round(it.transform[4]),
+        y:   Math.round(vp.height - it.transform[5]), // flip to top-down
+        str,
+        page: p,
+      });
+    }
+  }
+
+  if (!items.length)
+    throw new Error('PDF ไม่มีข้อความที่อ่านได้ (อาจเป็น PDF สแกน) — ลองแปลงเป็น CSV ก่อน');
+
+  // ── 2. Cluster items into visual ROWS (Y proximity ±6px) ──
+  items.sort((a,b) => a.page - b.page || a.y - b.y || a.x - b.x);
+  const rowGroups = [];
+  let cur = [items[0]];
+  for (let i = 1; i < items.length; i++) {
+    const it = items[i], prev = items[i - 1];
+    if (it.page === prev.page && Math.abs(it.y - cur[0].y) <= 6) {
+      cur.push(it);
+    } else {
+      rowGroups.push(cur);
+      cur = [it];
+    }
+  }
+  rowGroups.push(cur);
+
+  // ── 3. Cluster X positions into COLUMNS (tolerance 28px) ──
+  const allX   = items.map(i => i.x);
+  const colBins = clusterXPositions(allX, 28);
+
+  // ── 4. Build grid: rowGroups → array of arrays ────────────
+  const grid = rowGroups.map(group => {
+    const row = new Array(colBins.length).fill('');
+    for (const it of group) {
+      // Find nearest column bin
+      let best = 0, bestDist = Infinity;
+      colBins.forEach((bx, ci) => {
+        const d = Math.abs(it.x - bx);
+        if (d < bestDist) { bestDist = d; best = ci; }
+      });
+      row[best] = row[best] ? row[best] + ' ' + it.str : it.str;
+    }
+    return row;
+  }).filter(row => row.some(c => c.trim()));
+
+  if (grid.length < 2)
+    throw new Error('ไม่พบข้อมูลตาราง — PDF อาจไม่ใช่ bank statement แบบตาราง');
+
+  // ── 5. Detect header row ───────────────────────────────────
+  const HDR_KW = ['date','วันที่','amount','ยอด','จำนวน','description','รายการ',
+                  'debit','credit','เดบิต','เครดิต','balance','คงเหลือ'];
+  let hdrIdx = 0;
+  for (let i = 0; i < Math.min(8, grid.length); i++) {
+    const txt = grid[i].join(' ').toLowerCase();
+    if (HDR_KW.some(k => txt.includes(k))) { hdrIdx = i; break; }
+  }
+
+  const headers  = grid[hdrIdx].map((h, i) => h.trim() || ('Col' + (i + 1)));
+  const dataRows = grid.slice(hdrIdx + 1);
+
+  // ── 6. Trim excess empty columns ──────────────────────────
+  const usedCols = headers.reduce((used, _, ci) => {
+    if (dataRows.some(r => (r[ci] || '').trim())) used.push(ci);
+    return used;
+  }, []);
+  const trimHeaders = usedCols.map(ci => headers[ci]);
+  const trimRows    = dataRows.map(r => usedCols.map(ci => r[ci] || ''));
+
+  return {
+    filename: file.name,
+    headers:  trimHeaders,
+    rows:     trimRows,
+    amtCol:   detectAmtCol(trimHeaders, trimRows),
+    dateCol:  detectDateCol(trimHeaders, trimRows),
+    _source:  'pdf',
+  };
+}
+
+/** Cluster a list of x-coordinates into representative bins */
+function clusterXPositions(xList, tolerance) {
+  const sorted = [...new Set(xList.map(x => Math.round(x)))].sort((a, b) => a - b);
+  const bins   = [];
+  for (const x of sorted) {
+    if (!bins.length || x - bins[bins.length - 1] > tolerance) bins.push(x);
+  }
+  return bins;
+}
+
 /* ── Column auto-detection ───────────────────────────────── */
 function detectAmtCol(headers, rows) {
   const AMT = ['ยอด','จำนวน','amount','baht','thb','เงิน','withdrawal',
