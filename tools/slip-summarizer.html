@@ -866,9 +866,11 @@ function buildRowHTML(rec, idx) {
   const statusBadge = {
     processing: '',
     done:       '',
-    error:      '<span class="badge-error  text-xs px-2 py-0.5 rounded-full font-medium">อ่านไม่ได้</span>',
-    manual:     '<span class="badge-manual text-xs px-2 py-0.5 rounded-full font-medium">กรอกเอง</span>',
-    noSlip:     '<span class="badge-noSlip text-xs px-2 py-0.5 rounded-full font-medium">ไม่พบสลิป</span>',
+    error:      '<span class="badge-error   text-xs px-2 py-0.5 rounded-full font-medium">อ่านไม่ได้</span>',
+    manual:     '<span class="badge-manual  text-xs px-2 py-0.5 rounded-full font-medium">กรอกเอง</span>',
+    noSlip:     '<span class="badge-noSlip  text-xs px-2 py-0.5 rounded-full font-medium">ไม่พบสลิป</span>',
+    ocr:        '<span class="badge-ocr     text-xs px-2 py-0.5 rounded-full font-medium">🔍 OCR...</span>',
+    ocrwarn:    '<span class="badge-ocrwarn text-xs px-2 py-0.5 rounded-full font-medium">⚠ ตรวจสอบด้วย</span>',
   }[rec.status] || '';
 
   // Badge shown under image when this row is part of a multi-slip image
