@@ -518,16 +518,14 @@ async function summarizeAll() {
   }
 
   const total = items.length;
+  skippedIdCards = 0;
 
   // ── Step 2: For each image, detect ALL slips inside it ──
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     setProgress(i, total, item.filename);
 
-    // Shared image URL for all slips found in this image
-    const imageUrl = URL.createObjectURL(item.blob);
-
-    // Show a placeholder row while processing
+    const imageUrl   = URL.createObjectURL(item.blob);
     const placeholder = makeRecord({ imageUrl, item, status: 'processing' });
     records.push(placeholder);
     renderRow(placeholder);
@@ -537,19 +535,27 @@ async function summarizeAll() {
       refreshRow(placeholder);
 
     } else if (apiKey) {
-      // ── PATH A: Claude Vision (multi-slip detect) ──
+      // ── PATH A: Claude Vision ──────────────────────────
       try {
         const b64   = await blobToBase64(item.blob);
         const mt    = item.mimeType || 'image/jpeg';
         const slips = await detectSlipsFromImage(b64, mt);
 
-        if (slips.length === 0) {
+        // ID card detected by Claude
+        if (slips.length === 1 && slips[0]._isIdCard) {
+          autoRemoveRow(placeholder);
+          skippedIdCards++;
+
+        } else if (slips.length === 0) {
           placeholder.status = 'noSlip';
           refreshRow(placeholder);
+
         } else if (slips.length === 1) {
           fillRecord(placeholder, slips[0]);
           refreshRow(placeholder);
+
         } else {
+          // Multiple slips in one image
           fillRecord(placeholder, slips[0], labelFor(item, 1, slips.length));
           refreshRow(placeholder);
           for (let s = 1; s < slips.length; s++) {
@@ -567,14 +573,21 @@ async function summarizeAll() {
       }
 
     } else {
-      // ── PATH B: Tesseract.js free OCR ──
+      // ── PATH B: Tesseract.js ──────────────────────────
       try {
         placeholder.status = 'ocr';
         refreshRow(placeholder);
         const result = await readWithTesseract(item.blob);
-        fillRecord(placeholder, result);
-        placeholder.status = result._lowConf ? 'ocrwarn' : 'done';
-        refreshRow(placeholder);
+
+        // ID card detected by Tesseract keyword match
+        if (result._isIdCard) {
+          autoRemoveRow(placeholder);
+          skippedIdCards++;
+        } else {
+          fillRecord(placeholder, result);
+          placeholder.status = result._lowConf ? 'ocrwarn' : 'done';
+          refreshRow(placeholder);
+        }
       } catch(err) {
         console.warn('Tesseract error:', err);
         placeholder.status = 'manual';
@@ -583,6 +596,13 @@ async function summarizeAll() {
     }
 
     recalcTotal();
+  }
+
+  // Show ID-card skip notification
+  if (skippedIdCards > 0) {
+    document.getElementById('skipBannerText').textContent =
+      `ข้ามอัตโนมัติ ${skippedIdCards} ภาพ — ตรวจพบบัตรประชาชน/เอกสารประจำตัวที่ไม่ใช่สลิปโอนเงิน`;
+    document.getElementById('skipBanner').classList.remove('hidden');
   }
 
   pendingFiles = [];
