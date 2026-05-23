@@ -774,7 +774,14 @@ function buildRowHTML(rec, idx) {
   }[rec.status] || '';
 
   const imgCell = rec.imageUrl
-    ? `<img src="${rec.imageUrl}" class="slip-thumb mx-auto" onclick="openModal('${rec.imageUrl}','${escHtml(rec.filename)}')" title="${escHtml(rec.filename)}"/>`
+    ? `<div class="flex flex-col items-center gap-1">
+         <img src="${rec.imageUrl}" class="slip-thumb mx-auto"
+           onclick="openModal('${rec.imageUrl}','${escHtml(rec.sourceLabel || rec.filename)}')"
+           title="${escHtml(rec.sourceLabel || rec.filename)}"/>
+         ${rec.sourceLabel
+           ? `<span class="text-gray-400 text-center leading-tight" style="font-size:10px;max-width:80px;word-break:break-all">${escHtml(rec.sourceLabel)}</span>`
+           : ''}
+       </div>`
     : `<div class="w-16 h-20 bg-gray-100 rounded-lg mx-auto flex items-center justify-center text-gray-300 text-xs">ไม่มีภาพ</div>`;
 
   const shimmer = `<div class="shimmer w-full"></div>`;
