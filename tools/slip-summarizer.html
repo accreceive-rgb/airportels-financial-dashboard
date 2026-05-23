@@ -1498,10 +1498,11 @@ function pad(n) { return String(n).padStart(2, '0'); }
 
 function cleanName(s) {
   return (s || '')
-    .replace(/[^฀-๿A-Za-z\s\.]/g, '')  // keep Thai, Latin, space, dot
+    .replace(/[^฀-๿A-Za-z\s\.\-\']/g, '')  // Thai, Latin, space, dot, dash, apostrophe
     .replace(/\s{2,}/g, ' ')
     .trim()
-    .slice(0, 50);
+    .replace(/^[\s\.\-]+|[\s\.\-]+$/g, '')  // trim leading/trailing punct
+    .slice(0, 60);
 }
 </script>
 </body>
