@@ -1462,11 +1462,20 @@ function isValidName(s) {
 
 function isKeywordLine(s) {
   const skip = [
-    'ธนาคาร','Bank','Mobile','App','สำเร็จ','Success','โอนเงิน',
-    'บัญชี','Account','สาขา','Branch','รหัส','Code','เลขที่',
-    'ยอด','Amount','Total','จำนวน','บาท','THB','Ref','Reference',
+    // Thai system words
+    'ธนาคาร','สำเร็จ','โอนเงิน','บัญชี','สาขา','รหัส','เลขที่',
+    'ยอด','จำนวน','บาท','การโอน','ชำระ','ใบเสร็จ','ค่าธรรมเนียม','ค่าบริการ',
+    // Thai bank names (full + short forms)
+    'กสิกร','กสิกรไทย','ไทยพาณิชย์','กรุงเทพ','กรุงไทย','กรุงศรี',
+    'ออมสิน','ทหารไทย','ธนชาต','ซีไอเอ็มบี','ยูโอบี','แลนด์แอนด์เฮ้าส์',
+    'ธ.กสิกร','ธ.ไทยพาณิชย์','ธ.กรุงเทพ','ธ.กรุงไทย',
+    // English bank / system words
+    'Bank','Mobile','App','Success','Account','Branch','Code',
+    'Amount','Total','THB','Ref','Reference',
     'SCB','KBank','Krungthai','Bangkok','GSB','TMB','TTB','UOB','PromptPay',
-    'การโอน','Transfer','ชำระ','Payment','ใบเสร็จ','Receipt'
+    'Transfer','Payment','Receipt','KBANK','KTB','BBL','BAY',
+    // Common slip UI labels that are NOT names
+    'เวลา','วันที่','Date','Time','หมายเลข','เลขอ้างอิง','สถานะ','Status'
   ];
   return skip.some(w => s.toLowerCase().includes(w.toLowerCase()));
 }
