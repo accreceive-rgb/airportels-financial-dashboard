@@ -1328,43 +1328,63 @@ function parseSlipText(raw, confidence) {
     }
   }
 
-  /* ── 2. AMOUNT (label-first, then decimal, NO integer fallback) ─ */
+  /* ── 2. AMOUNT ─────────────────────────────────────────── */
   let amount = 0;
 
-  // Tier 1 — explicit currency symbol ฿
-  const t1 = joined.match(/฿\s*([\d,]+(?:\.\d{1,2})?)/);
-  // Tier 2 — number followed by บาท / THB / Baht
-  const t2 = joined.match(/([\d,]+(?:\.\d{1,2})?)\s*(?:บาท|บ\b|THB|Baht)\b/i);
-  // Tier 3 — amount keyword on same line
-  const t3 = joined.match(
-    /(?:จำนวน(?:เงิน)?|ยอด(?:โอน|ชำระ|สุทธิ|รวม)?|Amount|Total|โอนเงิน)\s*[:\-]?\s*([\d,]+(?:\.\d{1,2})?)/i
+  /** Parse number string → positive float, 0 if invalid/zero */
+  const parseAmt = raw => {
+    const v = parseFloat((raw || '').replace(/,/g, ''));
+    return (!isNaN(v) && v > 0) ? v : 0;
+  };
+
+  // Tier 1 — explicit ฿ symbol  (฿15.00)
+  const m1 = joined.match(/฿\s*([\d,]+(?:\.\d{1,2})?)/);
+
+  // Tier 2 — labeled amount keyword immediately before number (same joined line)
+  // Covers: จำนวน, ยอดโอน, ยอดเงิน, ยอดเงินโอน, Amount, Total …
+  const m2 = joined.match(
+    /(?:จำนวน(?:เงิน)?|ยอด(?:โอน|ชำระ|สุทธิ|เงิน(?:โอน)?|รวม(?:ทั้งสิ้น)?)?|Amount|Total|โอนเงิน)\s*[:\-=]?\s*([\d,]+(?:\.\d{1,2})?)/i
   );
-  // Tier 4 — per-line search: keyword on line N, number on line N or N+1
-  let t4 = 0;
-  if (!t1 && !t2 && !t3) {
-    const amtWords = ['จำนวน','ยอด','Amount','Total','บาท'];
+
+  // Tier 3 — line-by-line: amount keyword on line N, number on N / N+1 / N+2
+  // Fee lines (ค่าธรรมเนียม, ค่าบริการ, Fee, Charge) are explicitly skipped
+  let m3val = 0;
+  {
+    const AMT_KW = ['จำนวน','ยอด','Amount','Total'];
+    const FEE_KW = ['ค่าธรรมเนียม','ค่าบริการ','Fee','Charge'];
     for (let li = 0; li < lines.length; li++) {
-      if (amtWords.some(w => lines[li].includes(w))) {
-        for (let off = 0; off <= 1; off++) {
-          const candidate = (lines[li + off] || '').replace(/[^\d,.]/g, '');
-          const v = parseFloat(candidate.replace(/,/g, ''));
-          if (v >= 1 && v <= 50000000) { t4 = v; break; }
-        }
-        if (t4) break;
+      if (!AMT_KW.some(w => lines[li].includes(w))) continue;
+      if ( FEE_KW.some(w => lines[li].includes(w))) continue; // skip fee lines
+      for (let off = 0; off <= 2; off++) {
+        const numStr = (lines[li + off] || '').replace(/[^\d,.]/g, '');
+        const v = parseFloat(numStr.replace(/,/g, ''));
+        if (v >= 1 && v <= 50000000) { m3val = v; break; }
       }
+      if (m3val) break;
     }
   }
-  // Tier 5 — decimal numbers X,XXX.XX (safer than plain integers)
+
+  // Tier 4 — number followed by บาท/THB/Baht (fixed: no broken Thai \b)
+  // Skips values preceded within 35 chars by fee keywords
+  let m4val = 0;
+  {
+    const FEE_PAT = /ค่าธรรมเนียม|ค่าบริการ|Fee|Charge/i;
+    for (const m of joined.matchAll(/([\d,]+(?:\.\d{1,2})?)\s*(?:บาท|THB|Baht)/ig)) {
+      const before = joined.substring(Math.max(0, m.index - 35), m.index);
+      const v = parseAmt(m[1]);
+      if (v > 0 && !FEE_PAT.test(before)) { m4val = v; break; }
+    }
+  }
+
+  // Tier 5 — X.XX decimal fallback, skipping fee-adjacent numbers
+  const FEE_CTX = /ค่าธรรมเนียม|ค่าบริการ|Fee|Charge/i;
   const decimalNums = [...joined.matchAll(/([\d,]{1,12}\.\d{2})/g)]
-    .map(x => parseFloat(x[1].replace(/,/g, '')))
+    .filter(m => !FEE_CTX.test(joined.substring(Math.max(0, m.index - 35), m.index)))
+    .map(m => parseFloat(m[1].replace(/,/g, '')))
     .filter(v => v >= 1 && v <= 50000000);
 
-  // Pick best tier
-  if      (t1) amount = parseFloat(t1[1].replace(/,/g,''));
-  else if (t2) amount = parseFloat(t2[1].replace(/,/g,''));
-  else if (t3) amount = parseFloat(t3[1].replace(/,/g,''));
-  else if (t4) amount = t4;
-  else if (decimalNums.length) amount = decimalNums[0];  // FIRST decimal, not max
+  // Pick best tier: label-first → positional → fallback
+  amount = parseAmt(m1?.[1]) || parseAmt(m2?.[1]) || m3val || m4val || (decimalNums[0] || 0);
 
   /* ── 3. SENDER & RECIPIENT ──────────────────────────── */
   const SENDER_LABELS = [
