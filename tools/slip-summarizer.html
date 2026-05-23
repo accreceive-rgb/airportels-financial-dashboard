@@ -469,18 +469,35 @@ async function summarizeAll() {
   document.getElementById('topProgress').classList.remove('hidden');
   document.getElementById('emptyRow').style.display = 'none';
 
-  const total = pendingFiles.length;
+  // ── Step 1: Expand PDF / ZIP → flat list of image items ──
+  document.getElementById('progressText').textContent = 'กำลังขยายไฟล์ PDF / ZIP...';
+  document.getElementById('topProgressBar').style.width = '5%';
 
-  for (let i = 0; i < pendingFiles.length; i++) {
-    const file = pendingFiles[i];
-    setProgress(i, total, file.name);
+  let items = [];
+  try {
+    items = await expandAllFiles(pendingFiles);
+  } catch(e) {
+    console.error('Expand error:', e);
+    // Fallback: treat raw files as items
+    items = pendingFiles
+      .filter(f => f.type.startsWith('image/'))
+      .map(f => ({ blob: f, filename: f.name, mimeType: f.type, expandError: false }));
+  }
+
+  const total = items.length;
+
+  // ── Step 2: Process each image item ──
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    setProgress(i, total, item.filename);
 
     const id = Date.now() + Math.random();
-    const imageUrl = URL.createObjectURL(file);
+    const imageUrl = URL.createObjectURL(item.blob);
 
     const rec = {
       id, imageUrl,
-      filename: file.name,
+      filename: item.filename,
+      sourceLabel: item.sourceLabel || '',   // e.g. "receipts.pdf · หน้า 2/5"
       date: '', sender: '', recipient: '',
       amount: 0, notes: '', checked: false,
       status: 'processing'
@@ -489,10 +506,10 @@ async function summarizeAll() {
     records.push(rec);
     renderRow(rec);
 
-    if (apiKey) {
+    if (apiKey && !item.expandError) {
       try {
-        const b64 = await toBase64(file);
-        const mt = file.type || 'image/jpeg';
+        const b64 = await blobToBase64(item.blob);
+        const mt  = item.mimeType || 'image/jpeg';
         const data = await callClaudeVision(b64, mt);
         rec.date      = data.date      || '';
         rec.sender    = data.sender    || '';
@@ -504,7 +521,7 @@ async function summarizeAll() {
         rec.status = 'error';
       }
     } else {
-      rec.status = 'manual';
+      rec.status = item.expandError ? 'error' : 'manual';
     }
 
     refreshRow(rec);
@@ -523,19 +540,165 @@ async function summarizeAll() {
 }
 
 function setProgress(i, total, name) {
-  const pct = Math.round(((i) / total) * 100);
+  const pct = Math.round(5 + ((i / total) * 95));
   document.getElementById('progressText').textContent =
     `กำลังอ่านสลิป ${i+1}/${total} — ${name}`;
   document.getElementById('topProgressBar').style.width = pct + '%';
 }
 
-function toBase64(file) {
+/* blobToBase64 — works with File and Blob */
+function blobToBase64(blob) {
   return new Promise((res, rej) => {
     const r = new FileReader();
-    r.onload = e => res(e.target.result.split(',')[1]);
+    r.onload  = e => res(e.target.result.split(',')[1]);
     r.onerror = rej;
-    r.readAsDataURL(file);
+    r.readAsDataURL(blob);
   });
+}
+
+/* Legacy alias */
+const toBase64 = blobToBase64;
+
+/* ─── FILE EXPANSION: PDF + ZIP ─── */
+
+/**
+ * Expand raw files into flat list of {blob, filename, mimeType, sourceLabel, expandError}
+ * PDF  → render each page as JPEG canvas blob
+ * ZIP  → extract image + pdf entries, recurse one level
+ * Image → pass through
+ */
+async function expandAllFiles(rawFiles, depth) {
+  depth = depth || 0;
+  const items = [];
+
+  for (const file of rawFiles) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const isPdf = file.type === 'application/pdf' || ext === 'pdf';
+    const isZip = file.type === 'application/zip' ||
+                  file.type === 'application/x-zip-compressed' ||
+                  ext === 'zip';
+    const isImg = file.type.startsWith('image/');
+
+    if (isPdf) {
+      try {
+        const pages = await pdfToImageBlobs(file);
+        items.push(...pages);
+      } catch(e) {
+        console.warn('PDF render error:', file.name, e);
+        items.push({
+          blob: new Blob([], {type:'image/jpeg'}),
+          filename: file.name,
+          mimeType: 'image/jpeg',
+          sourceLabel: file.name + ' (อ่านไม่ได้)',
+          expandError: true
+        });
+      }
+
+    } else if (isZip && depth < 2) {
+      try {
+        const extracted = await extractZipContents(file);
+        const inner = await expandAllFiles(extracted, depth + 1);
+        items.push(...inner);
+      } catch(e) {
+        console.warn('ZIP extract error:', file.name, e);
+      }
+
+    } else if (isImg) {
+      items.push({
+        blob: file,
+        filename: file.name,
+        mimeType: file.type || 'image/jpeg',
+        sourceLabel: '',
+        expandError: false
+      });
+    }
+  }
+
+  return items;
+}
+
+/**
+ * Convert each PDF page → JPEG blob via PDF.js canvas rendering
+ */
+async function pdfToImageBlobs(file) {
+  if (!window.pdfjsLib) throw new Error('PDF.js ไม่ได้โหลด');
+
+  // Ensure worker is set
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+  }
+
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+  const numPages = pdf.numPages;
+  const results  = [];
+  const baseName = file.name.replace(/\.pdf$/i, '');
+
+  for (let p = 1; p <= numPages; p++) {
+    const page     = await pdf.getPage(p);
+    const viewport = page.getViewport({ scale: 2.0 });   // 2× = ~150 dpi-equivalent
+    const canvas   = document.createElement('canvas');
+    canvas.width   = viewport.width;
+    canvas.height  = viewport.height;
+
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+    const pageSuffix   = numPages > 1 ? `_p${p}`    : '';
+    const sourceLabel  = numPages > 1
+      ? `${file.name} · หน้า ${p}/${numPages}`
+      : file.name;
+
+    results.push({
+      blob,
+      filename:    `${baseName}${pageSuffix}.jpg`,
+      mimeType:    'image/jpeg',
+      sourceLabel: sourceLabel,
+      expandError: false
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Extract image & PDF files from a ZIP archive using JSZip
+ */
+async function extractZipContents(file) {
+  if (typeof JSZip === 'undefined') throw new Error('JSZip ไม่ได้โหลด');
+
+  const zip = await JSZip.loadAsync(file);
+  const IMAGE_EXTS = new Set(['jpg','jpeg','png','webp','gif','bmp','tif','tiff']);
+  const extracted  = [];
+
+  for (const [path, entry] of Object.entries(zip.files)) {
+    if (entry.dir) continue;
+    // Skip macOS __MACOSX junk
+    if (path.includes('__MACOSX') || path.includes('.DS_Store')) continue;
+
+    const name = path.split('/').pop();
+    if (!name) continue;
+    const ext  = name.split('.').pop().toLowerCase();
+
+    if (IMAGE_EXTS.has(ext)) {
+      const blob     = await entry.async('blob');
+      const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg'
+                     : ext === 'png'  ? 'image/png'
+                     : ext === 'webp' ? 'image/webp'
+                     : ext === 'gif'  ? 'image/gif'
+                     : 'image/jpeg';
+      extracted.push(new File([blob], name, { type: mimeType }));
+
+    } else if (ext === 'pdf') {
+      const blob = await entry.async('blob');
+      extracted.push(new File([blob], name, { type: 'application/pdf' }));
+    }
+  }
+
+  // Sort by filename for predictable order
+  extracted.sort((a, b) => a.name.localeCompare(b.name, 'th'));
+  return extracted;
 }
 
 async function callClaudeVision(b64, mimeType) {
