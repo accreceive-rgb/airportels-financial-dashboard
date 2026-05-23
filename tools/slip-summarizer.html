@@ -1248,7 +1248,12 @@ async function getTesseractWorker() {
 async function readWithTesseract(blob) {
   const worker = await getTesseractWorker();
   const { data } = await worker.recognize(blob);
-  return parseSlipText(data.text, data.confidence);
+  // Use median word confidence (more stable than page confidence)
+  const wordConfs = (data.words || []).map(w => w.confidence).filter(c => c > 0);
+  const medianConf = wordConfs.length
+    ? wordConfs.sort((a,b)=>a-b)[Math.floor(wordConfs.length/2)]
+    : data.confidence;
+  return parseSlipText(data.text, medianConf);
 }
 
 /**
