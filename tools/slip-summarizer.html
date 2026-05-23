@@ -1274,8 +1274,17 @@ function parseSlipText(raw, confidence) {
 
   function sanitiseYear(y) {
     y = parseInt(y);
-    if (y > 2400) y -= 543;          // Buddhist Era → CE
-    if (y < 100)  y += 2000;         // 2-digit year
+    if (y > 2400) y -= 543;          // Full Buddhist Era (e.g. 2567) → CE
+    else if (y < 100) {
+      // 2-digit shorthand — Thai slips use Buddhist Era short form
+      // e.g. "69" means 2569 BE → 2026 CE
+      const beCE = (2500 + y) - 543;
+      if (beCE >= 1990 && beCE <= NOW_CE + 2) return beCE;
+      // Fallback: treat as western 2-digit year (e.g. "24" → 2024)
+      const ceTry = y + 2000;
+      if (ceTry >= 1990 && ceTry <= NOW_CE + 2) return ceTry;
+      return null;
+    }
     if (y < 1990 || y > NOW_CE + 2) return null;   // out of range → reject
     return y;
   }
