@@ -138,6 +138,19 @@
 <!-- ═══════════════ MAIN ═══════════════ -->
 <main class="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 space-y-5">
 
+  <!-- ═══ TAB NAVIGATION ═══ -->
+  <div class="flex gap-1.5 bg-white rounded-2xl p-1.5 border border-gray-200 shadow-sm no-print w-fit">
+    <button id="tabBtnSlip" onclick="switchTab('slip')" class="tab-btn active">
+      🧾 สรุปสลิป
+    </button>
+    <button id="tabBtnRecon" onclick="switchTab('recon')" class="tab-btn">
+      ⚖️ กระทบยอด
+    </button>
+  </div>
+
+  <!-- ═══ PANEL: สรุปสลิป ═══ -->
+  <div id="panelSlip" class="space-y-5">
+
   <!-- API KEY SECTION -->
   <div id="apiSection" class="bg-amber-50 border border-amber-200 rounded-2xl p-5 no-print">
     <div class="flex items-start gap-3">
