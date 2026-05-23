@@ -417,8 +417,17 @@ function onDrop(e) {
   e.preventDefault();
   document.getElementById('uploadZone').classList.remove('drag-over');
   if (isProcessing) return;
-  const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+  const files = [...e.dataTransfer.files].filter(f => isAccepted(f));
   addPendingFiles(files);
+}
+
+function isAccepted(f) {
+  if (f.type.startsWith('image/')) return true;
+  if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) return true;
+  if (f.type === 'application/zip' ||
+      f.type === 'application/x-zip-compressed' ||
+      f.name.toLowerCase().endsWith('.zip')) return true;
+  return false;
 }
 
 function onFileSelect(e) {
