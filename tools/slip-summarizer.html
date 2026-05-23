@@ -391,11 +391,11 @@ function clearApiKey() {
 function setApiStatus(has) {
   const el = document.getElementById('apiKeyStatus');
   if (has) {
-    el.textContent = '✅ API Key บันทึกแล้ว — ระบบจะอ่านสลิปอัตโนมัติด้วย Claude Vision';
-    el.className = 'text-xs mt-1.5 text-green-600 font-medium';
+    el.innerHTML = '✅ <strong>Claude Vision</strong> — อ่านสลิปอัตโนมัติ แม่นยำสูง';
+    el.className = 'text-xs mt-1.5 text-green-700 font-medium';
   } else {
-    el.textContent = 'ยังไม่ได้ตั้งค่า — ถ้าไม่มี API Key สามารถกรอกข้อมูลด้วยตนเองได้';
-    el.className = 'text-xs mt-1.5 text-amber-600';
+    el.innerHTML = '⚡ ไม่มี API Key — ใช้ <strong>Tesseract OCR</strong> อ่านอัตโนมัติ (ฟรี ไม่ต้องต่อเน็ต) · หรือใส่ API Key เพื่อความแม่นยำสูงขึ้น';
+    el.className = 'text-xs mt-1.5 text-purple-700';
   }
 }
 
