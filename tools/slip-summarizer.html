@@ -350,12 +350,13 @@
 <!-- ═══════════════ SCRIPT ═══════════════ -->
 <script>
 /* ─── STATE ─── */
-let records      = [];
-let pendingFiles = [];
-let apiKey       = localStorage.getItem('madga_api_key') || '';
-let isProcessing = false;
-let tWorker      = null;   // Tesseract.js worker (lazy-init)
-let tWorkerReady = false;
+let records        = [];
+let pendingFiles   = [];
+let apiKey         = localStorage.getItem('madga_api_key') || '';
+let isProcessing   = false;
+let tWorker        = null;
+let tWorkerReady   = false;
+let skippedIdCards = 0;   // count auto-removed ID card images
 
 /* ─── INIT ─── */
 (function init() {
