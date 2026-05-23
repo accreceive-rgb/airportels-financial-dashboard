@@ -1109,6 +1109,8 @@ function doReset() {
   document.getElementById('topProgress').classList.add('hidden');
   document.getElementById('topProgressBar').style.width = '0%';
   document.getElementById('engineBadge').style.display = 'none';
+  document.getElementById('skipBanner').classList.add('hidden');
+  skippedIdCards = 0;
   document.getElementById('btnSummarize').disabled = true;
   document.getElementById('btnSummarize').querySelector('#btnSumText').textContent = 'สรุปรายการ';
 
