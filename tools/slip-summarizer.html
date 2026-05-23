@@ -1446,11 +1446,18 @@ function parseSlipText(raw, confidence) {
 /* ── Name helpers ──────────────────────────────────────── */
 function isValidName(s) {
   if (!s || s.length < 3 || s.length > 60) return false;
-  // Must have Thai or Latin letters
-  if (!/[ก-ฮA-Za-z]/.test(s)) return false;
   // Must NOT be all digits
   if (/^\d+$/.test(s)) return false;
-  return true;
+  // Thai name: must have at least 2 Thai consonants (ก-ฮ)
+  const thaiConsonants = (s.match(/[ก-ฮ]/g) || []).length;
+  if (thaiConsonants >= 2) return true;
+  // English name: must have a capitalized word of 3+ letters
+  if (/[A-Z][a-z]{2,}/.test(s)) return true;
+  // Reject: masked account numbers like "xxx-x-xxxx-x", mixed digit-dash strings
+  if (/^[x\d\-\s]+$/i.test(s)) return false;
+  // Reject: strings that are mostly digits/dashes/Xs with few letters
+  if (thaiConsonants < 2 && !/[A-Z][a-z]{2,}/.test(s)) return false;
+  return false;
 }
 
 function isKeywordLine(s) {
