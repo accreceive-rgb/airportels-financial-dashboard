@@ -1884,7 +1884,8 @@ async function loadReconFile(file, side) {
   lbl.textContent  = file.name;
 
   try {
-    const data = await parseReconFile(file);
+    const isPDF = /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
+    const data  = isPDF ? await parsePDFForRecon(file) : await parseReconFile(file);
     reconData[side] = data;
 
     buildColOptions('amtCol' + side,  data.headers, data.amtCol,  false);
