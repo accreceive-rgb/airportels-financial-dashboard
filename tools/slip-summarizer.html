@@ -373,6 +373,244 @@
     Airportels Financial · MADGA · Payment Slip Summarizer · รองรับ JPG / PNG / PDF / ZIP · ข้อมูลทั้งหมดประมวลผลในเครื่องของคุณ
   </footer>
 
+  </div><!-- /panelSlip -->
+
+  <!-- ═══════════════════════════════════════════════════════
+       PANEL: กระทบยอด
+       ═══════════════════════════════════════════════════════ -->
+  <div id="panelRecon" class="hidden space-y-5">
+
+    <!-- Instruction banner -->
+    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3.5 text-sm text-indigo-700 no-print flex items-start gap-2.5">
+      <svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>อัปโหลด <strong>ไฟล์ที่ 1</strong> และ <strong>ไฟล์ที่ 2</strong> (CSV หรือ Excel) → ระบบจับคู่รายการอัตโนมัติตาม <strong>ยอดโอน</strong> และ <strong>วันที่</strong> · เลือกคอลัมน์ที่ถูกต้องก่อนกด "กระทบยอด"</span>
+    </div>
+
+    <!-- Two upload zones -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+      <!-- ── ZONE A ── -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="bg-blue-600 px-5 py-3 flex items-center gap-2">
+          <span class="w-6 h-6 bg-white text-blue-600 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0">A</span>
+          <span class="font-semibold text-white text-sm">ไฟล์ที่ 1</span>
+          <span id="labelA" class="ml-auto text-xs text-blue-200 truncate max-w-[160px]">ยังไม่มีไฟล์</span>
+        </div>
+        <div class="p-4 space-y-3">
+          <div id="dropA" class="recon-drop"
+            onclick="document.getElementById('inputA').click()"
+            ondragover="reconDragOver(event,'A')"
+            ondragleave="reconDragLeave(event,'A')"
+            ondrop="reconDrop(event,'A')">
+            <input id="inputA" type="file"
+              accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              class="hidden" onchange="reconFileSelect(event,'A')"/>
+            <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p id="dropLabelA" class="text-sm font-medium text-gray-500">วางไฟล์ CSV / Excel ที่นี่</p>
+            <p class="text-xs text-gray-400 mt-0.5">หรือคลิกเพื่อเลือก</p>
+          </div>
+          <div id="colPickA" class="hidden grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">คอลัมน์ยอดโอน <span class="text-red-400">*</span></label>
+              <select id="amtColA" class="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-blue-300 focus:outline-none"></select>
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">คอลัมน์วันที่ <span class="text-gray-300">(ไม่บังคับ)</span></label>
+              <select id="dateColA" class="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-blue-300 focus:outline-none"></select>
+            </div>
+          </div>
+          <div id="previewA" class="hidden overflow-auto max-h-40 rounded-xl border border-gray-100">
+            <table id="previewTableA" class="w-full text-xs text-left"></table>
+          </div>
+          <div id="statsA" class="hidden flex items-center justify-between text-xs pt-1">
+            <span id="statRowsA" class="text-gray-400"></span>
+            <span id="statTotalA" class="font-bold text-blue-700"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ZONE B ── -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="bg-emerald-600 px-5 py-3 flex items-center gap-2">
+          <span class="w-6 h-6 bg-white text-emerald-600 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0">B</span>
+          <span class="font-semibold text-white text-sm">ไฟล์ที่ 2</span>
+          <span id="labelB" class="ml-auto text-xs text-emerald-200 truncate max-w-[160px]">ยังไม่มีไฟล์</span>
+        </div>
+        <div class="p-4 space-y-3">
+          <div id="dropB" class="recon-drop"
+            onclick="document.getElementById('inputB').click()"
+            ondragover="reconDragOver(event,'B')"
+            ondragleave="reconDragLeave(event,'B')"
+            ondrop="reconDrop(event,'B')">
+            <input id="inputB" type="file"
+              accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              class="hidden" onchange="reconFileSelect(event,'B')"/>
+            <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p id="dropLabelB" class="text-sm font-medium text-gray-500">วางไฟล์ CSV / Excel ที่นี่</p>
+            <p class="text-xs text-gray-400 mt-0.5">หรือคลิกเพื่อเลือก</p>
+          </div>
+          <div id="colPickB" class="hidden grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">คอลัมน์ยอดโอน <span class="text-red-400">*</span></label>
+              <select id="amtColB" class="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-emerald-300 focus:outline-none"></select>
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">คอลัมน์วันที่ <span class="text-gray-300">(ไม่บังคับ)</span></label>
+              <select id="dateColB" class="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-emerald-300 focus:outline-none"></select>
+            </div>
+          </div>
+          <div id="previewB" class="hidden overflow-auto max-h-40 rounded-xl border border-gray-100">
+            <table id="previewTableB" class="w-full text-xs text-left"></table>
+          </div>
+          <div id="statsB" class="hidden flex items-center justify-between text-xs pt-1">
+            <span id="statRowsB" class="text-gray-400"></span>
+            <span id="statTotalB" class="font-bold text-emerald-700"></span>
+          </div>
+        </div>
+      </div>
+    </div><!-- /grid -->
+
+    <!-- Reconcile button -->
+    <div class="flex justify-center">
+      <button id="btnRecon" onclick="runReconcile()" disabled
+        class="flex items-center gap-2.5 bg-indigo-600 text-white px-10 py-3.5 rounded-xl font-bold text-base
+               hover:bg-indigo-700 active:bg-indigo-800 transition-colors shadow-md
+               disabled:opacity-40 disabled:cursor-not-allowed">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+        </svg>
+        กระทบยอด
+      </button>
+    </div>
+
+    <!-- ── Results (hidden until run) ── -->
+    <div id="reconResults" class="hidden space-y-5">
+
+      <!-- Summary cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl border border-green-100 px-5 py-4 shadow-sm text-center">
+          <div class="text-3xl font-bold text-green-600" id="rcMatchCount">0</div>
+          <div class="text-xs text-gray-400 mt-1">✅ จับคู่ได้</div>
+          <div class="text-sm font-bold text-green-700 mt-1.5" id="rcMatchAmt">฿0.00</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-red-100 px-5 py-4 shadow-sm text-center">
+          <div class="text-3xl font-bold text-red-500" id="rcOnlyACount">0</div>
+          <div class="text-xs text-gray-400 mt-1">❌ ไม่มีใน B</div>
+          <div class="text-sm font-bold text-red-600 mt-1.5" id="rcOnlyAAmt">฿0.00</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-orange-100 px-5 py-4 shadow-sm text-center">
+          <div class="text-3xl font-bold text-orange-500" id="rcOnlyBCount">0</div>
+          <div class="text-xs text-gray-400 mt-1">❌ ไม่มีใน A</div>
+          <div class="text-sm font-bold text-orange-600 mt-1.5" id="rcOnlyBAmt">฿0.00</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-200 px-5 py-4 shadow-sm text-center">
+          <div class="text-2xl font-bold" id="rcDiffAmt" style="color:#374151">฿0.00</div>
+          <div class="text-xs text-gray-400 mt-1">ส่วนต่าง (A − B)</div>
+          <div class="text-xs mt-1.5 font-medium" id="rcDiffNote"></div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="flex gap-3 flex-wrap no-print">
+        <button onclick="exportReconExcel()"
+          class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Export ผลกระทบยอด (.xlsx)
+        </button>
+        <button onclick="resetRecon()"
+          class="flex items-center gap-2 bg-white text-gray-600 border border-gray-200 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm">
+          🔄 รีเซ็ต
+        </button>
+      </div>
+
+      <!-- Matched table -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-3.5 bg-green-50 border-b border-green-100 flex items-center gap-3">
+          <span class="font-bold text-green-700 text-sm">✅ จับคู่ได้</span>
+          <span id="matchedBadge" class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">0 รายการ</span>
+        </div>
+        <div class="overflow-x-auto" style="max-height:280px;overflow-y:auto">
+          <table class="w-full text-xs min-w-[700px]">
+            <thead class="bg-gray-50 sticky top-0 z-10">
+              <tr class="text-[10px] uppercase text-gray-400 tracking-wide border-b border-gray-100">
+                <th class="px-3 py-2.5 text-left">วันที่ (A)</th>
+                <th class="px-3 py-2.5 text-left">รายการ (A)</th>
+                <th class="px-3 py-2.5 text-right">ยอด (A)</th>
+                <th class="px-2 py-2.5 text-center text-base">⟺</th>
+                <th class="px-3 py-2.5 text-left">วันที่ (B)</th>
+                <th class="px-3 py-2.5 text-left">รายการ (B)</th>
+                <th class="px-3 py-2.5 text-right">ยอด (B)</th>
+                <th class="px-3 py-2.5 text-center">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="matchedBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Unmatched A -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-3.5 bg-red-50 border-b border-red-100 flex items-center gap-3">
+          <span class="font-bold text-red-600 text-sm">❌ ไม่มีใน ไฟล์ B</span>
+          <span id="onlyABadge" class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-semibold">0 รายการ</span>
+          <span class="text-xs text-gray-400">— มีในไฟล์ A แต่หาคู่ใน B ไม่เจอ</span>
+        </div>
+        <div class="overflow-x-auto" style="max-height:220px;overflow-y:auto">
+          <table class="w-full text-xs min-w-[420px]">
+            <thead class="bg-gray-50 sticky top-0">
+              <tr class="text-[10px] uppercase text-gray-400 tracking-wide border-b border-gray-100">
+                <th class="px-3 py-2.5 text-left">วันที่</th>
+                <th class="px-3 py-2.5 text-left">รายการ</th>
+                <th class="px-3 py-2.5 text-right">ยอด (฿)</th>
+              </tr>
+            </thead>
+            <tbody id="onlyABody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Unmatched B -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-3.5 bg-orange-50 border-b border-orange-100 flex items-center gap-3">
+          <span class="font-bold text-orange-600 text-sm">❌ ไม่มีใน ไฟล์ A</span>
+          <span id="onlyBBadge" class="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-semibold">0 รายการ</span>
+          <span class="text-xs text-gray-400">— มีในไฟล์ B แต่หาคู่ใน A ไม่เจอ</span>
+        </div>
+        <div class="overflow-x-auto" style="max-height:220px;overflow-y:auto">
+          <table class="w-full text-xs min-w-[420px]">
+            <thead class="bg-gray-50 sticky top-0">
+              <tr class="text-[10px] uppercase text-gray-400 tracking-wide border-b border-gray-100">
+                <th class="px-3 py-2.5 text-left">วันที่</th>
+                <th class="px-3 py-2.5 text-left">รายการ</th>
+                <th class="px-3 py-2.5 text-right">ยอด (฿)</th>
+              </tr>
+            </thead>
+            <tbody id="onlyBBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /reconResults -->
+
+    <!-- Recon footer -->
+    <footer class="text-center text-xs text-gray-300 pb-6 no-print">
+      Airportels Financial · MADGA · กระทบยอด · รองรับ CSV / Excel · ข้อมูลทั้งหมดประมวลผลในเครื่องของคุณ
+    </footer>
+
+  </div><!-- /panelRecon -->
+
 </main>
 
 <!-- ═══════════════ IMAGE MODAL ═══════════════ -->
