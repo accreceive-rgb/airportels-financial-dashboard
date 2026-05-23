@@ -164,7 +164,9 @@
     ondragover="onDragOver(event)"
     ondragleave="onDragLeave(event)"
     ondrop="onDrop(event)">
-    <input id="fileInput" type="file" accept="image/*" multiple class="hidden" onchange="onFileSelect(event)"/>
+    <input id="fileInput" type="file"
+      accept="image/*,.pdf,application/pdf,.zip,application/zip,application/x-zip-compressed"
+      multiple class="hidden" onchange="onFileSelect(event)"/>
     <div class="flex flex-col items-center gap-3 pointer-events-none">
       <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center">
         <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,7 +176,13 @@
       </div>
       <div>
         <p class="text-lg font-semibold text-gray-700">วางไฟล์สลิปโอนเงินที่นี่</p>
-        <p class="text-sm text-gray-400 mt-0.5">หรือคลิกเพื่อเลือกไฟล์ · รองรับหลายไฟล์พร้อมกัน (JPG, PNG, WEBP, GIF)</p>
+        <p class="text-sm text-gray-400 mt-0.5">หรือคลิกเพื่อเลือกไฟล์ · รองรับหลายไฟล์พร้อมกัน</p>
+      </div>
+      <!-- Supported types chips -->
+      <div class="flex gap-2 pointer-events-none">
+        <span class="ftype-chip ftype-img">🖼 JPG / PNG / WEBP</span>
+        <span class="ftype-chip ftype-pdf">📄 PDF (ทุกหน้า)</span>
+        <span class="ftype-chip ftype-zip">🗜 ZIP (สลิปหลายไฟล์)</span>
       </div>
       <div id="fileCountBadge" class="hidden bg-blue-100 text-blue-700 text-sm px-4 py-1.5 rounded-full font-semibold pointer-events-auto"></div>
     </div>
