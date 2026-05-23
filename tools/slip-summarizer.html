@@ -1250,127 +1250,177 @@ async function readWithTesseract(blob) {
 }
 
 /**
- * Parse raw OCR text into { date, sender, recipient, amount, _lowConf }
- * Handles common Thai bank slip formats: SCB, KBank, Krungthai, BBL, GSB, PromptPay
+ * Parse raw OCR text → { date, sender, recipient, amount, _lowConf, _isIdCard }
+ * Covers: SCB, KBank, Krungthai, BBL, GSB, TTB, UOB, PromptPay, QR
  */
 function parseSlipText(raw, confidence) {
-  const text  = raw || '';
+  const text   = raw || '';
   const lines  = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const joined = lines.join(' ');   // single-line version for regex
+  const joined = lines.join(' ');
 
-  /* ── DATE ──────────────────────────────────────────── */
+  /* ── ID CARD / DOCUMENT FILTER ─────────────────────── */
+  if (isIdCardText(text)) return { _isIdCard: true };
+
+  /* ── DATE ───────────────────────────────────────────── */
   let date = 'ไม่ระบุ';
 
-  // DD/MM/YYYY  or  D/M/YYYY
   const rxSlash = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/;
   let m = joined.match(rxSlash);
   if (m) {
     let y = parseInt(m[3]);
-    if (y > 2400) y -= 543;          // Buddhist Era → CE
+    if (y > 2400) y -= 543;
     date = `${pad(m[1])}/${pad(m[2])}/${y}`;
   }
 
-  // Thai month names (ม.ค. ก.พ. มี.ค. เม.ย. พ.ค. มิ.ย. ก.ค. ส.ค. ก.ย. ต.ค. พ.ย. ธ.ค.)
   if (date === 'ไม่ระบุ') {
     const thM = ['ม\\.?ค','ก\\.?พ','มี\\.?ค','เม\\.?ย','พ\\.?ค','มิ\\.?ย',
                  'ก\\.?ค','ส\\.?ค','ก\\.?ย','ต\\.?ค','พ\\.?ย','ธ\\.?ค'];
     for (let i = 0; i < thM.length; i++) {
-      const rx = new RegExp(`(\\d{1,2})\\s*${thM[i]}\\.?\\s*(\\d{2,4})`);
-      const mm = joined.match(rx);
+      const mm = joined.match(new RegExp(`(\\d{1,2})\\s*${thM[i]}\\.?\\s*(\\d{2,4})`));
       if (mm) {
-        let y = parseInt(mm[2]);
-        if (y > 2400) y -= 543;
-        date = `${pad(mm[1])}/${pad(i+1)}/${y < 100 ? 2000+y : y}`;
-        break;
+        let y = parseInt(mm[2]); if (y > 2400) y -= 543;
+        date = `${pad(mm[1])}/${pad(i+1)}/${y < 100 ? 2000+y : y}`; break;
       }
     }
   }
 
-  // English month (Jan Feb ... Dec)
   if (date === 'ไม่ระบุ') {
     const enM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     for (let i = 0; i < enM.length; i++) {
-      const rx = new RegExp(`(\\d{1,2})\\s+${enM[i]}[a-z]*\\.?\\s+(\\d{2,4})`, 'i');
-      const mm = joined.match(rx);
+      const mm = joined.match(new RegExp(`(\\d{1,2})\\s+${enM[i]}[a-z]*\\.?\\s+(\\d{2,4})`, 'i'));
       if (mm) {
-        let y = parseInt(mm[2]);
-        if (y > 2400) y -= 543;
-        date = `${pad(mm[1])}/${pad(i+1)}/${y < 100 ? 2000+y : y}`;
-        break;
+        let y = parseInt(mm[2]); if (y > 2400) y -= 543;
+        date = `${pad(mm[1])}/${pad(i+1)}/${y < 100 ? 2000+y : y}`; break;
       }
     }
   }
 
   /* ── AMOUNT ─────────────────────────────────────────── */
   let amount = 0;
-
-  // ฿ 1,234.56  or  1,234.56 ฿
-  const rxBaht1 = /฿\s*([\d,]+(?:\.\d{1,2})?)/;
-  const rxBaht2 = /([\d,]+(?:\.\d{1,2})?)\s*(?:บาท|THB|Baht)/i;
-  // จำนวนเงิน / ยอดโอน / Amount
-  const rxLabel = /(?:จำนวน|ยอด|Amount|Total)[^\d]*([\d,]+(?:\.\d{1,2})?)/i;
-
   let amtStr = '';
-  for (const rx of [rxBaht1, rxBaht2, rxLabel]) {
+
+  for (const rx of [
+    /฿\s*([\d,]+(?:\.\d{1,2})?)/,
+    /([\d,]+(?:\.\d{1,2})?)\s*(?:บาท|THB|Baht)\b/i,
+    /(?:จำนวน(?:เงิน)?|ยอด(?:โอน|ชำระ)?|Amount|Total)\s*[:\-]?\s*([\d,]+(?:\.\d{1,2})?)/i,
+  ]) {
     const mm = joined.match(rx);
     if (mm) { amtStr = mm[1]; break; }
   }
 
   if (!amtStr) {
-    // Fallback: collect all plausible monetary values, pick the largest
-    const all = [...joined.matchAll(/([\d]{1,3}(?:,\d{3})+(?:\.\d{2})?|\d+\.\d{2})/g)]
-      .map(m => parseFloat(m[1].replace(/,/g,'')))
+    const all = [...joined.matchAll(/([\d]{1,3}(?:,\d{3})+(?:\.\d{2})?|\d{3,}(?:\.\d{2})?)/g)]
+      .map(x => parseFloat(x[1].replace(/,/g,'')))
       .filter(v => v >= 1 && v <= 50000000);
     if (all.length) amount = Math.max(...all);
   } else {
     amount = parseFloat(amtStr.replace(/,/g,'')) || 0;
   }
 
-  /* ── SENDER ─────────────────────────────────────────── */
-  let sender = 'ไม่ระบุ';
-
-  const senderRx = [
-    /ผู้โอน\s*[:\-]?\s*([^\n\d฿]{4,40})/,
-    /จาก\s*[:\-]?\s*([^\n\d฿]{4,40})/,
-    /ชื่อผู้โอน\s*[:\-]?\s*([^\n\d฿]{4,40})/,
-    /From\s*[:\-]?\s*([^\n\d฿]{4,40})/i,
-    /Sender\s*[:\-]?\s*([^\n\d฿]{4,40})/i,
-    /Payer\s*[:\-]?\s*([^\n\d฿]{4,40})/i,
+  /* ── SENDER & RECIPIENT (inline + next-line) ────────── */
+  // Labels that introduce SENDER on same line or next line
+  const SENDER_LABELS = [
+    'ผู้โอน','จาก','ชื่อผู้โอน','บัญชีต้นทาง','บัญชีผู้โอน',
+    'ชื่อบัญชีผู้โอน','From','Sender','Payer','Remitter','Debit Account'
   ];
-  for (const rx of senderRx) {
-    const mm = text.match(rx);
-    if (mm) {
-      const v = cleanName(mm[1]);
-      if (v.length >= 3) { sender = v; break; }
-    }
-  }
+  // Labels that introduce RECIPIENT
+  const RECIP_LABELS = [
+    'ผู้รับโอน','ผู้รับ','ถึง','โอนให้','ชื่อผู้รับ','บัญชีปลายทาง',
+    'บัญชีผู้รับ','ชื่อบัญชีผู้รับ','ผู้รับเงิน',
+    'To','Receiver','Payee','Beneficiary','Credit Account','Recipient'
+  ];
 
-  /* ── RECIPIENT ───────────────────────────────────────── */
+  let sender    = 'ไม่ระบุ';
   let recipient = 'ไม่ระบุ';
 
-  const recipientRx = [
-    /ผู้รับ\s*[:\-]?\s*([^\n\d฿]{4,40})/,
-    /ถึง\s*[:\-]?\s*([^\n\d฿]{4,40})/,
-    /ชื่อผู้รับ\s*[:\-]?\s*([^\n\d฿]{4,40})/,
-    /To\s*[:\-]?\s*([^\n\d฿]{4,40})/i,
-    /Receiver\s*[:\-]?\s*([^\n\d฿]{4,40})/i,
-    /Payee\s*[:\-]?\s*([^\n\d฿]{4,40})/i,
-    /Beneficiary\s*[:\-]?\s*([^\n\d฿]{4,40})/i,
-  ];
-  for (const rx of recipientRx) {
-    const mm = text.match(rx);
-    if (mm) {
-      const v = cleanName(mm[1]);
-      if (v.length >= 3) { recipient = v; break; }
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li];
+    const nextLine = lines[li + 1] || '';
+
+    // Check if this line contains a SENDER label
+    if (sender === 'ไม่ระบุ') {
+      for (const lbl of SENDER_LABELS) {
+        if (line.includes(lbl)) {
+          // Try inline value after colon/dash
+          const inline = line.replace(lbl, '').replace(/^[\s:\-]+/, '');
+          const inClean = cleanName(inline);
+          if (inClean.length >= 3) { sender = inClean; break; }
+          // Try next line as value
+          const nextClean = cleanName(nextLine);
+          if (nextClean.length >= 3 && !/^\d/.test(nextLine)) {
+            sender = nextClean; break;
+          }
+        }
+      }
     }
+
+    // Check if this line contains a RECIPIENT label
+    if (recipient === 'ไม่ระบุ') {
+      for (const lbl of RECIP_LABELS) {
+        if (line.includes(lbl)) {
+          const inline = line.replace(lbl, '').replace(/^[\s:\-]+/, '');
+          const inClean = cleanName(inline);
+          if (inClean.length >= 3) { recipient = inClean; break; }
+          const nextClean = cleanName(nextLine);
+          if (nextClean.length >= 3 && !/^\d/.test(nextLine)) {
+            recipient = nextClean; break;
+          }
+        }
+      }
+    }
+
+    if (sender !== 'ไม่ระบุ' && recipient !== 'ไม่ระบุ') break;
   }
 
   /* ── CONFIDENCE ─────────────────────────────────────── */
-  // Mark low confidence so UI shows "⚠ ตรวจสอบด้วย" badge
   const lowConf = (confidence !== undefined && confidence < 60)
-    || sender === 'ไม่ระบุ' || recipient === 'ไม่ระบุ' || amount === 0;
+    || recipient === 'ไม่ระบุ' || amount === 0;
 
   return { date, sender, recipient, amount, _lowConf: lowConf };
+}
+
+/**
+ * Detect Thai ID card / passport / driver's license text
+ * Returns true → auto-skip this image
+ */
+function isIdCardText(text) {
+  // Definitive single-keyword matches (case-insensitive)
+  const definite = [
+    'บัตรประจำตัวประชาชน',
+    'Thai National ID',
+    'NATIONAL ID CARD',
+    'หนังสือเดินทาง',
+    'PASSPORT',
+    'ใบขับขี่',
+    'DRIVING LICENSE',
+    'DRIVER LICENSE',
+    'ใบอนุญาตขับขี่',
+  ];
+  const up = text.toUpperCase();
+  for (const kw of definite) {
+    if (up.includes(kw.toUpperCase())) return true;
+  }
+
+  // Score-based: need ≥2 indicators
+  const indicators = [
+    'เลขประจำตัวประชาชน','Identification Number',
+    'วัน เดือน ปีเกิด','Date of Birth','วันเกิด',
+    'สัญชาติ','Nationality',
+    'ศาสนา','Religion',
+    'กลุ่มเลือด','Blood Type',
+    'วันออกบัตร','Date of Issue',
+    'วันบัตรหมดอายุ','Date of Expiry',
+    'ที่อยู่ตามทะเบียนบ้าน',
+  ];
+  let score = 0;
+  for (const kw of indicators) {
+    if (text.includes(kw)) score++;
+  }
+  // 13-digit ID pattern: X-XXXX-XXXXX-XX-X
+  if (/\d[\s\-]\d{4}[\s\-]\d{5}[\s\-]\d{2}[\s\-]\d/.test(text)) score += 3;
+  if (/^\d{13}$/.test(text.replace(/[\s\-]/g,''))) score += 2;
+
+  return score >= 2;
 }
 
 function pad(n) { return String(n).padStart(2, '0'); }
