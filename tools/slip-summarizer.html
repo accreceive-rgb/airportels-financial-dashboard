@@ -346,16 +346,21 @@
 <!-- ═══════════════ SCRIPT ═══════════════ -->
 <script>
 /* ─── STATE ─── */
-let records = [];
+let records      = [];
 let pendingFiles = [];
-let apiKey = localStorage.getItem('madga_api_key') || '';
+let apiKey       = localStorage.getItem('madga_api_key') || '';
 let isProcessing = false;
+let tWorker      = null;   // Tesseract.js worker (lazy-init)
+let tWorkerReady = false;
 
 /* ─── INIT ─── */
 (function init() {
   if (apiKey) {
     document.getElementById('apiKeyInput').value = maskKey(apiKey);
     setApiStatus(true);
+  } else {
+    // No API key → show Tesseract notice
+    setApiStatus(false);
   }
   document.addEventListener('click', e => {
     if (!document.getElementById('exportWrapper').contains(e.target)) {
