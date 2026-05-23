@@ -852,10 +852,17 @@ function buildRowHTML(rec, idx) {
 
   const statusBadge = {
     processing: '',
-    done:   '',
-    error:  '<span class="badge-error text-xs px-2 py-0.5 rounded-full font-medium">อ่านไม่ได้</span>',
-    manual: '<span class="badge-manual text-xs px-2 py-0.5 rounded-full font-medium">กรอกเอง</span>',
+    done:       '',
+    error:      '<span class="badge-error  text-xs px-2 py-0.5 rounded-full font-medium">อ่านไม่ได้</span>',
+    manual:     '<span class="badge-manual text-xs px-2 py-0.5 rounded-full font-medium">กรอกเอง</span>',
+    noSlip:     '<span class="badge-noSlip text-xs px-2 py-0.5 rounded-full font-medium">ไม่พบสลิป</span>',
   }[rec.status] || '';
+
+  // Badge shown under image when this row is part of a multi-slip image
+  const isMulti   = rec.sourceLabel && rec.sourceLabel.includes('สลิปที่');
+  const multiBadge = isMulti
+    ? `<span class="badge-multi ftype-chip mt-0.5" style="font-size:10px">${rec.sourceLabel.split('·').pop().trim()}</span>`
+    : '';
 
   const imgCell = rec.imageUrl
     ? `<div class="flex flex-col items-center gap-1">
