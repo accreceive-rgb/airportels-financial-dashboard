@@ -1464,15 +1464,23 @@ function isValidName(s) {
   if (!s || s.length < 3 || s.length > 60) return false;
   // Must NOT be all digits
   if (/^\d+$/.test(s)) return false;
-  // Thai name: must have at least 2 Thai consonants (ก-ฮ)
-  const thaiConsonants = (s.match(/[ก-ฮ]/g) || []).length;
-  if (thaiConsonants >= 2) return true;
-  // English name: must have a capitalized word of 3+ letters
-  if (/[A-Z][a-z]{2,}/.test(s)) return true;
-  // Reject: masked account numbers like "xxx-x-xxxx-x", mixed digit-dash strings
+  // Reject masked account numbers: xxx-x-xxxx-x style
   if (/^[x\d\-\s]+$/i.test(s)) return false;
-  // Reject: strings that are mostly digits/dashes/Xs with few letters
-  if (thaiConsonants < 2 && !/[A-Z][a-z]{2,}/.test(s)) return false;
+
+  const thaiConsonants = (s.match(/[ก-ฮ]/g) || []).length;
+
+  // Fast-pass: starts with a Thai name title → definitely a name
+  const TITLES = ['นาย','น.ส.','นาง','นางสาว','ด.ช.','ด.ญ.','เด็กชาย','เด็กหญิง'];
+  if (TITLES.some(p => s.startsWith(p) || s.includes(p + ' '))) return true;
+
+  // Thai name (no title): require ≥ 4 consonants.
+  // This filters out month abbreviations (พ.ค., ม.ค., ก.ย. etc. — all have ≤ 2 consonants)
+  // and short system words (สำเร็จ = 3, สาขา = 2).
+  if (thaiConsonants >= 4) return true;
+
+  // English name: at least one capitalized word of 3+ letters
+  if (/[A-Z][a-z]{2,}/.test(s)) return true;
+
   return false;
 }
 
