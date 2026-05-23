@@ -869,7 +869,8 @@ function buildRowHTML(rec, idx) {
          <img src="${rec.imageUrl}" class="slip-thumb mx-auto"
            onclick="openModal('${rec.imageUrl}','${escHtml(rec.sourceLabel || rec.filename)}')"
            title="${escHtml(rec.sourceLabel || rec.filename)}"/>
-         ${rec.sourceLabel
+         ${multiBadge}
+         ${rec.sourceLabel && !isMulti
            ? `<span class="text-gray-400 text-center leading-tight" style="font-size:10px;max-width:80px;word-break:break-all">${escHtml(rec.sourceLabel)}</span>`
            : ''}
        </div>`
