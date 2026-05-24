@@ -1541,6 +1541,115 @@ function doExportPrint() {
   window.print();
 }
 
+/* ─── PEAK ACCOUNT EXPORT ───────────────────────────────────────────────────
+   Format: บันทึกค่าใช้จ่าย import template ของ Peak Account
+   Columns match Peak's NE010 / expense-record import spec
+   ─────────────────────────────────────────────────────────────────────────── */
+function doExportPeak() {
+  closeExportMenu();
+  if (typeof XLSX === 'undefined') { alert('กำลังโหลด SheetJS กรุณาลองใหม่'); return; }
+  if (records.length === 0) { alert('ยังไม่มีรายการ'); return; }
+
+  /* column headers — ตรงกับ template import ของ Peak */
+  const headers = [
+    'วันที่เอกสาร',       // DD/MM/YYYY (CE) — Required
+    'ผู้รับเงิน/คู่ค้า',  // ชื่อผู้รับโอน — Required
+    'คำอธิบาย',           // หมายเหตุ / รายการ
+    'อ้างอิงจาก',          // เลขอ้างอิงสลิป (ถ้ามี)
+    'ประเภทราคา',          // ไม่มีภาษี / รวมภาษี / แยกภาษี
+    'ค่าใช้จ่าย/บัญชี',  // รหัสบัญชี (กรอกใน Peak)
+    'จำนวน',              // 1
+    'ราคา',               // ยอดโอน
+    'ภาษี (%)',            // 0
+    'หัก ณ ที่จ่าย (%)',  // 0
+    'ชำระโดย',            // ช่องทางชำระ (กรอกใน Peak)
+    'ชำระเงิน',           // ยอดโอน (= ราคา เมื่อชำระเต็ม)
+  ];
+
+  const rows = records.map(r => {
+    const amt = parseFloat(r.amount) || 0;
+    return [
+      formatDateForPeak(r.date),   // วันที่เอกสาร
+      r.recipient || '',            // ผู้รับเงิน/คู่ค้า
+      r.notes     || 'โอนชำระเงิน', // คำอธิบาย
+      '',                           // อ้างอิงจาก
+      'ไม่มีภาษี',                  // ประเภทราคา
+      '',                           // ค่าใช้จ่าย/บัญชี (user fills in Peak)
+      1,                            // จำนวน
+      amt,                          // ราคา
+      0,                            // ภาษี (%)
+      0,                            // หัก ณ ที่จ่าย (%)
+      '',                           // ชำระโดย (user fills in Peak)
+      amt,                          // ชำระเงิน
+    ];
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+  /* number format for ราคา (H) and ชำระเงิน (L) */
+  for (let i = 2; i <= records.length + 1; i++) {
+    ['H','L'].forEach(col => {
+      const ref = `${col}${i}`;
+      if (ws[ref]) { ws[ref].t = 'n'; ws[ref].z = '#,##0.00'; }
+    });
+  }
+
+  /* column widths */
+  ws['!cols'] = [
+    {wch:14}, // วันที่เอกสาร
+    {wch:26}, // ผู้รับเงิน/คู่ค้า
+    {wch:30}, // คำอธิบาย
+    {wch:14}, // อ้างอิงจาก
+    {wch:14}, // ประเภทราคา
+    {wch:22}, // ค่าใช้จ่าย/บัญชี
+    {wch: 8}, // จำนวน
+    {wch:16}, // ราคา
+    {wch:10}, // ภาษี (%)
+    {wch:16}, // หัก ณ ที่จ่าย (%)
+    {wch:16}, // ชำระโดย
+    {wch:16}, // ชำระเงิน
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Peak Import');
+  XLSX.writeFile(wb, `Peak_บันทึกค่าใช้จ่าย_${today()}.xlsx`);
+}
+
+/* แปลงวันที่ (ทุก format) → DD/MM/YYYY (ค.ศ.) สำหรับ Peak */
+function formatDateForPeak(dateStr) {
+  if (!dateStr) return '';
+
+  const thMonthMap = {
+    'ม.ค.':1,  'ก.พ.':2,  'มี.ค.':3,  'เม.ย.':4, 'พ.ค.':5,  'มิ.ย.':6,
+    'ก.ค.':7,  'ส.ค.':8,  'ก.ย.':9,   'ต.ค.':10, 'พ.ย.':11, 'ธ.ค.':12,
+    'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,
+    'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12
+  };
+
+  /* "12 พ.ค. 2569" or "12 พฤษภาคม 2569" */
+  const mThai = dateStr.match(/(\d{1,2})\s+([฀-๿\.]+)\s+(\d{4})/);
+  if (mThai) {
+    const d = String(mThai[1]).padStart(2,'0');
+    const m = String(thMonthMap[mThai[2]] || 1).padStart(2,'0');
+    let y = parseInt(mThai[3]);
+    if (y > 2400) y -= 543;
+    return `${d}/${m}/${y}`;
+  }
+
+  /* "12/05/2569", "12-05-2026" */
+  const mSlash = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (mSlash) {
+    const d = mSlash[1].padStart(2,'0');
+    const m = mSlash[2].padStart(2,'0');
+    let y = parseInt(mSlash[3]);
+    if (y > 2400)      y -= 543;
+    else if (y < 100)  y += 2000;
+    return `${d}/${m}/${y}`;
+  }
+
+  return dateStr; // fallback
+}
+
 function downloadBlob(blob, name) {
   const a = Object.assign(document.createElement('a'), {
     href: URL.createObjectURL(blob),
