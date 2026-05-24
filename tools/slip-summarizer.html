@@ -1542,112 +1542,149 @@ function doExportPrint() {
 }
 
 /* ─── PEAK ACCOUNT EXPORT ───────────────────────────────────────────────────
-   Format: บันทึกค่าใช้จ่าย import template ของ Peak Account
-   Columns match Peak's NE010 / expense-record import spec
+   Format: ตรงกับ sheet "Import_Expenses" ของไฟล์ template จาก Peak Account
+   21 columns A–U (ดู Description sheet ใน PEAK_ImportExpense.xlsx)
    ─────────────────────────────────────────────────────────────────────────── */
 function doExportPeak() {
   closeExportMenu();
   if (typeof XLSX === 'undefined') { alert('กำลังโหลด SheetJS กรุณาลองใหม่'); return; }
   if (records.length === 0) { alert('ยังไม่มีรายการ'); return; }
 
-  /* column headers — ตรงกับ template import ของ Peak */
+  /* A–U header — ชื่อตรงกับ Peak template ทุก column */
   const headers = [
-    'วันที่เอกสาร',       // DD/MM/YYYY (CE) — Required
-    'ผู้รับเงิน/คู่ค้า',  // ชื่อผู้รับโอน — Required
-    'คำอธิบาย',           // หมายเหตุ / รายการ
-    'อ้างอิงจาก',          // เลขอ้างอิงสลิป (ถ้ามี)
-    'ประเภทราคา',          // ไม่มีภาษี / รวมภาษี / แยกภาษี
-    'ค่าใช้จ่าย/บัญชี',  // รหัสบัญชี (กรอกใน Peak)
-    'จำนวน',              // 1
-    'ราคา',               // ยอดโอน
-    'ภาษี (%)',            // 0
-    'หัก ณ ที่จ่าย (%)',  // 0
-    'ชำระโดย',            // ช่องทางชำระ (กรอกใน Peak)
-    'ชำระเงิน',           // ยอดโอน (= ราคา เมื่อชำระเต็ม)
+    'ลำดับที่* ',                    // A  required, int, same # = same doc
+    'วันที่เอกสาร',                   // B  YYYYMMDD (CE)
+    'อ้างอิงถึง',                      // C  max 32 chars
+    'ผู้รับเงิน/คู่ค้า',              // D  contact ID (C00001) — กรอกใน Peak
+    'เลขทะเบียน 13 หลัก',            // E  optional
+    'เลขสาขา 5 หลัก',               // F  optional
+    'เลขที่ใบกำกับฯ (ถ้ามี)',        // G  max 35 chars
+    'วันที่ใบกำกับฯ (ถ้ามี)',        // H  YYYYMMDD
+    'วันที่บันทึกภาษีซื้อ (ถ้ามี)', // I  YYYYMMDD
+    'ประเภทราคา',                     // J  1=แยกภาษี 2=รวมภาษี 3=ไม่มีภาษี
+    'บัญชี',                          // K  account code — กรอกใน Peak
+    'คำอธิบาย',                       // L  max 1000 chars
+    'จำนวน',                          // M  qty (default 1)
+    'ราคาต่อหน่วย',                   // N  unit price
+    'อัตราภาษี',                      // O  NO = ไม่มีภาษี, 0.07 = 7%
+    'หัก ณ ที่จ่าย (ถ้ามี)',         // P  WHT amount or %
+    'ชำระโดย',                        // Q  payment channel ID — กรอกใน Peak
+    'จำนวนเงินที่ชำระ',               // R  payment amount
+    'ภ.ง.ด. (ถ้ามี)',               // S  1/2/3/53
+    'หมายเหตุ',                       // T  max 500 chars
+    'กลุ่มจัดประเภท',                 // U  category group ID
   ];
 
-  const rows = records.map(r => {
+  const rows = records.map((r, i) => {
     const amt = parseFloat(r.amount) || 0;
+
+    // คำอธิบาย: รวม ผู้โอน + ผู้รับ + หมายเหตุ เพื่อเก็บข้อมูลสลิปไว้
+    const descParts = [];
+    if (r.recipient) descParts.push(`ผู้รับ: ${r.recipient}`);
+    if (r.sender)    descParts.push(`ผู้โอน: ${r.sender}`);
+    if (r.notes)     descParts.push(r.notes);
+    const desc = descParts.join(' | ') || 'โอนชำระเงิน';
+
     return [
-      formatDateForPeak(r.date),   // วันที่เอกสาร
-      r.recipient || '',            // ผู้รับเงิน/คู่ค้า
-      r.notes     || 'โอนชำระเงิน', // คำอธิบาย
-      '',                           // อ้างอิงจาก
-      'ไม่มีภาษี',                  // ประเภทราคา
-      '',                           // ค่าใช้จ่าย/บัญชี (user fills in Peak)
-      1,                            // จำนวน
-      amt,                          // ราคา
-      0,                            // ภาษี (%)
-      0,                            // หัก ณ ที่จ่าย (%)
-      '',                           // ชำระโดย (user fills in Peak)
-      amt,                          // ชำระเงิน
+      i + 1,                          // A ลำดับที่*
+      formatDateForPeak(r.date),      // B วันที่เอกสาร YYYYMMDD
+      '',                             // C อ้างอิงถึง
+      '',                             // D ผู้รับเงิน/คู่ค้า (contact ID — กรอกใน Peak)
+      '',                             // E เลขทะเบียน 13 หลัก
+      '',                             // F เลขสาขา 5 หลัก
+      '',                             // G เลขที่ใบกำกับฯ
+      '',                             // H วันที่ใบกำกับฯ
+      '',                             // I วันที่บันทึกภาษีซื้อ
+      3,                              // J ประเภทราคา = 3 (ไม่มีภาษี)
+      '',                             // K บัญชี (account code — กรอกใน Peak)
+      desc,                           // L คำอธิบาย
+      1,                              // M จำนวน
+      amt,                            // N ราคาต่อหน่วย
+      'NO',                           // O อัตราภาษี = ไม่มีภาษี
+      0,                              // P หัก ณ ที่จ่าย
+      '',                             // Q ชำระโดย (payment channel ID — กรอกใน Peak)
+      amt,                            // R จำนวนเงินที่ชำระ
+      '',                             // S ภ.ง.ด.
+      r.notes || '',                  // T หมายเหตุ
+      '',                             // U กลุ่มจัดประเภท
     ];
   });
 
   const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-  /* number format for ราคา (H) and ชำระเงิน (L) */
+  /* number format — ราคาต่อหน่วย (N) และ จำนวนเงินที่ชำระ (R) */
   for (let i = 2; i <= records.length + 1; i++) {
-    ['H','L'].forEach(col => {
+    ['N','R'].forEach(col => {
       const ref = `${col}${i}`;
       if (ws[ref]) { ws[ref].t = 'n'; ws[ref].z = '#,##0.00'; }
     });
   }
 
-  /* column widths */
+  /* column widths A–U */
   ws['!cols'] = [
-    {wch:14}, // วันที่เอกสาร
-    {wch:26}, // ผู้รับเงิน/คู่ค้า
-    {wch:30}, // คำอธิบาย
-    {wch:14}, // อ้างอิงจาก
-    {wch:14}, // ประเภทราคา
-    {wch:22}, // ค่าใช้จ่าย/บัญชี
-    {wch: 8}, // จำนวน
-    {wch:16}, // ราคา
-    {wch:10}, // ภาษี (%)
-    {wch:16}, // หัก ณ ที่จ่าย (%)
-    {wch:16}, // ชำระโดย
-    {wch:16}, // ชำระเงิน
+    {wch: 9},  // A ลำดับที่
+    {wch:12},  // B วันที่เอกสาร
+    {wch:14},  // C อ้างอิงถึง
+    {wch:16},  // D ผู้รับเงิน/คู่ค้า
+    {wch:16},  // E เลขทะเบียน 13 หลัก
+    {wch:12},  // F เลขสาขา 5 หลัก
+    {wch:16},  // G เลขที่ใบกำกับฯ
+    {wch:12},  // H วันที่ใบกำกับฯ
+    {wch:20},  // I วันที่บันทึกภาษีซื้อ
+    {wch:12},  // J ประเภทราคา
+    {wch:12},  // K บัญชี
+    {wch:40},  // L คำอธิบาย
+    {wch: 8},  // M จำนวน
+    {wch:16},  // N ราคาต่อหน่วย
+    {wch:10},  // O อัตราภาษี
+    {wch:16},  // P หัก ณ ที่จ่าย
+    {wch:14},  // Q ชำระโดย
+    {wch:18},  // R จำนวนเงินที่ชำระ
+    {wch:10},  // S ภ.ง.ด.
+    {wch:30},  // T หมายเหตุ
+    {wch:16},  // U กลุ่มจัดประเภท
   ];
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Peak Import');
+  XLSX.utils.book_append_sheet(wb, ws, 'Import_Expenses');
   XLSX.writeFile(wb, `Peak_บันทึกค่าใช้จ่าย_${today()}.xlsx`);
 }
 
-/* แปลงวันที่ (ทุก format) → DD/MM/YYYY (ค.ศ.) สำหรับ Peak */
+/* แปลงวันที่ (ทุก format) → YYYYMMDD (ค.ศ.) ตามที่ Peak กำหนด */
 function formatDateForPeak(dateStr) {
   if (!dateStr) return '';
 
   const thMonthMap = {
-    'ม.ค.':1,  'ก.พ.':2,  'มี.ค.':3,  'เม.ย.':4, 'พ.ค.':5,  'มิ.ย.':6,
-    'ก.ค.':7,  'ส.ค.':8,  'ก.ย.':9,   'ต.ค.':10, 'พ.ย.':11, 'ธ.ค.':12,
+    'ม.ค.':1,  'ก.พ.':2,  'มี.ค.':3,  'เม.ย.':4,  'พ.ค.':5,  'มิ.ย.':6,
+    'ก.ค.':7,  'ส.ค.':8,  'ก.ย.':9,   'ต.ค.':10,  'พ.ย.':11, 'ธ.ค.':12,
     'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,
     'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12
   };
 
-  /* "12 พ.ค. 2569" or "12 พฤษภาคม 2569" */
+  let d, m, y;
+
+  /* "12 พ.ค. 2569" / "12 พฤษภาคม 2569" */
   const mThai = dateStr.match(/(\d{1,2})\s+([฀-๿\.]+)\s+(\d{4})/);
   if (mThai) {
-    const d = String(mThai[1]).padStart(2,'0');
-    const m = String(thMonthMap[mThai[2]] || 1).padStart(2,'0');
-    let y = parseInt(mThai[3]);
+    d = parseInt(mThai[1]);
+    m = thMonthMap[mThai[2]] || 1;
+    y = parseInt(mThai[3]);
     if (y > 2400) y -= 543;
-    return `${d}/${m}/${y}`;
+    return `${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;
   }
 
   /* "12/05/2569", "12-05-2026" */
   const mSlash = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
   if (mSlash) {
-    const d = mSlash[1].padStart(2,'0');
-    const m = mSlash[2].padStart(2,'0');
-    let y = parseInt(mSlash[3]);
-    if (y > 2400)      y -= 543;
-    else if (y < 100)  y += 2000;
-    return `${d}/${m}/${y}`;
+    d = parseInt(mSlash[1]);
+    m = parseInt(mSlash[2]);
+    y = parseInt(mSlash[3]);
+    if (y > 2400)     y -= 543;
+    else if (y < 100) y += 2000;
+    return `${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;
   }
 
-  return dateStr; // fallback
+  return dateStr; // fallback — ส่งคืนตามเดิม
 }
 
 function downloadBlob(blob, name) {
