@@ -1449,18 +1449,85 @@ function doExportExcel() {
   closeExportMenu();
   if (typeof XLSX === 'undefined') { alert('กำลังโหลด SheetJS กรุณาลองใหม่'); return; }
 
-  const headers = ['#','วันที่โอน','ชื่อผู้โอน','ชื่อผู้รับโอน','ยอดโอน (บาท)','หมายเหตุ','ตรวจสอบแล้ว'];
-  const rows = records.map((r,i)=>[i+1,r.date,r.sender,r.recipient,r.amount,r.notes,r.checked?'ใช่':'ไม่']);
-  const total = records.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
-  rows.push(['','รวมทั้งหมด','','',total,'','']);
+  const now   = new Date();
+  const thDate = now.toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' });
+  const thTime = now.toLocaleTimeString('th-TH',  { hour:'2-digit', minute:'2-digit' });
 
-  const ws = XLSX.utils.aoa_to_sheet([headers,...rows]);
+  /* ── totals ── */
+  const total          = records.reduce((s,r) => s + (parseFloat(r.amount)||0), 0);
+  const checked        = records.filter(r =>  r.checked);
+  const unchecked      = records.filter(r => !r.checked);
+  const checkedTotal   = checked.reduce((s,r)   => s + (parseFloat(r.amount)||0), 0);
+  const uncheckedTotal = unchecked.reduce((s,r) => s + (parseFloat(r.amount)||0), 0);
+
+  /* ── build rows (AOA) ── */
+  const aoa = [];
+
+  // ① Title block (row 1–2)
+  aoa.push(['สรุปรายการโอนชำระ — Airportels Financial', '', '', '', '', '', '']);
+  aoa.push([`วันที่สร้างรายงาน: ${thDate}  เวลา ${thTime}`, '', '', '', '', '', '']);
+  aoa.push([]); // row 3 — spacer
+
+  // ② Summary block (rows 4–7)
+  aoa.push(['สรุปยอดรวม', '', '', '', '', '', '']);
+  aoa.push(['จำนวนรายการทั้งหมด', `${records.length} รายการ`, '', 'ยอดรวมทั้งหมด (บาท)',          total,          '', '']);
+  aoa.push(['ตรวจสอบแล้ว',        `${checked.length} รายการ`,   '', 'ยอดที่ตรวจสอบแล้ว (บาท)',    checkedTotal,   '', '']);
+  aoa.push(['ยังไม่ตรวจสอบ',       `${unchecked.length} รายการ`, '', 'ยอดที่ยังไม่ตรวจสอบ (บาท)', uncheckedTotal, '', '']);
+  aoa.push([]); // row 8 — spacer
+
+  // ③ Table header (row 9)
+  aoa.push(['#', 'วันที่โอน', 'ชื่อผู้โอน', 'ชื่อผู้รับโอน', 'ยอดโอน (บาท)', 'หมายเหตุ', 'ตรวจสอบแล้ว']);
+
+  // ④ Data rows (rows 10 … 9+n)
+  records.forEach((r, i) => {
+    aoa.push([
+      i + 1,
+      r.date   || '',
+      r.sender || '',
+      r.recipient || '',
+      parseFloat(r.amount) || 0,
+      r.notes  || '',
+      r.checked ? '✓' : ''
+    ]);
+  });
+
+  // ⑤ Total row (row 10+n)
+  aoa.push(['', 'รวมทั้งหมด', '', '', total, '', '']);
+
+  /* ── worksheet ── */
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+  // Number format — summary amounts (E5, E6, E7)
+  ['E5','E6','E7'].forEach(ref => {
+    if (ws[ref]) ws[ref].z = '#,##0.00';
+  });
+
+  // Number format — data table amount column (E10 … E{10+n})
+  const dataStart = 10; // 1-based Excel row of first data row
+  for (let i = 0; i <= records.length; i++) {
+    const ref = `E${dataStart + i}`;
+    if (ws[ref]) { ws[ref].t = 'n'; ws[ref].z = '#,##0.00'; }
+  }
+
+  // Merge cells for title, date, summary-header rows
+  ws['!merges'] = [
+    { s:{r:0,c:0}, e:{r:0,c:6} },  // row 1 — title
+    { s:{r:1,c:0}, e:{r:1,c:6} },  // row 2 — date
+    { s:{r:3,c:0}, e:{r:3,c:6} },  // row 4 — "สรุปยอดรวม" header
+  ];
 
   // Column widths
   ws['!cols'] = [
-    {wch:5},{wch:14},{wch:22},{wch:22},{wch:16},{wch:24},{wch:12}
+    {wch: 5},   // #
+    {wch: 15},  // วันที่โอน
+    {wch: 24},  // ชื่อผู้โอน
+    {wch: 24},  // ชื่อผู้รับโอน
+    {wch: 22},  // ยอดโอน (บาท)
+    {wch: 30},  // หมายเหตุ
+    {wch: 13},  // ตรวจสอบแล้ว
   ];
 
+  /* ── workbook ── */
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'สรุปการโอน');
   XLSX.writeFile(wb, `สรุปการโอน_${today()}.xlsx`);
